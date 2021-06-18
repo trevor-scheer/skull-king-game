@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "npm run build",
     "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./*/tsconfig*tsbuildinfo",
     "build": "tsc -b",
     "watch": "tsc -b -w",
