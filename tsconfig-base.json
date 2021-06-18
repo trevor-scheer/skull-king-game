@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig.json to read more about this file */
+    "pretty": true,
+    "lib": [
+      "esnext"
+    ],
+    "target": "es2019",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "strict": true,
+    "types": [
+      "node",
+      "jest"
+    ],
+    "declaration": true,
+    "declarationMap": true,
+    "composite": true,
+    "incremental": true,
+    // "noEmitOnError": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}

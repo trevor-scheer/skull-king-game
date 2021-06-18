@@ -1,12 +1,28 @@
 {
-  "name": "skull-king",
+  "name": "skull-king-monorepo",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./*/tsconfig*tsbuildinfo",
+    "build": "tsc -b",
+    "watch": "tsc -b -w",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@skull-king/core": "file:skull-king-core",
+    "@skull-king/server": "file:skull-king-server"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.0",
+    "jest": "^27.0.4",
+    "prettier": "^2.3.0",
+    "pretty-format": "^26.6.2",
+    "ts-jest": "^27.0.2",
+    "typescript": "^4.3.2"
+  }
 }

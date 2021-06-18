@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "include": [],
+  "compilerOptions": {
+    "composite": true
+  },
+  "references": [
+    {
+      "path": "./skull-king-core"
+    },
+    {
+      "path": "./skull-king-server"
+    }
+  ]
+}
