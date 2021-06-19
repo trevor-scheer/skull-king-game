@@ -12,6 +12,7 @@ export function isColoredCard(card: Card): card is ColoredCard {
 
 export interface SpecialCard {
   type: "escape" | "pirate" | "tigress" | "skullKing";
+  selection?: null | "pirate" | "escape";
 }
 
 export function isSpecialCard(card: Card): card is SpecialCard {

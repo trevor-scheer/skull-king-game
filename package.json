@@ -8,7 +8,8 @@
     "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./*/tsconfig*tsbuildinfo",
     "build": "tsc -b",
     "watch": "tsc -b -w",
-    "test": "jest"
+    "test": "jest",
+    "start": "nodemon ./skull-king-server/dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,7 @@
     "@types/jest": "^26.0.23",
     "@types/node": "^15.12.0",
     "jest": "^27.0.4",
+    "nodemon": "^2.0.7",
     "prettier": "^2.3.0",
     "pretty-format": "^26.6.2",
     "ts-jest": "^27.0.2",
