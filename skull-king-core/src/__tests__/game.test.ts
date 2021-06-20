@@ -163,6 +163,10 @@ describe("Game", () => {
       expect(game.__debugDump().currentRound.trickColor).toEqual(null);
     });
 
+    it.todo(
+      "trick color is set to null for the round after a character card is led"
+    );
+
     it("allows any special card to be played when the trick color is set", () => {
       game = new Game({
         deck: new Deck({

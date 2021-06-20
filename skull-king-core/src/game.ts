@@ -158,7 +158,6 @@ export class Game {
   }
 
   private determineWinningCard() {
-    let winner: string | null = null;
     const { cardsPlayed, trickColor } = this.currentRound;
 
     // TODO: DRY with below
