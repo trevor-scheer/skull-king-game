@@ -2,7 +2,12 @@
   "files": [],
   "include": [],
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    // needed for ts-jest?
+    "lib": [
+      "esnext"
+    ],
+    "esModuleInterop": true
   },
   "references": [
     {

@@ -10,8 +10,9 @@ export function isColoredCard(card: Card): card is ColoredCard {
   return "color" in card && "number" in card;
 }
 
+export type SpecialCardTypes = "escape" | "pirate" | "tigress" | "skullKing";
 export interface SpecialCard {
-  type: "escape" | "pirate" | "tigress" | "skullKing";
+  type: SpecialCardTypes;
   selection?: null | "pirate" | "escape";
 }
 

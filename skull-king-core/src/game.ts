@@ -2,32 +2,34 @@ import { Deck } from "./deck";
 import { Card, Color, isColoredCard, isSpecialCard } from "./cards";
 import { Player } from "./player";
 import { assert } from "./utils/assert";
+import { Scorecard } from "./scorecard";
 
+export interface CurrentRound {
+  roundNumber: number;
+  phase: "bid" | "play";
+  bids: Map<string, number>;
+  cardsPlayed: { playerId: string; card: Card }[];
+  dealer: number;
+  leader: number;
+  trickColor: Color | null;
+  tricksWon: Map<string, Card[][]>;
+}
 export class Game {
   private players: Player[];
   private playerNames: Set<string>;
-  private deck?: Deck;
-  private scorecard: Scorecard;
+  private deck: Deck;
+  private scorecard?: Scorecard;
   private options: GameOptions;
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
-  private currentRound: {
-    roundNumber: number;
-    phase: "bid" | "play";
-    bids: Map<string, number>;
-    cardsPlayed: { playerId: string; card: Card }[];
-    dealer: number;
-    leader: number;
-    trickColor: Color | null;
-    tricksWon: Map<string, Card[][]>;
-  };
+  private currentRound: CurrentRound;
 
   constructor(options?: GameOptions) {
     this.options = options ?? {};
     this.players = [];
     this.playerNames = new Set();
+    this.deck = options?.deck ?? new Deck();
     this.mode = options?.mode ?? "standard";
-    this.scorecard = {};
     this.phase = "setup";
     this.currentRound = {
       roundNumber: 0,
@@ -62,7 +64,7 @@ export class Game {
     if (this.players.length > 8) {
       throw Error("A maximum of 8 players can play the game");
     }
-    this.deck = this.options?.deck ?? new Deck();
+    this.scorecard = new Scorecard(this.playerNames);
     this.phase = "play";
     this.nextRound();
   }
@@ -150,6 +152,7 @@ export class Game {
 
     // end round
     if (Array.from(tricksWon.values()).flat().length === roundNumber) {
+      this.updateScores();
       this.nextRound();
     }
   }
@@ -167,7 +170,10 @@ export class Game {
     }
 
     const firstPiratePlayedIndex = cardsPlayed.findIndex(
-      ({ card }) => isSpecialCard(card) && card.type === "pirate"
+      ({ card }) =>
+        isSpecialCard(card) &&
+        (card.type === "pirate" ||
+          (card.type === "tigress" && card.selection === "pirate"))
     );
     if (firstPiratePlayedIndex > -1) {
       return cardsPlayed[firstPiratePlayedIndex].playerId;
@@ -215,13 +221,20 @@ export class Game {
 
     if (
       cardsPlayed.every(
-        ({ card }) => isSpecialCard(card) && card.type === "escape"
+        ({ card }) =>
+          isSpecialCard(card) &&
+          (card.type === "escape" ||
+            (card.type === "tigress" && card.selection === "escape"))
       )
     ) {
       return cardsPlayed[0].playerId;
     }
 
     throw Error("Programming error, unhandled win condition");
+  }
+
+  private updateScores() {
+    this.scorecard?.scoreRound(this.currentRound);
   }
 
   private canPlayCard(hand: Card[], cardIndex: number) {
@@ -283,7 +296,7 @@ export class Game {
   }
 
   private shuffle() {
-    this.deck!.shuffle();
+    this.deck.shuffle();
   }
 
   private deal() {
@@ -293,7 +306,7 @@ export class Game {
 
     for (let i = 0; i < roundNumber; i++) {
       for (let playerIdx of dealOrder) {
-        this.players[playerIdx].hand.push(this.deck!.draw());
+        this.players[playerIdx].hand.push(this.deck.draw());
       }
     }
   }
@@ -335,4 +348,3 @@ interface GameOptions {
   deck?: Deck;
 }
 
-interface Scorecard {}
