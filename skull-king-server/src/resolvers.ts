@@ -15,31 +15,38 @@ const resolvers: Config["resolvers"] = {
       context.games.set(id, game);
       return id;
     },
-    startGame(_, { gameId }, { games }) {
+    startGame(_, { gameId }, { games, pubsub }) {
       const game: Game = games.get(gameId);
       game.start();
-      console.log(game.__debugDump());
+      pubsub.publish(`GAME_UPDATED_${gameId}`, { state: game.__debugDump() });
       return true;
     },
-    addPlayer(_, { gameId, name }, { games }) {
+    addPlayer(_, { gameId, name }, { games, pubsub }) {
       const game: Game = games.get(gameId);
       game.addPlayer(name);
-      console.log(game.__debugDump().players);
+      pubsub.publish(`GAME_UPDATED_${gameId}`, { state: game.__debugDump() });
       return true;
     },
-    submitBid(_, { gameId, playerId, count }, { games }) {
+    submitBid(_, { gameId, playerId, count }, { games, pubsub }) {
       const game: Game = games.get(gameId);
       game.submitBid({ playerId, count });
+      pubsub.publish(`GAME_UPDATED_${gameId}`, { state: game.__debugDump() });
       return true;
     },
-    playColoredCard(_, { gameId, playerId, color, number }, { games }) {
+    playColoredCard(_, { gameId, playerId, color, number }, { games, pubsub }) {
       const game: Game = games.get(gameId);
       game.playCard({ playerId, card: { color, number } });
+      pubsub.publish(`GAME_UPDATED_${gameId}`, { state: game.__debugDump() });
       return true;
     },
-    playSpecialCard(_, { gameId, playerId, card, selection }, { games }) {
+    playSpecialCard(
+      _,
+      { gameId, playerId, card, selection },
+      { games, pubsub }
+    ) {
       const game: Game = games.get(gameId);
       game.playCard({ playerId, card: { type: card, selection } });
+      pubsub.publish(`GAME_UPDATED_${gameId}`, { state: game.__debugDump() });
       return true;
     },
   },
