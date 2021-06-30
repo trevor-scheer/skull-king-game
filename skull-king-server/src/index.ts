@@ -1,105 +1,71 @@
-import { ApolloServer } from "apollo-server";
+import { createServer } from "http";
+import express from "express";
+import { execute, subscribe } from "graphql";
+import { ApolloServer } from "apollo-server-express";
+import { PubSub } from "graphql-subscriptions";
+import { SubscriptionServer } from "subscriptions-transport-ws";
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import { Game } from "@skull-king/core";
 import resolvers from "./resolvers";
 import typeDefs from "./typeDefs";
-import ws from "ws";
-import { useServer } from "graphql-ws/lib/use/ws";
-import { buildSchema } from "graphql";
-import { PubSub } from "graphql-subscriptions";
 
-const pubsub = new PubSub();
+(async function () {
+  const app = express();
+  const pubSub = new PubSub();
+  const games: Map<number, Game> = new Map();
 
-const games: Map<number, Game> = new Map();
+  const wsServer = createServer(app);
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context({ req }) {
-    // const currentGame;
-    return { games, pubsub };
-  },
-});
-
-const schema = buildSchema(`#graphql
-  type Query {
-    hello: String
-  }
-  type Subscription {
-    hello: String
-    state(id: Int!): GameState
-  }
-
-  type GameState {
-    phase: String!
-    players: [Player!]!
-    currentRound: CurrentRound!
-    # deck: Deck!
-    # scorecard: Scorecard
-  }
-
-  type Player {
-    name: String!
-    hand: [Card!]!
-  }
-
-  union Card = SpecialCard | ColoredCard
-
-  type SpecialCard {
-    type: String!
-    selection: String
-  }
-
-  type ColoredCard {
-    color: String!
-    number: Int!
-  }
-
-  type CurrentRound {
-    roundNumber: Int!
-    # TODO
-  }
-`);
-
-// The roots provide resolvers for each GraphQL operation
-const roots = {
-  query: {
-    hello: () => "Hello World!",
-  },
-  subscription: {
-    hello: async function* () {
-      yield { hello: "Hello World!" };
-    },
-    state: (args: any, context: any) => {
-      console.log(args);
-      return pubsub.asyncIterator(`GAME_UPDATED_${args.id}`);
-      // console.log({ args, context });
-      // console.log(context.games);
-      // const game = context.games.get(args.id);
-      // const { phase, players, currentRound } = game.__debugDump();
-      // console.log({ phase, players, currentRound });
-      // yield { state: { phase, players, currentRound } };
-    },
-  },
-};
-
-const wsServer = new ws.Server({
-  port: 4001,
-  path: "/",
-});
-
-useServer(
-  // from the previous step
-  {
+  const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers: resolvers(pubSub),
+  });
+  const server = new ApolloServer({
     schema,
-    roots,
-    context() {
+    context({ req }) {
+      console.log('creating context');
       return { games };
     },
-  },
-  wsServer
-);
+  });
+  await server.start();
+  server.applyMiddleware({ app });
+  // await server.start();
 
+  wsServer.listen(4000, () =>
+    console.log(
+      `Websocket Server is now running on http://localhost:4000/graphql`
+    )
+  );
 
-server.listen(4000).then(() => {
-  console.log("Skull King server running at http://localhost:4000");
-});
+  const subscriptionServer = SubscriptionServer.create(
+    {
+      // This is the `schema` created in Step 6 above.
+      schema,
+      // These were imported from `graphql` in Step 5 above.
+      execute,
+      subscribe,
+    },
+    {
+      // This is the `httpServer` created in Step 9 above.
+      server: wsServer,
+
+      // This `server` is the instance returned from `new ApolloServer`.
+      path: server.graphqlPath,
+    }
+  );
+
+  // httpServer.listen(4000);
+  // console.log("Skull King server running at http://localhost:4000");
+
+  // server.start().then(() => {
+  //   server.applyMiddleware({ app });
+  //   // app.use(() => {
+
+  //   // })
+  //   httpServer.listen(4000);
+  //   // app.listen(4000, () => {
+  //   //   console.log("Skull King server running at http://localhost:4000");
+  //   // });
+  //   console.log("Skull King server running at http://localhost:4000");
+  // });
+})();

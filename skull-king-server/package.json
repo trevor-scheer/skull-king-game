@@ -10,11 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@graphql-tools/schema": "^7.1.5",
     "@skull-king/core": "file:../skull-king-core",
-    "apollo-server": "3.0.0-preview.2",
+    "apollo-server-express": "3.0.0-preview.2",
+    "express": "^4.17.1",
     "graphql": "^15.5.0",
     "graphql-subscriptions": "^1.2.1",
-    "graphql-ws": "^5.3.0",
-    "ws": "^7.5.0"
+    "subscriptions-transport-ws": "^0.9.19"
   }
 }

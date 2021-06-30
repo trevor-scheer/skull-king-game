@@ -23,6 +23,41 @@ const typeDefs = gql`
       selection: String
     ): Boolean!
   }
+
+  type Subscription {
+    hello: String
+    state(id: Int!): GameState
+  }
+
+  type GameState {
+    phase: String!
+    players: [Player!]!
+    currentRound: CurrentRound!
+    # deck: Deck!
+    # scorecard: Scorecard
+  }
+
+  type Player {
+    name: String!
+    hand: [Card!]!
+  }
+
+  union Card = SpecialCard | ColoredCard
+
+  type SpecialCard {
+    type: String!
+    selection: String
+  }
+
+  type ColoredCard {
+    color: String!
+    number: Int!
+  }
+
+  type CurrentRound {
+    roundNumber: Int!
+    # TODO
+  }
 `;
 
 export default typeDefs;
