@@ -11,12 +11,6 @@ function App() {
       <Router>
         <Header />
         <Switch>
-          {/* <Route path="/about">
-            <About />
-            </Route>
-            <Route path="/users">
-            <Users />
-          </Route> */}
           <Route path="/game/:id">
             <Game />
           </Route>

@@ -1,13 +1,11 @@
 import { gql, useMutation } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { usePlayerToken } from "../../hooks/usePlayerToken";
 
 export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
   function ({ onJoin }) {
     const params = useParams<{ id: string }>();
-    const [token, setToken] = usePlayerToken();
-    const [name, updateName] = useState<string | undefined>(undefined);
+    const [name, updateName] = useState<string | undefined>("");
 
     const [createPlayer, result] = useMutation(
       gql`
@@ -25,11 +23,10 @@ export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
     );
 
     useEffect(() => {
-      if (result.data?.addPlayer && !token) {
-        setToken(result.data.addPlayer);
+      if (result.data?.addPlayer) {
         onJoin(result.data.addPlayer);
       }
-    }, [result.data?.addPlayer, token, setToken, params.id, onJoin]);
+    }, [result.data?.addPlayer, params.id, onJoin]);
 
     return (
       <>

@@ -1,46 +1,29 @@
-import { gql, useQuery, useSubscription } from "@apollo/client";
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { usePlayerToken } from "../hooks/usePlayerToken";
-import { JoinGame } from "./Game/JoinGame";
+import { gql, useQuery } from "@apollo/client";
+import { Redirect, useParams } from "react-router-dom";
+import { InGame } from "./Game/InGame";
+import { Lobby } from "./Game/Lobby";
 
 export function Game() {
   const { id: gameId } = useParams<{ id: string }>();
-  const [token, setToken] = usePlayerToken();
-  const variables = { gameId };
-
-  useSubscription(gameStateQuery(true), {
-    variables,
-  });
-  const { data, loading, error } = useQuery(gameStateQuery(), {
-    variables,
-  });
-
-  return loading ? (
-    <p>Loading...</p>
-  ) : (
-    <div>
-      {JSON.stringify(data)}
-      {token ? <div>In game</div> : <JoinGame onJoin={setToken} />}
-    </div>
-  );
-}
-
-function gameStateQuery(isSubscription: boolean = false) {
-  return gql`
-  ${isSubscription ? "subscription" : "query"} GameState${
-    isSubscription ? "Subscription" : "Query"
-  }($gameId: String!) {
-    state(gameId: $gameId) {
-      id
-      phase
-      players {
-        name
+  const { data, loading, error } = useQuery(
+    gql`
+      query GamePhaseQuery($gameId: String!) {
+        state(gameId: $gameId) {
+          id
+          phase
+        }
       }
-      currentRound {
-        roundNumber
-      }
+    `,
+    {
+      variables: { gameId },
+      pollInterval: 2000,
     }
-  }
-  `;
+  );
+
+  if (loading) return <div>Loading...</div>;
+
+  // No game found
+  if (!data?.state) return <Redirect to="/" />;
+
+  return data.state.phase === "setup" ? <Lobby /> : <InGame />;
 }
