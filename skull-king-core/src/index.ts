@@ -1,3 +1,4 @@
 import { Game } from "./game";
+import { Card, isSpecialCard } from "./cards";
 
-export { Game };
+export { Game, Card, isSpecialCard };

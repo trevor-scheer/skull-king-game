@@ -3,11 +3,15 @@ import express from "express";
 import { execute, subscribe } from "graphql";
 import { ApolloServer } from "apollo-server-express";
 import { PubSub } from "graphql-subscriptions";
-import { SubscriptionServer } from "subscriptions-transport-ws";
+import {
+  ConnectionContext,
+  SubscriptionServer,
+} from "subscriptions-transport-ws";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { Game } from "@skull-king/core";
 import resolvers from "./resolvers";
 import typeDefs from "./typeDefs";
+import WebSocket from "ws";
 
 (async function () {
   const app = express();
@@ -22,10 +26,20 @@ import typeDefs from "./typeDefs";
   });
   const server = new ApolloServer({
     schema,
-    context({ req }) {
-      console.log('creating context');
+    context() {
       return { games };
     },
+    plugins: [
+      {
+        async requestDidStart({ request }) {
+          return {
+            async didEncounterErrors({errors}) {
+              console.error(errors);
+            },
+          };
+        },
+      },
+    ],
   });
   await server.start();
   server.applyMiddleware({ app });
@@ -33,7 +47,7 @@ import typeDefs from "./typeDefs";
 
   wsServer.listen(4000, () =>
     console.log(
-      `Websocket Server is now running on http://localhost:4000/graphql`
+      `Server is now running on http://localhost:4000/graphql, ws://localhost:4000/graphql`
     )
   );
 
@@ -44,6 +58,14 @@ import typeDefs from "./typeDefs";
       // These were imported from `graphql` in Step 5 above.
       execute,
       subscribe,
+      async onConnect(
+        headers: any,
+        _socket: WebSocket,
+        connectionContext: ConnectionContext
+      ) {
+        // console.log(headers);
+        return { games, ...headers };
+      },
     },
     {
       // This is the `httpServer` created in Step 9 above.
@@ -53,19 +75,4 @@ import typeDefs from "./typeDefs";
       path: server.graphqlPath,
     }
   );
-
-  // httpServer.listen(4000);
-  // console.log("Skull King server running at http://localhost:4000");
-
-  // server.start().then(() => {
-  //   server.applyMiddleware({ app });
-  //   // app.use(() => {
-
-  //   // })
-  //   httpServer.listen(4000);
-  //   // app.listen(4000, () => {
-  //   //   console.log("Skull King server running at http://localhost:4000");
-  //   // });
-  //   console.log("Skull King server running at http://localhost:4000");
-  // });
 })();

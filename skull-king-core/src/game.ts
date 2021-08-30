@@ -3,6 +3,7 @@ import { Card, Color, isColoredCard, isSpecialCard } from "./cards";
 import { Player } from "./player";
 import { assert } from "./utils/assert";
 import { Scorecard } from "./scorecard";
+import { randomUUID } from "crypto";
 
 export interface CurrentRound {
   roundNumber: number;
@@ -15,8 +16,10 @@ export interface CurrentRound {
   tricksWon: Map<string, Card[][]>;
 }
 export class Game {
+  private id: String;
   private players: Player[];
   private playerNames: Set<string>;
+  private playerTokens: Map<string, string>;
   private deck: Deck;
   private scorecard?: Scorecard;
   private options: GameOptions;
@@ -24,10 +27,12 @@ export class Game {
   private phase: "setup" | "play" | "postgame";
   private currentRound: CurrentRound;
 
-  constructor(options?: GameOptions) {
+  constructor(id: string, options?: GameOptions) {
+    this.id = id;
     this.options = options ?? {};
     this.players = [];
     this.playerNames = new Set();
+    this.playerTokens = new Map();
     this.deck = options?.deck ?? new Deck();
     this.mode = options?.mode ?? "standard";
     this.phase = "setup";
@@ -50,7 +55,10 @@ export class Game {
       throw new Error(`Name "${name}" is already in use`);
     } else {
       this.playerNames.add(name);
-      this.players.push({ name, hand: [] });
+      this.players.push({ name, id: name, hand: [] });
+      const token = randomUUID();
+      this.playerTokens.set(token, name);
+      return token;
     }
   }
 
@@ -70,8 +78,11 @@ export class Game {
   }
 
   // @throws
-  public submitBid({ playerId, count }: { playerId: string; count: number }) {
-    if (this.phase !== "play") {
+  public submitBid({ playerToken, count }: { playerToken: string; count: number }) {
+    const playerId = this.playerTokens.get(playerToken);
+    if (!playerId) {
+      throw Error("Invalid player token");
+    } else if (this.phase !== "play") {
       throw Error("Can't submit bid during this game mode");
     } else if (this.currentRound.bids.has(playerId)) {
       throw Error("Can't place multiple bids");
@@ -90,7 +101,9 @@ export class Game {
   }
 
   // @throws
-  public playCard({ playerId, card }: { playerId: string; card: Card }) {
+  public playCard({ playerToken, card }: { playerToken: string; card: Card }) {
+    const playerId = this.playerTokens.get(playerToken);
+    assert(playerId, "Invalid player token provided");
     assert(this.phase === "play", "Can't play a card during this game phase");
     assert(
       this.currentRound.phase === "play",
@@ -330,8 +343,34 @@ export class Game {
 
   private endGame() {}
 
+  public getStateForPlayer(playerToken?: string) {
+    const gameState = {
+      id: this.id,
+      phase: this.phase,
+      currentRound: {
+        ...this.currentRound,
+        leader: this.players[this.currentRound.leader]?.name ?? null,
+      },
+      scorecard: this.scorecard,
+      options: this.options,
+      players: this.players.map((player) => ({
+        ...player,
+        hand: [],
+      })),
+      me: undefined as Player | undefined,
+    }
+    if (playerToken) {
+      const playerName = this.playerTokens.get(playerToken);
+      const me = this.players.find((player) => player.name === playerName);
+      gameState.me = me;
+    }
+       
+    return gameState;
+  }
+
   public __debugDump() {
     return {
+      id: this.id,
       phase: this.phase,
       players: this.players,
       currentRound: this.currentRound,
@@ -346,4 +385,3 @@ interface GameOptions {
   mode?: "standard";
   deck?: Deck;
 }
-

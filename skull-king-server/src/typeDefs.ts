@@ -2,23 +2,25 @@ import { gql } from "apollo-server-core";
 
 const typeDefs = gql`
   type Query {
-    players(gameId: Int!): String!
+    players(gameId: String!): String!
+    games: [String!]!
+    state(gameId: String!, playerToken: String): GameState
   }
 
   type Mutation {
-    newGame: Int!
-    startGame(gameId: Int!): Boolean!
-    addPlayer(gameId: Int!, name: String!): Boolean!
-    submitBid(gameId: Int!, playerId: String!, count: Int!): Boolean!
+    newGame: String!
+    startGame(gameId: String!): Boolean!
+    addPlayer(gameId: String!, name: String!): String!
+    submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
     playColoredCard(
-      gameId: Int!
-      playerId: String!
+      gameId: String!
+      playerToken: String!
       color: String!
       number: Int!
     ): Boolean!
     playSpecialCard(
-      gameId: Int!
-      playerId: String!
+      gameId: String!
+      playerToken: String!
       card: String!
       selection: String
     ): Boolean!
@@ -26,11 +28,13 @@ const typeDefs = gql`
 
   type Subscription {
     hello: String
-    state(id: Int!): GameState
+    state(gameId: String!, playerToken: String): GameState
   }
 
   type GameState {
+    id: String!
     phase: String!
+    me: Player
     players: [Player!]!
     currentRound: CurrentRound!
     # deck: Deck!
@@ -38,6 +42,7 @@ const typeDefs = gql`
   }
 
   type Player {
+    id: String!
     name: String!
     hand: [Card!]!
   }
@@ -56,7 +61,8 @@ const typeDefs = gql`
 
   type CurrentRound {
     roundNumber: Int!
-    # TODO
+    phase: String!
+    leader: String
   }
 `;
 
