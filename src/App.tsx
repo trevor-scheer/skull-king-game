@@ -4,6 +4,7 @@ import "./App.css";
 import { Home } from "./pages/Home";
 import { Game } from "./pages/Game";
 import { client } from "./client";
+import { PlayerTokenProvider } from "./hooks/PlayerTokenContext";
 
 function App() {
   return (
@@ -12,7 +13,9 @@ function App() {
         <Header />
         <Switch>
           <Route path="/game/:id">
-            <Game />
+            <PlayerTokenProvider>
+              <Game />
+            </PlayerTokenProvider>
           </Route>
           <Route path="/">
             <Home />

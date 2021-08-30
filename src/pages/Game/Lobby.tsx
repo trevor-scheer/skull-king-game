@@ -1,24 +1,40 @@
 import { gql, useQuery } from "@apollo/client";
-import { useParams } from "react-router-dom";
-import { usePlayerToken } from "../../hooks/usePlayerToken";
+import { usePlayerToken } from "../../hooks/PlayerTokenContext";
+import { useGameId } from "../../hooks/useGameId";
 import { JoinGame } from "./JoinGame";
 import { StartGame } from "./StartGame";
 
 export const Lobby: React.FunctionComponent = function () {
-  const { id: gameId } = useParams<{ id: string }>();
+  const gameId = useGameId();
   const [playerToken, setToken] = usePlayerToken();
   const variables = { gameId, playerToken };
 
-  const { data, loading, error } = useQuery(gameStateQuery(), {
-    variables,
-    pollInterval: 2000,
-  });
+  console.log(gameId);
+  const { data, loading, error } = useQuery(
+    gql`
+      query LobbyQuery($gameId: String!, $playerToken: String) {
+        state(gameId: $gameId, playerToken: $playerToken) {
+          id
+          players {
+            id
+            name
+          }
+        }
+      }
+    `,
+    {
+      variables,
+      pollInterval: 2000,
+    }
+  );
+  if (error) console.error(error);
 
   if (loading) return <div>Loading...</div>;
 
   // TODO: any
   return (
     <div>
+      <p>{playerToken}</p>
       {JSON.stringify(data, null, 2)}
       <ol>
         {data.state.players.map((player: any) => (
@@ -29,16 +45,3 @@ export const Lobby: React.FunctionComponent = function () {
     </div>
   );
 };
-
-function gameStateQuery() {
-  return gql`
-    query GameStateQuery($gameId: String!, $playerToken: String) {
-      state(gameId: $gameId, playerToken: $playerToken) {
-        id
-        players {
-          name
-        }
-      }
-    }
-  `;
-}

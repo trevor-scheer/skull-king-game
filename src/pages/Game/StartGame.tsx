@@ -1,24 +1,22 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { useParams } from "react-router-dom";
+import { useGameId } from "../../hooks/useGameId";
 
 export const StartGame: React.FunctionComponent = function () {
-  const params = useParams<{ id: string }>();
+  const gameId = useGameId();
 
   const { loading, data } = useQuery(
     gql`
       query Players($gameId: String!) {
         state(gameId: $gameId) {
+          id
           players {
+            id
             name
           }
         }
       }
     `,
-    {
-      variables: {
-        gameId: params.id,
-      },
-    }
+    { variables: { gameId } }
   );
 
   const [startGame] = useMutation(
@@ -27,11 +25,7 @@ export const StartGame: React.FunctionComponent = function () {
         startGame(gameId: $gameId)
       }
     `,
-    {
-      variables: {
-        gameId: params.id,
-      },
-    }
+    { variables: { gameId } }
   );
 
   return (

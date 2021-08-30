@@ -1,10 +1,10 @@
 import { gql, useMutation } from "@apollo/client";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useGameId } from "../../hooks/useGameId";
 
 export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
   function ({ onJoin }) {
-    const params = useParams<{ id: string }>();
+    const gameId = useGameId();
     const [name, updateName] = useState<string | undefined>("");
 
     const [createPlayer, result] = useMutation(
@@ -14,24 +14,35 @@ export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
         }
       `,
       {
-        variables: {
-          gameId: params.id,
-          name,
-        },
+        variables: { gameId, name },
         onError: console.error,
       }
     );
 
     useEffect(() => {
+      console.log(result.data?.addPlayer);
       if (result.data?.addPlayer) {
         onJoin(result.data.addPlayer);
       }
-    }, [result.data?.addPlayer, params.id, onJoin]);
+    }, [result.data?.addPlayer, gameId, onJoin]);
 
     return (
-      <>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          createPlayer();
+        }}
+      >
         <input onChange={(e) => updateName(e.target.value)} value={name} />
-        <button onClick={() => createPlayer()}>Join Game</button>
-      </>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            createPlayer();
+          }}
+          type="submit"
+        >
+          Join Game
+        </button>
+      </form>
     );
   };
