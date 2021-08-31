@@ -2,8 +2,8 @@ import { gql, useQuery } from "@apollo/client";
 import { usePlayerToken } from "../../hooks/PlayerTokenContext";
 import { useGameId } from "../../hooks/useGameId";
 import { GameStateQuery } from "../../types/graphqlTypes";
-import { BidForm } from './BidForm';
-import { Hand } from "./Hand";
+import { BidForm } from './InGame/BidForm';
+import { Hand } from "./InGame/Hand";
 
 export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -24,7 +24,7 @@ export const InGame: React.FunctionComponent = function () {
           }
           currentRound {
             phase
-            leader
+            playerTurn
           }
         }
       }
@@ -41,7 +41,7 @@ export const InGame: React.FunctionComponent = function () {
   return (
     <div>
       In Game: {playerToken}
-      <Hand canPlay={phase === "play"} />
+      <Hand />
       {phase === "bid" && <BidForm />}
     </div>
   );

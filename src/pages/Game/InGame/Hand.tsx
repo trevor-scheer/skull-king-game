@@ -1,11 +1,9 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { usePlayerToken } from "../../hooks/PlayerTokenContext";
-import { useGameId } from "../../hooks/useGameId";
-import { MyHandQuery } from "../../types/graphqlTypes";
+import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
+import { useGameId } from "../../../hooks/useGameId";
+import { MyHandQuery } from "../../../types/graphqlTypes";
 
-export const Hand: React.FunctionComponent<{ canPlay: boolean }> = function ({
-  canPlay,
-}) {
+export const Hand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
@@ -16,6 +14,7 @@ export const Hand: React.FunctionComponent<{ canPlay: boolean }> = function ({
           id
           me {
             id
+            name
             hand {
               __typename
               ... on SpecialCard {
@@ -26,6 +25,10 @@ export const Hand: React.FunctionComponent<{ canPlay: boolean }> = function ({
                 number
               }
             }
+          }
+          currentRound {
+            phase
+            playerTurn
           }
         }
       }
@@ -62,6 +65,11 @@ export const Hand: React.FunctionComponent<{ canPlay: boolean }> = function ({
     }
   `);
 
+  const phase = data?.state?.currentRound?.phase;
+  const playerTurn = data?.state?.currentRound?.playerTurn;
+  const me = data?.state?.me?.name;
+  const canPlay = phase === "play" && playerTurn === me;
+
   if (loading) return <div>Loading...</div>;
   return (
     <ul>
@@ -70,6 +78,7 @@ export const Hand: React.FunctionComponent<{ canPlay: boolean }> = function ({
           return (
             <button
               key={card.color + card.number}
+              disabled={!canPlay}
               onClick={() =>
                 playColoredCard({
                   variables: {
@@ -80,7 +89,6 @@ export const Hand: React.FunctionComponent<{ canPlay: boolean }> = function ({
                   },
                 })
               }
-              disabled={!canPlay}
             >
               <li>
                 {card.color} {card.number}
@@ -91,6 +99,7 @@ export const Hand: React.FunctionComponent<{ canPlay: boolean }> = function ({
           return (
             <button
               key={card.type}
+              disabled={!canPlay}
               onClick={() =>
                 playSpecialCard({
                   variables: { gameId, playerToken, card: card.type },
