@@ -265,6 +265,11 @@ export class Game {
   }
 
   private isPlayersTurn(playerId: string) {
+    const player = this.playerTurn();
+    return player === playerId;
+  }
+
+  private playerTurn () {
     // Player order for the round
     const order = this.playerOrder();
     // We can use cards played so far to determine whose turn it is
@@ -276,7 +281,7 @@ export class Game {
     // Get player from the players array using the lookup
     const player = Array.from(this.playerNames)[playerTurnIdx];
 
-    return player === playerId;
+    return player;
   }
 
   private nextRound() {
@@ -350,6 +355,7 @@ export class Game {
       currentRound: {
         ...this.currentRound,
         leader: this.players[this.currentRound.leader]?.name ?? null,
+        playerTurn: this.playerTurn(),
       },
       scorecard: this.scorecard,
       options: this.options,

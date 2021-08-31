@@ -62,7 +62,8 @@ const typeDefs = gql`
   type CurrentRound {
     roundNumber: Int!
     phase: String!
-    leader: String
+    leader: String!
+    playerTurn: String!
   }
 `;
 
