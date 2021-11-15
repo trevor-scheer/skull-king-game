@@ -38,7 +38,7 @@ const typeDefs = gql`
     players: [Player!]!
     currentRound: CurrentRound!
     # deck: Deck!
-    # scorecard: Scorecard
+    scorecard: [[ScoreBlock!]!]
   }
 
   type Player {
@@ -60,10 +60,35 @@ const typeDefs = gql`
   }
 
   type CurrentRound {
+    id: Int!
     roundNumber: Int!
     phase: String!
     leader: String!
     playerTurn: String!
+    myBid: Int
+    trickColor: Color
+    cardsPlayed: [PlayedCard!]!
+  }
+
+  type PlayedCard {
+    playerId: String!
+    card: Card!
+  }
+
+  enum Color {
+    YELLOW
+    GREEN
+    PURPLE
+    BLACK
+  }
+
+  type ScoreBlock {
+    playerName: String!
+    tricksBid: Int!
+    tricksWon: Int!
+    bidPoints: Int!
+    bonusPoints: Int!
+    totalPoints: Int!
   }
 `;
 

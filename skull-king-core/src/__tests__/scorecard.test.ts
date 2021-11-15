@@ -1,17 +1,24 @@
+import { randomUUID } from "crypto";
 import { Card } from "../cards";
 import { Scorecard } from "../scorecard";
 
 const players = new Set(["Seth", "Trevor"]);
-const nonBonusHand: Card[] = [{ type: "pirate" }, { type: "escape" }];
+const nonBonusHand: Card[] = [
+  { id: randomUUID(), type: "pirate" },
+  { id: randomUUID(), type: "escape" },
+];
 const coloredBonusHand: Card[] = [
-  { type: "pirate" },
-  { color: "green", number: 14 },
+  { id: randomUUID(), type: "pirate" },
+  { id: randomUUID(), color: "GREEN", number: 14 },
 ];
 const blackBonusHand: Card[] = [
-  { type: "pirate" },
-  { color: "black", number: 14 },
+  { id: randomUUID(), type: "pirate" },
+  { id: randomUUID(), color: "BLACK", number: 14 },
 ];
-const skullKingBonusHand: Card[] = [{ type: "skullKing" }, { type: "pirate" }];
+const skullKingBonusHand: Card[] = [
+  { id: randomUUID(), type: "skullKing" },
+  { id: randomUUID(), type: "pirate" },
+];
 
 describe("scorecard", () => {
   let scorecard: Scorecard;

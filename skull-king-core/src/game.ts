@@ -78,7 +78,13 @@ export class Game {
   }
 
   // @throws
-  public submitBid({ playerToken, count }: { playerToken: string; count: number }) {
+  public submitBid({
+    playerToken,
+    count,
+  }: {
+    playerToken: string;
+    count: number;
+  }) {
     const playerId = this.playerTokens.get(playerToken);
     if (!playerId) {
       throw Error("Invalid player token");
@@ -101,8 +107,19 @@ export class Game {
   }
 
   // @throws
-  public playCard({ playerToken, card }: { playerToken: string; card: Card }) {
+  public playCard({
+    playerToken,
+    cardId,
+    selection,
+  }: {
+    playerToken: string;
+    cardId: string;
+    selection?: string;
+  }) {
     const playerId = this.playerTokens.get(playerToken);
+
+    const card = this.deck.getCard(cardId);
+    assert(card, "Programming error: Invalid cardId provided");
     assert(playerId, "Invalid player token provided");
     assert(this.phase === "play", "Can't play a card during this game phase");
     assert(
@@ -123,7 +140,7 @@ export class Game {
         return false;
       }
     });
-    assert(cardInHandIndex > -1, "Programming error, card not found");
+    assert(cardInHandIndex > -1, "Card not found in player's hand");
     assert(this.canPlayCard([...player.hand], cardInHandIndex), "Illegal move");
 
     // Remove card from player hand
@@ -193,7 +210,7 @@ export class Game {
 
     // TODO: DRY with below
     const blackCards = cardsPlayed.filter(
-      ({ card }) => isColoredCard(card) && card.color === "black"
+      ({ card }) => isColoredCard(card) && card.color === "BLACK"
     );
     if (blackCards.length > 0) {
       const winningCard = blackCards.reduce(
@@ -206,7 +223,7 @@ export class Game {
             ? nextCard
             : highestCard;
         },
-        { playerId: "", card: { number: 0, color: "black" } }
+        { playerId: "", card: { id: "", number: 0, color: "BLACK" } }
       );
 
       return winningCard.playerId;
@@ -226,7 +243,7 @@ export class Game {
             ? nextCard
             : highestCard;
         },
-        { playerId: "", card: { number: 0, color: trickColor } }
+        { playerId: "", card: { id: "", number: 0, color: trickColor } }
       );
       return winningCard.playerId;
     }
@@ -269,7 +286,7 @@ export class Game {
     return player === playerId;
   }
 
-  private playerTurn () {
+  private playerTurn() {
     // Player order for the round
     const order = this.playerOrder();
     // We can use cards played so far to determine whose turn it is
@@ -354,23 +371,26 @@ export class Game {
       phase: this.phase,
       currentRound: {
         ...this.currentRound,
+        id: this.currentRound.roundNumber,
+        myBid: undefined as number | undefined,
         leader: this.players[this.currentRound.leader]?.name ?? null,
         playerTurn: this.playerTurn(),
       },
-      scorecard: this.scorecard,
+      scorecard: this.scorecard?.getScoreCard(),
       options: this.options,
       players: this.players.map((player) => ({
         ...player,
         hand: [],
       })),
       me: undefined as Player | undefined,
-    }
+    };
     if (playerToken) {
       const playerName = this.playerTokens.get(playerToken);
-      const me = this.players.find((player) => player.name === playerName);
+      const me = this.players.find((player) => player.name === playerName)!;
       gameState.me = me;
+      gameState.currentRound.myBid = this.currentRound.bids.get(me.name);
     }
-       
+
     return gameState;
   }
 

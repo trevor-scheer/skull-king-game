@@ -53,37 +53,37 @@ const resolvers: (pubSub: PubSub) => Config["resolvers"] = (pubSub) => ({
       });
       return true;
     },
-    playColoredCard(_, { gameId, playerToken, color, number }, { games }) {
+    playColoredCard(_, { gameId, playerToken, cardId }, { games }) {
       const game: Game = games.get(gameId);
-      game.playCard({ playerToken, card: { color, number } });
+      game.playCard({ playerToken, cardId });
       pubSub.publish(`GAME_UPDATED_${gameId}`, {
         state: game.getStateForPlayer(playerToken),
       });
       return true;
     },
-    playSpecialCard(_, { gameId, playerToken, card, selection }, { games }) {
+    playSpecialCard(_, { gameId, playerToken, cardId, selection }, { games }) {
       const game: Game = games.get(gameId);
-      game.playCard({ playerToken, card: { type: card, selection } });
+      game.playCard({ playerToken, cardId, selection });
       pubSub.publish(`GAME_UPDATED_${gameId}`, {
         state: game.getStateForPlayer(playerToken),
       });
       return true;
     },
   },
-  Subscription: {
-    hello: {
-      subscribe: async function* () {
-        yield { hello: "Hello World!" };
-      },
-    },
-    state: {
-      subscribe(_, { gameId, playerToken }) {
-        console.log(gameId, playerToken);
-        const asyncIterator = pubSub.asyncIterator(`GAME_UPDATED_${gameId}`);
-        return asyncIterator;
-      },
-    },
-  },
+  // Subscription: {
+  //   hello: {
+  //     subscribe: async function* () {
+  //       yield { hello: "Hello World!" };
+  //     },
+  //   },
+  //   state: {
+  //     subscribe(_, { gameId, playerToken }) {
+  //       console.log(gameId, playerToken);
+  //       const asyncIterator = pubSub.asyncIterator(`GAME_UPDATED_${gameId}`);
+  //       return asyncIterator;
+  //     },
+  //   },
+  // },
   Card: {
     __resolveType(card: Card) {
       return isSpecialCard(card) ? "SpecialCard" : "ColoredCard";

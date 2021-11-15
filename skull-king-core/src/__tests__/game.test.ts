@@ -1,10 +1,11 @@
+import { randomUUID } from "crypto";
 import { Deck } from "../deck";
 import { Game } from "../game";
 
 describe("Game", () => {
   let game: Game;
   beforeEach(() => {
-    game = new Game();
+    game = new Game(randomUUID());
   });
 
   describe("setup", () => {
@@ -59,20 +60,21 @@ describe("Game", () => {
       });
 
       it("when bid is placed before game is started", () => {
-        game.addPlayer("Seth");
-        game.addPlayer("Trevor");
+        const sethToken = game.addPlayer("Seth");
+        const trevorToken = game.addPlayer("Trevor");
         expect(() =>
-          game.submitBid({ playerId: "Seth", count: 1 })
+          game.submitBid({ playerToken: sethToken, count: 1 })
         ).toThrowErrorMatchingInlineSnapshot(
           `"Can't submit bid during this game mode"`
         );
       });
 
       it("when card is played before game is started", () => {
-        game.addPlayer("Seth");
-        game.addPlayer("Trevor");
+        const sethToken = game.addPlayer("Seth");
+        const trevorToken = game.addPlayer("Trevor");
+        const randomCard = game.__debugDump().deck.draw();
         expect(() =>
-          game.playCard({ playerId: "Seth", card: { type: "skullKing" } })
+          game.playCard({ playerToken: sethToken, cardId: randomCard.id })
         ).toThrowErrorMatchingInlineSnapshot(
           `"Can't play a card during this game phase"`
         );
@@ -82,19 +84,19 @@ describe("Game", () => {
 
   describe("bidding", () => {
     it("accepts a bid", () => {
-      game.addPlayer("Seth");
-      game.addPlayer("Trevor");
+      const sethToken = game.addPlayer("Seth");
+      const trevorToken = game.addPlayer("Trevor");
       game.start();
-      game.submitBid({ playerId: "Seth", count: 1 });
+      game.submitBid({ playerToken: sethToken, count: 1 });
       expect(game.__debugDump().currentRound.bids.get("Seth")).toEqual(1);
     });
 
     it("moves to play phase when all bids are entered", () => {
-      game.addPlayer("Seth");
-      game.addPlayer("Trevor");
+      const sethToken = game.addPlayer("Seth");
+      const trevorToken = game.addPlayer("Trevor");
       game.start();
-      game.submitBid({ playerId: "Seth", count: 1 });
-      game.submitBid({ playerId: "Trevor", count: 0 });
+      game.submitBid({ playerToken: sethToken, count: 1 });
+      game.submitBid({ playerToken: trevorToken, count: 0 });
 
       const { currentRound } = game.__debugDump();
       expect(currentRound.bids.size).toEqual(2);
@@ -103,63 +105,69 @@ describe("Game", () => {
 
     describe("errors", () => {
       it("when bid count exceeds cards in hand", () => {
-        game.addPlayer("Seth");
-        game.addPlayer("Trevor");
+        const sethToken = game.addPlayer("Seth");
+        const trevorToken = game.addPlayer("Trevor");
         game.start();
         expect(() =>
-          game.submitBid({ playerId: "Seth", count: 2 })
+          game.submitBid({ playerToken: sethToken, count: 2 })
         ).toThrowErrorMatchingInlineSnapshot(
           `"Can't bid more than there are cards in the current hand"`
         );
       });
 
       it("when bid is submitted multiple times by the same person", () => {
-        game.addPlayer("Seth");
-        game.addPlayer("Trevor");
+        const sethToken = game.addPlayer("Seth");
+        const trevorToken = game.addPlayer("Trevor");
         game.start();
-        game.submitBid({ playerId: "Seth", count: 1 });
+        game.submitBid({ playerToken: sethToken, count: 1 });
         expect(() =>
-          game.submitBid({ playerId: "Seth", count: 1 })
+          game.submitBid({ playerToken: sethToken, count: 1 })
         ).toThrowErrorMatchingInlineSnapshot(`"Can't place multiple bids"`);
       });
     });
   });
 
   describe("playing cards", () => {
+    let sethToken: string;
+    let trevorToken: string;
     beforeEach(() => {
-      game = new Game({
+      game = new Game(randomUUID(), {
         deck: new Deck({ shuffleSeed: 0.3 }),
       });
-      game.addPlayer("Seth");
-      game.addPlayer("Trevor");
+      sethToken = game.addPlayer("Seth");
+      trevorToken = game.addPlayer("Trevor");
       game.start();
-      game.submitBid({ playerId: "Seth", count: 1 });
-      game.submitBid({ playerId: "Trevor", count: 0 });
+      game.submitBid({ playerToken: sethToken, count: 1 });
+      game.submitBid({ playerToken: trevorToken, count: 0 });
     });
 
     it("allows any card to be played when no trick color is set", () => {
       const { players } = game.__debugDump();
       const trevorCard = players[1].hand[0];
       expect(() =>
-        game.playCard({ playerId: "Trevor", card: trevorCard })
+        game.playCard({ playerToken: trevorToken, cardId: trevorCard.id })
       ).not.toThrow();
       const { currentRound } = game.__debugDump();
-      expect(currentRound.trickColor).toEqual("green");
+      expect(currentRound.trickColor).toEqual("GREEN");
     });
 
     it("playing a special card does not set the trick color", () => {
-      game = new Game({
+      game = new Game(randomUUID(), {
         deck: new Deck({
-          customDeck: [{ type: "pirate" }, { color: "green", number: 8 }],
+          customDeck: [
+            { id: "1", type: "pirate" },
+            { id: "2", color: "GREEN", number: 8 },
+          ],
           shuffleSeed: 0.4,
         }),
       });
-      game.addPlayer("Seth");
-      game.addPlayer("Trevor");
+      const sethToken = game.addPlayer("Seth");
+      const trevorToken = game.addPlayer("Trevor");
       game.start();
-      game.submitBid({ playerId: "Seth", count: 1 });
-      game.submitBid({ playerId: "Trevor", count: 0 });
-      game.playCard({ playerId: "Trevor", card: { type: "pirate" } });
+      game.submitBid({ playerToken: sethToken, count: 1 });
+      game.submitBid({ playerToken: trevorToken, count: 0 });
+      // pirate
+      game.playCard({ playerToken: trevorToken, cardId: "1" });
       expect(game.__debugDump().currentRound.trickColor).toEqual(null);
     });
 
@@ -168,115 +176,129 @@ describe("Game", () => {
     );
 
     it("allows any special card to be played when the trick color is set", () => {
-      game = new Game({
+      game = new Game(randomUUID(), {
         deck: new Deck({
           customDeck: [
-            { color: "green", number: 8 },
-            { type: "pirate" },
-            { type: "escape" },
-            { type: "escape" },
+            { id: "1", color: "GREEN", number: 8 },
+            { id: "2", type: "pirate" },
+            { id: "3", type: "escape" },
+            { id: "4", type: "escape" },
           ],
           shuffleSeed: 0,
         }),
       });
-      game.addPlayer("Seth");
-      game.addPlayer("Trevor");
+      sethToken = game.addPlayer("Seth");
+      trevorToken = game.addPlayer("Trevor");
       game.start();
-      game.submitBid({ playerId: "Seth", count: 1 });
-      game.submitBid({ playerId: "Trevor", count: 0 });
+      game.submitBid({ playerToken: sethToken, count: 1 });
+      game.submitBid({ playerToken: trevorToken, count: 0 });
 
       game.playCard({
-        playerId: "Trevor",
-        card: { color: "green", number: 8 },
+        playerToken: trevorToken,
+        // GREEN 8
+        cardId: "1",
       });
-      expect(game.__debugDump().currentRound.trickColor).toEqual("green");
+      expect(game.__debugDump().currentRound.trickColor).toEqual("GREEN");
 
       expect(() =>
-        game.playCard({ playerId: "Seth", card: { type: "pirate" } })
+        // pirate
+        game.playCard({ playerToken: sethToken, cardId: "2" })
       ).not.toThrow();
     });
     it("allows playing a card whose color matches the trick color (requires multiple cards in hand to verify)", () => {
       // seth (has lead): pirate, purple 1
       // trevor: green 1, purple 2
-      game = gameInSecondRound();
+      ({ game, trevorToken, sethToken } = gameInSecondRound());
       game.playCard({
-        playerId: "Seth",
-        card: { color: "purple", number: 1 },
+        playerToken: sethToken,
+        // PURPLE 1
+        cardId: "5",
       });
       game.playCard({
-        playerId: "Trevor",
-        card: { color: "purple", number: 2 },
+        playerToken: trevorToken,
+        // PURPLE 2
+        cardId: "6",
       });
     });
     it("allows playing a card of any color when no card in the hand matches the trick color (requires multiple cards in hand to verify)", () => {
       // seth: green 1, purple 2, black 1
       // trevor (has lead): pirate, purple 1, green 2
-      const game = gameInThirdRound();
+      ({ game, sethToken, trevorToken } = gameInThirdRound());
       game.playCard({
-        playerId: "Trevor",
-        card: { type: "pirate" },
+        playerToken: trevorToken,
+        // pirate
+        cardId: "1",
       });
       game.playCard({
-        playerId: "Seth",
-        card: { color: "purple", number: 2 },
+        playerToken: sethToken,
+        // PURPLE 2
+        cardId: "6",
       });
       game.playCard({
-        playerId: "Trevor",
-        card: { color: "purple", number: 1 },
+        playerToken: trevorToken,
+        // PURPLE 1
+        cardId: "5",
       });
       expect(() =>
         game.playCard({
-          playerId: "Seth",
-          card: { color: "green", number: 1 },
+          playerToken: sethToken,
+          // GREEN 1
+          cardId: "2",
         })
       ).not.toThrow();
     });
 
     describe("errors", () => {
       it("disallows playing a card during the bid", () => {
-        game = new Game();
-        game.addPlayer("Seth");
-        game.addPlayer("Trevor");
+        game = new Game(randomUUID());
+        const sethToken = game.addPlayer("Seth");
+        const trevorToken = game.addPlayer("Trevor");
         game.start();
+        const randomCard = game.__debugDump().deck.draw();
         expect(game.__debugDump().currentRound.phase).toEqual("bid");
         expect(() =>
-          game.playCard({ playerId: "Seth", card: { type: "skullKing" } })
+          game.playCard({ playerToken: sethToken, cardId: randomCard.id })
         ).toThrowErrorMatchingInlineSnapshot(
           `"Can't play cards outside of play phase"`
         );
       });
       it("disallows playing out of turn", () => {
+        const sethCard = game.__debugDump().players[0].hand[0];
         expect(() =>
           game.playCard({
-            playerId: "Seth",
-            card: { color: "green", number: 8 },
+            playerToken: sethToken,
+            cardId: sethCard.id,
           })
         ).toThrowErrorMatchingInlineSnapshot(`"Can't play out of turn"`);
       });
       it("disallows playing a card not in your hand", () => {
+        const sethCardId = game.__debugDump().players[0].hand[0].id;
         expect(() =>
           game.playCard({
-            playerId: "Trevor",
-            card: { color: "purple", number: 8 },
+            playerToken: trevorToken,
+            cardId: sethCardId,
           })
         ).toThrowErrorMatchingInlineSnapshot(
-          `"Programming error, card not found"`
+          `"Card not found in player's hand"`
         );
       });
 
       it("disallows playing a card not of the trick color when a card of the trick color is in hand (requires multiple cards in hand to verify)", () => {
         // seth (has lead): pirate, purple 1
         // trevor: green 1, purple 2
-        game = gameInSecondRound();
+        ({ game, trevorToken, sethToken } = gameInSecondRound());
+
         game.playCard({
-          playerId: "Seth",
-          card: { color: "purple", number: 1 },
+          playerToken: sethToken,
+          // PURPLE 1
+          cardId: "5",
         });
 
         expect(() =>
           game.playCard({
-            playerId: "Trevor",
-            card: { color: "green", number: 1 },
+            playerToken: trevorToken,
+            // GREEN 1
+            cardId: "2",
           })
         ).toThrowErrorMatchingInlineSnapshot(`"Illegal move"`);
       });
@@ -291,34 +313,38 @@ describe("Game", () => {
  * trevor: green 1, purple 2
  */
 function gameInSecondRound() {
-  const game = new Game({
+  const game = new Game(randomUUID(), {
     deck: new Deck({
       customDeck: [
-        { type: "pirate" },
-        { color: "green", number: 1 },
-        { color: "green", number: 2 },
-        { color: "black", number: 1 },
-        { color: "purple", number: 1 },
-        { color: "purple", number: 2 },
+        { id: "1", type: "pirate" },
+        { id: "2", color: "GREEN", number: 1 },
+        { id: "3", color: "GREEN", number: 2 },
+        { id: "4", color: "BLACK", number: 1 },
+        { id: "5", color: "PURPLE", number: 1 },
+        { id: "6", color: "PURPLE", number: 2 },
       ],
       shuffleSeed: 0,
     }),
   });
 
-  game.addPlayer("Seth");
-  game.addPlayer("Trevor");
+  const sethToken = game.addPlayer("Seth");
+  const trevorToken = game.addPlayer("Trevor");
   game.start();
 
-  game.submitBid({ playerId: "Trevor", count: 1 });
-  game.submitBid({ playerId: "Seth", count: 0 });
+  game.submitBid({ playerToken: trevorToken, count: 1 });
+  game.submitBid({ playerToken: sethToken, count: 0 });
 
-  game.playCard({ playerId: "Trevor", card: { type: "pirate" } });
-  game.playCard({ playerId: "Seth", card: { color: "green", number: 1 } });
+  game.playCard({
+    playerToken: trevorToken,
+    // pirate
+    cardId: "1",
+  });
+  // GREEN 1
+  game.playCard({ playerToken: sethToken, cardId: "2" });
+  game.submitBid({ playerToken: trevorToken, count: 2 });
+  game.submitBid({ playerToken: sethToken, count: 0 });
 
-  game.submitBid({ playerId: "Trevor", count: 2 });
-  game.submitBid({ playerId: "Seth", count: 0 });
-
-  return game;
+  return { game, trevorToken, sethToken };
 }
 
 /**
@@ -328,14 +354,18 @@ function gameInSecondRound() {
  * trevor (has lead): pirate, purple 1, green 2
  */
 function gameInThirdRound() {
-  const game = gameInSecondRound();
-  game.playCard({ playerId: "Seth", card: { type: "pirate" } });
-  game.playCard({ playerId: "Trevor", card: { color: "purple", number: 2 } });
-  game.playCard({ playerId: "Seth", card: { color: "purple", number: 1 } });
-  game.playCard({ playerId: "Trevor", card: { color: "green", number: 1 } });
+  const { game, trevorToken, sethToken } = gameInSecondRound();
+  // pirate
+  game.playCard({ playerToken: sethToken, cardId: "1" });
+  // PURPLE 2
+  game.playCard({ playerToken: trevorToken, cardId: "6" });
+  // PURPLE 1
+  game.playCard({ playerToken: sethToken, cardId: "5" });
+  // GREEN 1
+  game.playCard({ playerToken: trevorToken, cardId: "2" });
 
-  game.submitBid({ playerId: "Seth", count: 1 });
-  game.submitBid({ playerId: "Trevor", count: 1 });
+  game.submitBid({ playerToken: sethToken, count: 1 });
+  game.submitBid({ playerToken: trevorToken, count: 1 });
 
-  return game;
+  return { game, trevorToken, sethToken };
 }

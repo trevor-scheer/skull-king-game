@@ -4,7 +4,8 @@ import { findSpecial } from "./utils/findSpecial";
 
 type Round = Map<string, ScoreBlock>;
 
-interface ScoreBlock {
+export interface ScoreBlock {
+  playerName: string;
   tricksBid: number;
   tricksWon: number;
   bidPoints: number;
@@ -38,6 +39,7 @@ export class Scorecard {
         const bidCorrectly = numTricksWon === 0;
         const bidPoints = 10 * roundNumber * (bidCorrectly ? 1 : -1);
         scoreBlock = {
+          playerName,
           tricksBid,
           tricksWon: numTricksWon,
           bidPoints,
@@ -50,6 +52,7 @@ export class Scorecard {
         const bonusPoints = this.scoreBonusPoints(playerTricks);
         // score hands
         scoreBlock = {
+          playerName,
           tricksBid,
           tricksWon: numTricksWon,
           bidPoints,
@@ -60,13 +63,14 @@ export class Scorecard {
         // incorrect bid case
       } else {
         const diff = Math.abs(tricksBid - numTricksWon);
-        const pointsLost = 10 * diff;
+        const bidPoints = -10 * diff;
         scoreBlock = {
+          playerName,
           tricksBid,
           tricksWon: numTricksWon,
-          bidPoints: pointsLost,
+          bidPoints,
           bonusPoints: 0,
-          totalPoints: this.getPlayerScore(playerName) - pointsLost,
+          totalPoints: this.getPlayerScore(playerName) + bidPoints,
         };
       }
       scoredRound.set(playerName, scoreBlock);
@@ -98,12 +102,16 @@ export class Scorecard {
       // number 14 bonuses
       for (const card of hand) {
         if (isColoredCard(card) && card.number === 14) {
-          if (card.color === "black") sum += 20;
-          if (card.color !== "black") sum += 10;
+          if (card.color === "BLACK") sum += 20;
+          if (card.color !== "BLACK") sum += 10;
         }
       }
       return sum;
     }, 0);
     return roundScore;
+  }
+
+  public getScoreCard() {
+    return this.rounds.map((round) => Array.from(round.values()));
   }
 }
