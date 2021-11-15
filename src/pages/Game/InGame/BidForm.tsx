@@ -9,6 +9,7 @@ export const BidForm: React.FunctionComponent = function () {
   const gameId = useGameId();
 
   const [count, setCount] = useState<null | number>(null);
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const [submitBid] = useMutation<SubmitBidMutation>(
     gql`
@@ -34,15 +35,11 @@ export const BidForm: React.FunctionComponent = function () {
       onSubmit={(e) => {
         e.preventDefault();
         submitBid();
+        setSubmitted(true);
       }}
     >
       <input onChange={(e) => setCount(Number(e.target.value))} />
-      <button
-        // onClick={(e) => {
-        //   e.preventDefault();
-        // }}
-        type="submit"
-      >
+      <button type="submit" disabled={submitted}>
         Submit Bid
       </button>
     </form>

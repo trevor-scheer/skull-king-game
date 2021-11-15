@@ -16,18 +16,30 @@ export type Scalars = {
 
 export type Card = SpecialCard | ColoredCard;
 
+export enum Color {
+  Yellow = 'YELLOW',
+  Green = 'GREEN',
+  Purple = 'PURPLE',
+  Black = 'BLACK'
+}
+
 export type ColoredCard = {
   __typename?: 'ColoredCard';
+  id: Scalars['String'];
   color: Scalars['String'];
   number: Scalars['Int'];
 };
 
 export type CurrentRound = {
   __typename?: 'CurrentRound';
+  id: Scalars['Int'];
   roundNumber: Scalars['Int'];
   phase: Scalars['String'];
   leader: Scalars['String'];
   playerTurn: Scalars['String'];
+  myBid?: Maybe<Scalars['Int']>;
+  trickColor?: Maybe<Color>;
+  cardsPlayed: Array<PlayedCard>;
 };
 
 export type GameState = {
@@ -37,6 +49,7 @@ export type GameState = {
   me?: Maybe<Player>;
   players: Array<Player>;
   currentRound: CurrentRound;
+  scorecard?: Maybe<Array<Array<ScoreBlock>>>;
 };
 
 export type Mutation = {
@@ -71,16 +84,21 @@ export type MutationSubmitBidArgs = {
 export type MutationPlayColoredCardArgs = {
   gameId: Scalars['String'];
   playerToken: Scalars['String'];
-  color: Scalars['String'];
-  number: Scalars['Int'];
+  cardId: Scalars['String'];
 };
 
 
 export type MutationPlaySpecialCardArgs = {
   gameId: Scalars['String'];
   playerToken: Scalars['String'];
-  card: Scalars['String'];
+  cardId: Scalars['String'];
   selection?: Maybe<Scalars['String']>;
+};
+
+export type PlayedCard = {
+  __typename?: 'PlayedCard';
+  playerId: Scalars['String'];
+  card: Card;
 };
 
 export type Player = {
@@ -108,8 +126,19 @@ export type QueryStateArgs = {
   playerToken?: Maybe<Scalars['String']>;
 };
 
+export type ScoreBlock = {
+  __typename?: 'ScoreBlock';
+  playerName: Scalars['String'];
+  tricksBid: Scalars['Int'];
+  tricksWon: Scalars['Int'];
+  bidPoints: Scalars['Int'];
+  bonusPoints: Scalars['Int'];
+  totalPoints: Scalars['Int'];
+};
+
 export type SpecialCard = {
   __typename?: 'SpecialCard';
+  id: Scalars['String'];
   type: Scalars['String'];
   selection?: Maybe<Scalars['String']>;
 };
@@ -139,7 +168,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: Maybe<{ __typename?: 'Player', id: string, name: string }>, currentRound: { __typename?: 'CurrentRound', phase: string, playerTurn: string } }> };
+export type GameStateQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: Maybe<{ __typename?: 'Player', id: string, name: string }>, currentRound: { __typename?: 'CurrentRound', id: number, phase: string, leader: string, playerTurn: string, myBid?: Maybe<number> } }> };
 
 export type SubmitBidMutationVariables = Exact<{
   gameId: Scalars['String'];
@@ -156,12 +185,13 @@ export type MyHandQueryVariables = Exact<{
 }>;
 
 
-export type MyHandQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, me?: Maybe<{ __typename?: 'Player', id: string, name: string, hand: Array<{ __typename: 'SpecialCard', type: string } | { __typename: 'ColoredCard', color: string, number: number }> }>, currentRound: { __typename?: 'CurrentRound', phase: string, playerTurn: string } }> };
+export type MyHandQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, me?: Maybe<{ __typename?: 'Player', id: string, name: string, hand: Array<{ __typename: 'SpecialCard', id: string, type: string } | { __typename: 'ColoredCard', id: string, color: string, number: number }> }>, currentRound: { __typename?: 'CurrentRound', id: number, phase: string, playerTurn: string, trickColor?: Maybe<Color> } }> };
 
 export type PlaySpecialCardMutationVariables = Exact<{
   gameId: Scalars['String'];
   playerToken: Scalars['String'];
-  card: Scalars['String'];
+  cardId: Scalars['String'];
+  selection?: Maybe<Scalars['String']>;
 }>;
 
 
@@ -170,12 +200,27 @@ export type PlaySpecialCardMutation = { __typename?: 'Mutation', playSpecialCard
 export type PlayColoredCardMutationVariables = Exact<{
   gameId: Scalars['String'];
   playerToken: Scalars['String'];
-  color: Scalars['String'];
-  number: Scalars['Int'];
+  cardId: Scalars['String'];
 }>;
 
 
 export type PlayColoredCardMutation = { __typename?: 'Mutation', playColoredCard: boolean };
+
+export type CardsPlayedQueryVariables = Exact<{
+  gameId: Scalars['String'];
+  playerToken: Scalars['String'];
+}>;
+
+
+export type CardsPlayedQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, currentRound: { __typename?: 'CurrentRound', id: number, cardsPlayed: Array<{ __typename?: 'PlayedCard', playerId: string, card: { __typename: 'SpecialCard', id: string, type: string } | { __typename: 'ColoredCard', id: string, color: string, number: number } }> } }> };
+
+export type ScorecardQueryVariables = Exact<{
+  gameId: Scalars['String'];
+  playerToken: Scalars['String'];
+}>;
+
+
+export type ScorecardQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, me?: Maybe<{ __typename?: 'Player', id: string, name: string }>, scorecard?: Maybe<Array<Array<{ __typename?: 'ScoreBlock', playerName: string, tricksBid: number, tricksWon: number, bidPoints: number, bonusPoints: number, totalPoints: number }>>> }> };
 
 export type AddPlayerMutationVariables = Exact<{
   gameId: Scalars['String'];
@@ -267,8 +312,11 @@ export const GameStateDocument = gql`
       name
     }
     currentRound {
+      id
       phase
+      leader
       playerTurn
+      myBid
     }
   }
 }
@@ -345,17 +393,21 @@ export const MyHandDocument = gql`
       hand {
         __typename
         ... on SpecialCard {
+          id
           type
         }
         ... on ColoredCard {
+          id
           color
           number
         }
       }
     }
     currentRound {
+      id
       phase
       playerTurn
+      trickColor
     }
   }
 }
@@ -390,8 +442,13 @@ export type MyHandQueryHookResult = ReturnType<typeof useMyHandQuery>;
 export type MyHandLazyQueryHookResult = ReturnType<typeof useMyHandLazyQuery>;
 export type MyHandQueryResult = Apollo.QueryResult<MyHandQuery, MyHandQueryVariables>;
 export const PlaySpecialCardDocument = gql`
-    mutation PlaySpecialCard($gameId: String!, $playerToken: String!, $card: String!) {
-  playSpecialCard(gameId: $gameId, playerToken: $playerToken, card: $card)
+    mutation PlaySpecialCard($gameId: String!, $playerToken: String!, $cardId: String!, $selection: String) {
+  playSpecialCard(
+    gameId: $gameId
+    playerToken: $playerToken
+    cardId: $cardId
+    selection: $selection
+  )
 }
     `;
 export type PlaySpecialCardMutationFn = Apollo.MutationFunction<PlaySpecialCardMutation, PlaySpecialCardMutationVariables>;
@@ -411,7 +468,8 @@ export type PlaySpecialCardMutationFn = Apollo.MutationFunction<PlaySpecialCardM
  *   variables: {
  *      gameId: // value for 'gameId'
  *      playerToken: // value for 'playerToken'
- *      card: // value for 'card'
+ *      cardId: // value for 'cardId'
+ *      selection: // value for 'selection'
  *   },
  * });
  */
@@ -423,13 +481,8 @@ export type PlaySpecialCardMutationHookResult = ReturnType<typeof usePlaySpecial
 export type PlaySpecialCardMutationResult = Apollo.MutationResult<PlaySpecialCardMutation>;
 export type PlaySpecialCardMutationOptions = Apollo.BaseMutationOptions<PlaySpecialCardMutation, PlaySpecialCardMutationVariables>;
 export const PlayColoredCardDocument = gql`
-    mutation PlayColoredCard($gameId: String!, $playerToken: String!, $color: String!, $number: Int!) {
-  playColoredCard(
-    gameId: $gameId
-    playerToken: $playerToken
-    color: $color
-    number: $number
-  )
+    mutation PlayColoredCard($gameId: String!, $playerToken: String!, $cardId: String!) {
+  playColoredCard(gameId: $gameId, playerToken: $playerToken, cardId: $cardId)
 }
     `;
 export type PlayColoredCardMutationFn = Apollo.MutationFunction<PlayColoredCardMutation, PlayColoredCardMutationVariables>;
@@ -449,8 +502,7 @@ export type PlayColoredCardMutationFn = Apollo.MutationFunction<PlayColoredCardM
  *   variables: {
  *      gameId: // value for 'gameId'
  *      playerToken: // value for 'playerToken'
- *      color: // value for 'color'
- *      number: // value for 'number'
+ *      cardId: // value for 'cardId'
  *   },
  * });
  */
@@ -461,6 +513,108 @@ export function usePlayColoredCardMutation(baseOptions?: Apollo.MutationHookOpti
 export type PlayColoredCardMutationHookResult = ReturnType<typeof usePlayColoredCardMutation>;
 export type PlayColoredCardMutationResult = Apollo.MutationResult<PlayColoredCardMutation>;
 export type PlayColoredCardMutationOptions = Apollo.BaseMutationOptions<PlayColoredCardMutation, PlayColoredCardMutationVariables>;
+export const CardsPlayedDocument = gql`
+    query CardsPlayed($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    currentRound {
+      id
+      cardsPlayed {
+        playerId
+        card {
+          __typename
+          ... on SpecialCard {
+            id
+            type
+          }
+          ... on ColoredCard {
+            id
+            color
+            number
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useCardsPlayedQuery__
+ *
+ * To run a query within a React component, call `useCardsPlayedQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCardsPlayedQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCardsPlayedQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function useCardsPlayedQuery(baseOptions: Apollo.QueryHookOptions<CardsPlayedQuery, CardsPlayedQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CardsPlayedQuery, CardsPlayedQueryVariables>(CardsPlayedDocument, options);
+      }
+export function useCardsPlayedLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CardsPlayedQuery, CardsPlayedQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CardsPlayedQuery, CardsPlayedQueryVariables>(CardsPlayedDocument, options);
+        }
+export type CardsPlayedQueryHookResult = ReturnType<typeof useCardsPlayedQuery>;
+export type CardsPlayedLazyQueryHookResult = ReturnType<typeof useCardsPlayedLazyQuery>;
+export type CardsPlayedQueryResult = Apollo.QueryResult<CardsPlayedQuery, CardsPlayedQueryVariables>;
+export const ScorecardDocument = gql`
+    query Scorecard($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    me {
+      id
+      name
+    }
+    scorecard {
+      playerName
+      tricksBid
+      tricksWon
+      bidPoints
+      bonusPoints
+      totalPoints
+    }
+  }
+}
+    `;
+
+/**
+ * __useScorecardQuery__
+ *
+ * To run a query within a React component, call `useScorecardQuery` and pass it any options that fit your needs.
+ * When your component renders, `useScorecardQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useScorecardQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function useScorecardQuery(baseOptions: Apollo.QueryHookOptions<ScorecardQuery, ScorecardQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ScorecardQuery, ScorecardQueryVariables>(ScorecardDocument, options);
+      }
+export function useScorecardLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ScorecardQuery, ScorecardQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ScorecardQuery, ScorecardQueryVariables>(ScorecardDocument, options);
+        }
+export type ScorecardQueryHookResult = ReturnType<typeof useScorecardQuery>;
+export type ScorecardLazyQueryHookResult = ReturnType<typeof useScorecardLazyQuery>;
+export type ScorecardQueryResult = Apollo.QueryResult<ScorecardQuery, ScorecardQueryVariables>;
 export const AddPlayerDocument = gql`
     mutation AddPlayer($gameId: String!, $name: String!) {
   addPlayer(gameId: $gameId, name: $name)

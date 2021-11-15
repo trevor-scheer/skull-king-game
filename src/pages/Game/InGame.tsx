@@ -2,14 +2,18 @@ import { gql, useQuery } from "@apollo/client";
 import { usePlayerToken } from "../../hooks/PlayerTokenContext";
 import { useGameId } from "../../hooks/useGameId";
 import { GameStateQuery } from "../../types/graphqlTypes";
+import { AwaitingBids } from "./InGame/AwaitingBids";
 import { BidForm } from './InGame/BidForm';
 import { Hand } from "./InGame/Hand";
+import { PlayedCards } from "./InGame/PlayedCards";
+import { Scorecard } from "./InGame/Scorecard";
 
 export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
-  const { data, loading, error } = useQuery<GameStateQuery>(
+  // TODO: error handling
+  const { data, loading } = useQuery<GameStateQuery>(
     gql`
       query GameState($gameId: String!, $playerToken: String!) {
         state(gameId: $gameId, playerToken: $playerToken) {
@@ -23,8 +27,11 @@ export const InGame: React.FunctionComponent = function () {
             name
           }
           currentRound {
+            id
             phase
+            leader
             playerTurn
+            myBid
           }
         }
       }
@@ -37,12 +44,24 @@ export const InGame: React.FunctionComponent = function () {
 
   if (loading) return <div>Loading...</div>;
 
-  const phase = data?.state?.currentRound.phase;
+  const me = data?.state?.me;
+  const { phase, myBid, leader } = data?.state?.currentRound ?? {};
   return (
     <div>
       In Game: {playerToken}
       <Hand />
-      {phase === "bid" && <BidForm />}
+      {phase === "bid" && (
+        <>
+          {leader === me?.name ? (
+            <p>You lead this round</p>
+          ) : (
+            <p>{`${leader} leads this round`}</p>
+          )}
+          {myBid ? <AwaitingBids bid={myBid} /> : <BidForm />}
+        </>
+      )}
+      {phase === "play" && <PlayedCards />}
+      <Scorecard />
     </div>
   );
 };

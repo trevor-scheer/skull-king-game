@@ -9,7 +9,6 @@ export const Lobby: React.FunctionComponent = function () {
   const [playerToken, setToken] = usePlayerToken();
   const variables = { gameId, playerToken };
 
-  console.log(gameId);
   const { data, loading, error } = useQuery(
     gql`
       query LobbyQuery($gameId: String!, $playerToken: String) {

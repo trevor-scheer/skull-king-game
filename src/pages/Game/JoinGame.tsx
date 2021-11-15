@@ -20,7 +20,6 @@ export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
     );
 
     useEffect(() => {
-      console.log(result.data?.addPlayer);
       if (result.data?.addPlayer) {
         onJoin(result.data.addPlayer);
       }

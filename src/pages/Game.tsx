@@ -9,7 +9,9 @@ import { Spectator } from "./Game/Spectator";
 export function Game() {
   const gameId = useGameId();
   const [playerToken] = usePlayerToken();
-  const { data, loading, error } = useQuery(
+
+  // TODO: error handling
+  const { data, loading } = useQuery(
     gql`
       query GamePhaseQuery($gameId: String!) {
         state(gameId: $gameId) {
