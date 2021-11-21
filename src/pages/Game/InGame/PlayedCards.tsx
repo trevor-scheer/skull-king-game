@@ -22,6 +22,7 @@ export const PlayedCards: React.FunctionComponent = function () {
                 ... on SpecialCard {
                   id
                   type
+                  selection
                 }
                 ... on ColoredCard {
                   id
@@ -53,7 +54,7 @@ export const PlayedCards: React.FunctionComponent = function () {
             {playerId +
               ": " +
               (card.__typename === "SpecialCard"
-                ? card.type
+                ? `${card.type}${card.selection ? ` (${card.selection})` : ""}`
                 : `${card.color} ${card.number}`)}
           </div>
         </li>

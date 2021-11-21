@@ -2,7 +2,14 @@ import { gql, useMutation, useQuery } from "@apollo/client";
 import { useState } from "react";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
-import { Card, ColoredCard, MyHandQuery, SpecialCard } from "../../../types/graphqlTypes";
+import {
+  Card,
+  ColoredCard,
+  MyHandQuery,
+  PlaySpecialCardMutation,
+  PlaySpecialCardMutationVariables,
+  SpecialCard,
+} from "../../../types/graphqlTypes";
 
 export const Hand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -46,7 +53,10 @@ export const Hand: React.FunctionComponent = function () {
     }
   );
 
-  const [playSpecialCard] = useMutation(gql`
+  const [playSpecialCard] = useMutation<
+    PlaySpecialCardMutation,
+    PlaySpecialCardMutationVariables
+  >(gql`
     mutation PlaySpecialCard(
       $gameId: String!
       $playerToken: String!
@@ -102,46 +112,85 @@ export const Hand: React.FunctionComponent = function () {
   }
 
   if (loading) return <div>Loading...</div>;
+  if (!playerToken) return <div>No player token</div>;
   return (
     <ul>
       {me?.hand.map((card) => {
         if (isColoredCard(card)) {
           return (
-            <button
-              key={card.color + card.number}
-              disabled={!myTurn || !canPlayCard(card) || justClicked}
-              onClick={() => {
-                debounceClick(() =>
-                  playColoredCard({
-                    variables: {
-                      gameId,
-                      playerToken,
-                      cardId: card.id,
-                    },
-                  })
-                );
-              }}
-            >
-              <li>
+            <li key={card.id}>
+              <button
+                disabled={!myTurn || !canPlayCard(card) || justClicked}
+                onClick={() => {
+                  debounceClick(() =>
+                    playColoredCard({
+                      variables: {
+                        gameId,
+                        playerToken,
+                        cardId: card.id,
+                      },
+                    })
+                  );
+                }}
+              >
                 {card.color} {card.number}
-              </li>
-            </button>
+              </button>
+            </li>
           );
         } else if (isSpecialCard(card)) {
-          return (
-            <button
-              key={card.type}
-              disabled={!myTurn || !canPlayCard(card) || justClicked}
-              onClick={() => {
-                debounceClick(() =>
-                  playSpecialCard({
-                    variables: { gameId, playerToken, cardId: card.id },
-                  })
-                );
-              }}
-            >
-              <li>{card.type}</li>
-            </button>
+          return card.type === "tigress" ? (
+            <li key={card.id}>
+              Tigress
+              <button
+                disabled={!myTurn || !canPlayCard(card) || justClicked}
+                onClick={() => {
+                  debounceClick(() =>
+                    playSpecialCard({
+                      variables: {
+                        gameId,
+                        playerToken,
+                        cardId: card.id,
+                        selection: "escape",
+                      },
+                    })
+                  );
+                }}
+              >
+                Escape
+              </button>
+              <button
+                disabled={!myTurn || !canPlayCard(card) || justClicked}
+                onClick={() => {
+                  debounceClick(() =>
+                    playSpecialCard({
+                      variables: {
+                        gameId,
+                        playerToken,
+                        cardId: card.id,
+                        selection: "pirate",
+                      },
+                    })
+                  );
+                }}
+              >
+                Pirate
+              </button>
+            </li>
+          ) : (
+            <li key={card.id}>
+              <button
+                disabled={!myTurn || !canPlayCard(card) || justClicked}
+                onClick={() => {
+                  debounceClick(() =>
+                    playSpecialCard({
+                      variables: { gameId, playerToken, cardId: card.id },
+                    })
+                  );
+                }}
+              >
+                {card.type}
+              </button>
+            </li>
           );
         } else {
           throw Error("Unknown card type");
@@ -151,10 +200,10 @@ export const Hand: React.FunctionComponent = function () {
   );
 };
 
-function isSpecialCard(card: Card) : card is SpecialCard {
+function isSpecialCard(card: Card): card is SpecialCard {
   return card.__typename === "SpecialCard";
 }
 
-function isColoredCard(card: Card) : card is ColoredCard {
+function isColoredCard(card: Card): card is ColoredCard {
   return card.__typename === "ColoredCard";
 }
