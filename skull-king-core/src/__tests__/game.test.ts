@@ -171,6 +171,18 @@ describe("Game", () => {
       expect(game.__debugDump().currentRound.trickColor).toEqual(null);
     });
 
+    it("resets the trick color after a hand", () => {
+      const { players } = game.__debugDump();
+      const trevorCard = players[1].hand[0];
+      const sethCard = players[0].hand[0];
+      game.playCard({ playerToken: trevorToken, cardId: trevorCard.id });
+      let trickColor = game.__debugDump().currentRound.trickColor;
+      expect(trickColor).toEqual("GREEN");
+      game.playCard({ playerToken: sethToken, cardId: sethCard.id });
+      trickColor = game.__debugDump().currentRound.trickColor;
+      expect(trickColor).toEqual(null);
+    });
+
     it.todo(
       "trick color is set to null for the round after a character card is led"
     );
@@ -301,6 +313,35 @@ describe("Game", () => {
             cardId: "2",
           })
         ).toThrowErrorMatchingInlineSnapshot(`"Illegal move"`);
+      });
+
+      it("disallows playing a tigress without a selection", () => {
+        const game = new Game(randomUUID(), {
+          deck: new Deck({
+            customDeck: [
+              { id: "1", type: "tigress" },
+              { id: "2", type: "tigress" },
+            ],
+            shuffleSeed: 0,
+          }),
+        });
+
+        const sethToken = game.addPlayer("Seth");
+        const trevorToken = game.addPlayer("Trevor");
+        game.start();
+
+        game.submitBid({ playerToken: trevorToken, count: 1 });
+        game.submitBid({ playerToken: sethToken, count: 0 });
+
+        expect(() =>
+          game.playCard({
+            playerToken: trevorToken,
+            // tigress
+            cardId: "1",
+          })
+        ).toThrowErrorMatchingInlineSnapshot(
+          `"Can't play tigress card without providing a selection"`
+        );
       });
     });
   });

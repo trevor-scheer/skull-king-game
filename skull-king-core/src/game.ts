@@ -114,7 +114,7 @@ export class Game {
   }: {
     playerToken: string;
     cardId: string;
-    selection?: string;
+    selection?: "escape" | "pirate";
   }) {
     const playerId = this.playerTokens.get(playerToken);
 
@@ -143,6 +143,10 @@ export class Game {
     assert(cardInHandIndex > -1, "Card not found in player's hand");
     assert(this.canPlayCard([...player.hand], cardInHandIndex), "Illegal move");
 
+    if (isSpecialCard(card) && card.type === "tigress") {
+      assert(selection, "Can't play tigress card without providing a selection");
+      card.selection = selection;
+    }
     // Remove card from player hand
     player.hand.splice(cardInHandIndex, 1);
     // Set the trick color if necessary
@@ -175,6 +179,7 @@ export class Game {
       playersTricks.push(cardsInTrick);
     }
 
+    this.currentRound.trickColor = null;
     this.currentRound.cardsPlayed = [];
     this.currentRound.leader = this.players.findIndex(
       (player) => player.name === trickWinner
@@ -190,6 +195,9 @@ export class Game {
   private determineWinningCard() {
     const { cardsPlayed, trickColor } = this.currentRound;
 
+    if (cardsPlayed.findIndex(({card}) => isSpecialCard(card) && card.type === "tigress") > -1) {
+      debugger;
+    }
     // TODO: DRY with below
     const skullKingIndex = cardsPlayed.findIndex(
       ({ card }) => isSpecialCard(card) && card.type === "skullKing"
@@ -259,6 +267,7 @@ export class Game {
       return cardsPlayed[0].playerId;
     }
 
+    debugger;
     throw Error("Programming error, unhandled win condition");
   }
 

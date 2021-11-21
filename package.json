@@ -9,7 +9,8 @@
     "build": "tsc -b",
     "watch": "tsc -b -w",
     "test": "jest",
-    "start": "nodemon ./skull-king-server/dist/index.js"
+    "start": "nodemon ./skull-king-server/dist/index.js",
+    "debug": "node --inspect-brk ./skull-king-server/dist/index.js"
   },
   "keywords": [],
   "author": "",

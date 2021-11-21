@@ -15,13 +15,12 @@ const typeDefs = gql`
     playColoredCard(
       gameId: String!
       playerToken: String!
-      color: String!
-      number: Int!
+      cardId: String!
     ): Boolean!
     playSpecialCard(
       gameId: String!
       playerToken: String!
-      card: String!
+      cardId: String!
       selection: String
     ): Boolean!
   }
@@ -50,11 +49,13 @@ const typeDefs = gql`
   union Card = SpecialCard | ColoredCard
 
   type SpecialCard {
+    id: String!
     type: String!
     selection: String
   }
 
   type ColoredCard {
+    id: String!
     color: String!
     number: Int!
   }
