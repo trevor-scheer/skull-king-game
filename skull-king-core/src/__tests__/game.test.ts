@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { basicDeck } from "../cards";
 import { Deck } from "../deck";
 import { Game } from "../game";
 
@@ -65,7 +66,7 @@ describe("Game", () => {
         expect(() =>
           game.submitBid({ playerToken: sethToken, count: 1 })
         ).toThrowErrorMatchingInlineSnapshot(
-          `"Can't submit bid during this game mode"`
+          `"Can't submit bid during this game phase"`
         );
       });
 
@@ -345,6 +346,38 @@ describe("Game", () => {
       });
     });
   });
+
+  describe("postgame", () => {
+    it("ends the game after the 10th round", () => {
+      const { game } = gameAfterTenthRound();
+      expect(game.__debugDump().currentRound).toBe(null);
+      expect(game.__debugDump().phase).toBe("postgame");
+    });
+
+    it("doesn't accept bids or plays after the 10th round", () => {
+      const { game, trevorToken } = gameAfterTenthRound();
+
+      expect(() =>
+        game.submitBid({ playerToken: trevorToken, count: 1 })
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Can't submit bid during this game phase"`
+      );
+
+      expect(() =>
+        game.playCard({ playerToken: trevorToken, cardId: "yellow-1" })
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Can't play a card during this game phase"`
+      );
+    });
+
+    it("doesn't accept bids or plays after the 10th round", () => {
+      const { game } = gameAfterTenthRound();
+
+      expect(game.__debugDump().scorecard.getPlayerScore("Trevor")).toBe(-310);
+      expect(game.__debugDump().scorecard.getPlayerScore("Seth")).toBe(-250);
+
+    });
+  });
 });
 
 /**
@@ -409,4 +442,211 @@ function gameInThirdRound() {
   game.submitBid({ playerToken: trevorToken, count: 1 });
 
   return { game, trevorToken, sethToken };
+}
+
+function gameAfterTenthRound() {
+  const game = new Game(randomUUID(), {
+    deck: new Deck({ customDeck: basicDeck, shuffleSeed: 0 }),
+  });
+  const sethToken = game.addPlayer("Seth");
+  const trevorToken = game.addPlayer("Trevor");
+  game.start();
+
+  // round 1
+  expect(game.__debugDump().currentRound.roundNumber).toBe(1);
+  game.submitBid({ playerToken: sethToken, count: 1 });
+  game.submitBid({ playerToken: trevorToken, count: 1 });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-2" });
+
+  // round 2
+  expect(game.__debugDump().currentRound.roundNumber).toBe(2);
+  game.submitBid({ playerToken: sethToken, count: 2 });
+  game.submitBid({ playerToken: trevorToken, count: 1 });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: sethToken,
+    cardId: "tigress",
+    selection: "pirate",
+  });
+
+  // round 3
+  expect(game.__debugDump().currentRound.roundNumber).toBe(3);
+  game.submitBid({ playerToken: sethToken, count: 2 });
+  game.submitBid({ playerToken: trevorToken, count: 1 });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: sethToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: trevorToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+
+  // round 4
+  expect(game.__debugDump().currentRound.roundNumber).toBe(4);
+  game.submitBid({ playerToken: trevorToken, count: 2 });
+  game.submitBid({ playerToken: sethToken, count: 1 });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: trevorToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: sethToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-3" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-2" });
+
+  // round 5
+  expect(game.__debugDump().currentRound.roundNumber).toBe(5);
+  game.submitBid({ playerToken: trevorToken, count: 2 });
+  game.submitBid({ playerToken: sethToken, count: 1 });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: sethToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: trevorToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-3" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-2" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-5" });
+
+  // round 6
+  expect(game.__debugDump().currentRound.roundNumber).toBe(6);
+  game.submitBid({ playerToken: trevorToken, count: 2 });
+  game.submitBid({ playerToken: sethToken, count: 1 });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: trevorToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: sethToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-3" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-1" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-5" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-4" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-3" });
+
+  // round 7
+  expect(game.__debugDump().currentRound.roundNumber).toBe(7);
+  game.submitBid({ playerToken: trevorToken, count: 2 });
+  game.submitBid({ playerToken: sethToken, count: 1 });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: sethToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: trevorToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-3" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-2" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-5" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-4" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-3" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-1" });
+
+  // round 8
+  expect(game.__debugDump().currentRound.roundNumber).toBe(8);
+  game.submitBid({ playerToken: sethToken, count: 2 });
+  game.submitBid({ playerToken: trevorToken, count: 1 });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: trevorToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: sethToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-3" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-1" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-5" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-4" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-3" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-2" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "black-14" });
+  game.playCard({ playerToken: sethToken, cardId: "black-13" });
+
+  // round 9
+  expect(game.__debugDump().currentRound.roundNumber).toBe(9);
+  game.submitBid({ playerToken: trevorToken, count: 2 });
+  game.submitBid({ playerToken: sethToken, count: 1 });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: sethToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: trevorToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-3" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-2" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-5" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-4" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-3" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-1" });
+  game.playCard({ playerToken: sethToken, cardId: "black-14" });
+  game.playCard({ playerToken: trevorToken, cardId: "black-13" });
+  game.playCard({ playerToken: sethToken, cardId: "black-12" });
+  game.playCard({ playerToken: trevorToken, cardId: "black-11" });
+
+  // round 10
+  expect(game.__debugDump().currentRound.roundNumber).toBe(10);
+  game.submitBid({ playerToken: sethToken, count: 2 });
+  game.submitBid({ playerToken: trevorToken, count: 1 });
+  game.playCard({ playerToken: sethToken, cardId: "yellow-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "yellow-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-5" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-4" });
+  game.playCard({ playerToken: trevorToken, cardId: "skullKing" });
+  game.playCard({
+    playerToken: sethToken,
+    cardId: "tigress",
+    selection: "escape",
+  });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-3" });
+  game.playCard({ playerToken: sethToken, cardId: "pirate-2" });
+  game.playCard({ playerToken: trevorToken, cardId: "pirate-1" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-5" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-4" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-3" });
+  game.playCard({ playerToken: trevorToken, cardId: "escape-2" });
+  game.playCard({ playerToken: sethToken, cardId: "escape-1" });
+  game.playCard({ playerToken: trevorToken, cardId: "black-14" });
+  game.playCard({ playerToken: sethToken, cardId: "black-13" });
+  game.playCard({ playerToken: trevorToken, cardId: "black-12" });
+  game.playCard({ playerToken: sethToken, cardId: "black-11" });
+  game.playCard({ playerToken: trevorToken, cardId: "black-10" });
+  game.playCard({ playerToken: sethToken, cardId: "black-9" });
+
+  return { trevorToken, sethToken, game };
 }

@@ -29,20 +29,20 @@ export const colors: Color[] = ["YELLOW", "GREEN", "PURPLE", "BLACK"];
 const coloredCards: ColoredCard[] = colors
   .map((color) =>
     Array.from(Array(14)).map((_, index) => ({
-      id: randomUUID(),
+      id: `${color.toLocaleLowerCase()}-${index + 1}`,
       color,
       number: index + 1,
     }))
   )
   .flat();
 
-const escapes: SpecialCard[] = Array.from(Array(5)).map(() => ({
-  id: randomUUID(),
+const escapes: SpecialCard[] = Array.from(Array(5)).map((_, index) => ({
+  id: `escape-${index + 1}`,
   type: "escape",
 }));
 
-const pirates: SpecialCard[] = Array.from(Array(5)).map(() => ({
-  id: randomUUID(),
+const pirates: SpecialCard[] = Array.from(Array(5)).map((_, index) => ({
+  id: `pirate-${index + 1}`,
   type: "pirate",
 }));
 
@@ -50,8 +50,8 @@ export const basicDeck: Card[] = [
   ...coloredCards.slice(),
   ...escapes.slice(),
   ...pirates.slice(),
-  { id: randomUUID(), type: "tigress" },
-  { id: randomUUID(), type: "skullKing" },
+  { id: `tigress`, type: "tigress" },
+  { id: `skullKing`, type: "skullKing" },
 ];
 
 export const cardsMap: Map<string, Card> = new Map(

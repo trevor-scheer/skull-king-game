@@ -25,7 +25,7 @@ export class Game {
   private options: GameOptions;
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
-  private currentRound: CurrentRound;
+  private currentRound: CurrentRound | null;
 
   constructor(id: string, options?: GameOptions) {
     this.id = id;
@@ -86,20 +86,23 @@ export class Game {
     count: number;
   }) {
     const playerId = this.playerTokens.get(playerToken);
-    if (!playerId) {
-      throw Error("Invalid player token");
-    } else if (this.phase !== "play") {
-      throw Error("Can't submit bid during this game mode");
-    } else if (this.currentRound.bids.has(playerId)) {
-      throw Error("Can't place multiple bids");
-    } else if (this.currentRound.phase !== "bid") {
-      // TODO: untested branch
-      throw Error("Can't place bids outside of bid phase");
-    } else if (count > this.currentRound.roundNumber) {
-      throw Error("Can't bid more than there are cards in the current hand");
-    } else {
-      this.currentRound.bids.set(playerId, count);
-    }
+    assert(playerId, "Invalid player token");
+    assert(this.phase === "play", "Can't submit bid during this game phase");
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
+    assert(!this.currentRound.bids.has(playerId), "Can't place multiple bids");
+    assert(
+      this.currentRound.phase === "bid",
+      "Can't place bids outside of bid phase"
+    );
+    assert(
+      count <= this.currentRound.roundNumber,
+      "Can't bid more than there are cards in the current hand"
+    );
+
+    this.currentRound.bids.set(playerId, count);
 
     if (this.currentRound.bids.size === this.players.length) {
       this.currentRound.phase = "play";
@@ -123,6 +126,10 @@ export class Game {
     assert(playerId, "Invalid player token provided");
     assert(this.phase === "play", "Can't play a card during this game phase");
     assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
+    assert(
       this.currentRound.phase === "play",
       "Can't play cards outside of play phase"
     );
@@ -144,7 +151,10 @@ export class Game {
     assert(this.canPlayCard([...player.hand], cardInHandIndex), "Illegal move");
 
     if (isSpecialCard(card) && card.type === "tigress") {
-      assert(selection, "Can't play tigress card without providing a selection");
+      assert(
+        selection,
+        "Can't play tigress card without providing a selection"
+      );
       card.selection = selection;
     }
     // Remove card from player hand
@@ -158,6 +168,10 @@ export class Game {
   }
 
   private maybeSetTrickColor(card: Card) {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     const { trickColor, cardsPlayed } = this.currentRound;
     if (isSpecialCard(card)) return;
     if (trickColor != null) return;
@@ -166,6 +180,10 @@ export class Game {
   }
 
   private maybeEndHand() {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     const { cardsPlayed, roundNumber, tricksWon } = this.currentRound;
     if (cardsPlayed.length < this.players.length) return;
 
@@ -193,11 +211,12 @@ export class Game {
   }
 
   private determineWinningCard() {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     const { cardsPlayed, trickColor } = this.currentRound;
 
-    if (cardsPlayed.findIndex(({card}) => isSpecialCard(card) && card.type === "tigress") > -1) {
-      debugger;
-    }
     // TODO: DRY with below
     const skullKingIndex = cardsPlayed.findIndex(
       ({ card }) => isSpecialCard(card) && card.type === "skullKing"
@@ -272,10 +291,18 @@ export class Game {
   }
 
   private updateScores() {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     this.scorecard?.scoreRound(this.currentRound);
   }
 
   private canPlayCard(hand: Card[], cardIndex: number) {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     const { trickColor } = this.currentRound;
     const [card] = hand.splice(cardIndex, 1);
     // Can always play a special card
@@ -298,6 +325,10 @@ export class Game {
   private playerTurn() {
     // Player order for the round
     const order = this.playerOrder();
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+      );
     // We can use cards played so far to determine whose turn it is
     const { cardsPlayed } = this.currentRound;
     // Number of cards played correlates to the index of the player whose turn it is from the order array
@@ -311,6 +342,10 @@ export class Game {
   }
 
   private nextRound() {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     if (this.currentRound.roundNumber === 10) {
       // TODO: implement endGame
       this.endGame();
@@ -343,6 +378,10 @@ export class Game {
   }
 
   private deal() {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     const { roundNumber } = this.currentRound;
     const [dealer, ...rest] = this.playerOrder();
     const dealOrder = [...rest, dealer];
@@ -357,6 +396,11 @@ export class Game {
   private playerOrder() {
     const playerOrder: number[] = [];
     const { players } = this;
+
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     const { leader } = this.currentRound;
 
     playerOrder.push(leader);
@@ -372,9 +416,16 @@ export class Game {
     return playerOrder;
   }
 
-  private endGame() {}
+  private endGame() {
+    this.phase = "postgame";
+    this.currentRound = null;
+  }
 
   public getStateForPlayer(playerToken?: string) {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
     const gameState = {
       id: this.id,
       phase: this.phase,
