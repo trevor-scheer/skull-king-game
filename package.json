@@ -10,7 +10,8 @@
     "watch": "tsc -b -w",
     "test": "jest",
     "start": "nodemon ./skull-king-server/dist/index.js",
-    "debug": "node --inspect-brk ./skull-king-server/dist/index.js"
+    "debug": "node --inspect-brk ./skull-king-server/dist/index.js",
+    "release": "npx lerna publish"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "@types/node": "^15.12.0",
     "@types/ws": "^7.4.5",
     "jest": "^27.0.4",
+    "lerna": "^4.0.0",
     "nodemon": "^2.0.7",
     "prettier": "^2.3.0",
     "pretty-format": "^26.6.2",
