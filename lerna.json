@@ -1,0 +1,13 @@
+{
+  "packages": [
+    "skull-king-core"
+  ],
+  "version": "independent",
+  "command": {
+    "version": {
+      "message": "Release",
+      "ignoreChanges": ["**/*.md", "**/*.mdx", "**/__tests__/**"],
+      "includeMergedTags": true
+    }
+  }
+}
