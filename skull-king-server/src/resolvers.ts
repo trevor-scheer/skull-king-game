@@ -1,12 +1,11 @@
-import type { Config } from "apollo-server-express";
+import type { Config } from "apollo-server";
 import { Game, Card, isSpecialCard } from "@skull-king/core";
-import { PubSub } from "graphql-subscriptions";
 import { randomUUID } from "crypto";
 
 interface Context {
   games: Map<string, Game>;
 }
-const resolvers: (pubSub: PubSub) => Config["resolvers"] = (pubSub) => ({
+const resolvers: Config["resolvers"] = {
   Query: {
     players(_, { gameId }, { games }: Context) {
       const game = games.get(gameId);
@@ -30,43 +29,43 @@ const resolvers: (pubSub: PubSub) => Config["resolvers"] = (pubSub) => ({
     startGame(_, { gameId }, { games }) {
       const game: Game = games.get(gameId);
       game.start();
-      pubSub.publish(`GAME_UPDATED_${gameId}`, {
-        state: game.getStateForPlayer(),
-      });
+      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
+      //   state: game.getStateForPlayer(),
+      // });
       return true;
     },
     addPlayer(_, { gameId, name }, { games }) {
       const game: Game = games.get(gameId);
       const token = game.addPlayer(name);
 
-      pubSub.publish(`GAME_UPDATED_${gameId}`, {
-        state: game.getStateForPlayer(),
-      });
+      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
+      //   state: game.getStateForPlayer(),
+      // });
 
       return token;
     },
     submitBid(_, { gameId, playerToken, count }, { games }) {
       const game: Game = games.get(gameId);
       game.submitBid({ playerToken, count });
-      pubSub.publish(`GAME_UPDATED_${gameId}`, {
-        state: game.getStateForPlayer(playerToken),
-      });
+      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
+      //   state: game.getStateForPlayer(playerToken),
+      // });
       return true;
     },
     playColoredCard(_, { gameId, playerToken, cardId }, { games }) {
       const game: Game = games.get(gameId);
       game.playCard({ playerToken, cardId });
-      pubSub.publish(`GAME_UPDATED_${gameId}`, {
-        state: game.getStateForPlayer(playerToken),
-      });
+      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
+      //   state: game.getStateForPlayer(playerToken),
+      // });
       return true;
     },
     playSpecialCard(_, { gameId, playerToken, cardId, selection }, { games }) {
       const game: Game = games.get(gameId);
       game.playCard({ playerToken, cardId, selection });
-      pubSub.publish(`GAME_UPDATED_${gameId}`, {
-        state: game.getStateForPlayer(playerToken),
-      });
+      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
+      //   state: game.getStateForPlayer(playerToken),
+      // });
       return true;
     },
   },
@@ -89,6 +88,6 @@ const resolvers: (pubSub: PubSub) => Config["resolvers"] = (pubSub) => ({
       return isSpecialCard(card) ? "SpecialCard" : "ColoredCard";
     },
   },
-});
+};
 
 export default resolvers;

@@ -1,31 +1,14 @@
-import { createServer } from "http";
-import express from "express";
-// import { execute, subscribe } from "graphql";
-import { ApolloServer } from "apollo-server-express";
-import { PubSub } from "graphql-subscriptions";
-// import {
-//   ConnectionContext,
-//   SubscriptionServer,
-// } from "subscriptions-transport-ws";
-import { makeExecutableSchema } from "@graphql-tools/schema";
+import { ApolloServer } from "apollo-server";
 import { Game } from "@skull-king/core";
 import resolvers from "./resolvers";
 import typeDefs from "./typeDefs";
-// import WebSocket from "ws";
 
 (async function () {
-  const app = express();
-  const pubSub = new PubSub();
   const games: Map<number, Game> = new Map();
 
-  const wsServer = createServer(app);
-
-  const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers: resolvers(pubSub),
-  });
   const server = new ApolloServer({
-    schema,
+    typeDefs,
+    resolvers,
     context() {
       return { games };
     },
@@ -33,7 +16,7 @@ import typeDefs from "./typeDefs";
       {
         async requestDidStart({ request }) {
           return {
-            async didEncounterErrors({errors}) {
+            async didEncounterErrors({ errors }) {
               console.error(errors);
             },
           };
@@ -41,14 +24,12 @@ import typeDefs from "./typeDefs";
       },
     ],
   });
-  await server.start();
-  server.applyMiddleware({ app });
-
-  wsServer.listen(4000, () =>
-    console.log(
-      `Server is now running on http://localhost:4000/graphql, ws://localhost:4000/graphql`
-    )
-  );
+  server.listen({ port: process.env.PORT || 4000 }).then(({ url }) => {
+    console.log(`
+      🚀  Server is ready at ${url}
+      📭  Query at https://studio.apollographql.com/dev
+    `);
+  });
 
   // const subscriptionServer = SubscriptionServer.create(
   //   {
