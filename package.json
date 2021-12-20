@@ -9,7 +9,8 @@
     "build": "tsc -b",
     "watch": "tsc -b -w",
     "test": "jest",
-    "start": "nodemon ./skull-king-server/dist/index.js",
+    "dev": "nodemon ./skull-king-server/dist/index.js",
+    "start": "node ./skull-king-server/dist/index.js",
     "debug": "node --inspect-brk ./skull-king-server/dist/index.js",
     "release": "npx lerna publish"
   },
