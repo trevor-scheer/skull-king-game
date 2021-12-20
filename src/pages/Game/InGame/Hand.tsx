@@ -3,13 +3,13 @@ import { useState } from "react";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import {
-  Card,
-  ColoredCard,
+  Card as CardType,
   MyHandQuery,
   PlaySpecialCardMutation,
   PlaySpecialCardMutationVariables,
-  SpecialCard,
 } from "../../../types/graphqlTypes";
+import { isColoredCard, isSpecialCard } from "../../../utils";
+import { Card } from "./Card";
 
 export const Hand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -91,7 +91,7 @@ export const Hand: React.FunctionComponent = function () {
   const me = data?.state?.me;
   const myTurn = phase === "play" && playerTurn === me?.name;
 
-  function canPlayCard(card: Card) {
+  function canPlayCard(card: CardType) {
     if (isSpecialCard(card)) return true;
     if (trickColor === null) return true;
 
@@ -119,8 +119,9 @@ export const Hand: React.FunctionComponent = function () {
         if (isColoredCard(card)) {
           return (
             <li key={card.id}>
-              <button
+              <Card
                 disabled={!myTurn || !canPlayCard(card) || justClicked}
+                card={card}
                 onClick={() => {
                   debounceClick(() =>
                     playColoredCard({
@@ -132,9 +133,7 @@ export const Hand: React.FunctionComponent = function () {
                     })
                   );
                 }}
-              >
-                {card.color} {card.number}
-              </button>
+              />
             </li>
           );
         } else if (isSpecialCard(card)) {
@@ -177,20 +176,17 @@ export const Hand: React.FunctionComponent = function () {
               </button>
             </li>
           ) : (
-            <li key={card.id}>
-              <button
-                disabled={!myTurn || !canPlayCard(card) || justClicked}
-                onClick={() => {
-                  debounceClick(() =>
-                    playSpecialCard({
-                      variables: { gameId, playerToken, cardId: card.id },
-                    })
-                  );
-                }}
-              >
-                {card.type}
-              </button>
-            </li>
+            <Card
+              disabled={!myTurn || !canPlayCard(card) || justClicked}
+              card={card}
+              onClick={() => {
+                debounceClick(() =>
+                  playSpecialCard({
+                    variables: { gameId, playerToken, cardId: card.id },
+                  })
+                );
+              }}
+            />
           );
         } else {
           throw Error("Unknown card type");
@@ -199,11 +195,3 @@ export const Hand: React.FunctionComponent = function () {
     </ul>
   );
 };
-
-function isSpecialCard(card: Card): card is SpecialCard {
-  return card.__typename === "SpecialCard";
-}
-
-function isColoredCard(card: Card): card is ColoredCard {
-  return card.__typename === "ColoredCard";
-}

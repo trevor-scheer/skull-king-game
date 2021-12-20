@@ -2,6 +2,7 @@ import { gql, useQuery } from "@apollo/client";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { CardsPlayedQuery } from "../../../types/graphqlTypes";
+import { Card } from "./Card";
 
 export const PlayedCards: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -47,18 +48,12 @@ export const PlayedCards: React.FunctionComponent = function () {
   if (!cardsPlayed) return null;
 
   return (
-    <ul>
+    <ol>
       {cardsPlayed.map(({ playerId, card }) => (
         <li key={playerId}>
-          <div>
-            {playerId +
-              ": " +
-              (card.__typename === "SpecialCard"
-                ? `${card.type}${card.selection ? ` (${card.selection})` : ""}`
-                : `${card.color} ${card.number}`)}
-          </div>
+          <Card card={card} disabled={true} />
         </li>
       ))}
-    </ul>
+    </ol>
   );
 };
