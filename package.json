@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "postinstall": "npm run build",
     "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./*/tsconfig*tsbuildinfo",
