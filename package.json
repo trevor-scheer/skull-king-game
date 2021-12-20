@@ -15,6 +15,7 @@
     "test": "jest",
     "dev": "nodemon ./skull-king-server/dist/index.js",
     "start": "node ./skull-king-server/dist/index.js",
+    "heroku": "node ./skull-king-server/dist/index.js",
     "debug": "node --inspect-brk ./skull-king-server/dist/index.js",
     "release": "npx lerna publish"
   },
