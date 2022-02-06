@@ -8,16 +8,22 @@ export const Card: React.FunctionComponent<{
   card: CardType;
 }> = function ({ disabled, onClick, card }) {
   return (
-    <button className="Card" disabled={disabled} onClick={() => onClick?.()}>
-      <div className="Card-content">
-        {isSpecialCard(card) ? (
-          <p>{card.type}</p>
-        ) : (
-          <p>
-            {card.color} {card.number}
-          </p>
-        )}
-      </div>
-    </button>
+    <li className="Card">
+      <button
+        className="Card-content"
+        disabled={disabled}
+        onClick={() => onClick?.()}
+      >
+        <div>
+          {isSpecialCard(card) ? (
+            <p>{card.type}</p>
+          ) : (
+            <p>
+              {card.color} {card.number}
+            </p>
+          )}
+        </div>
+      </button>
+    </li>
   );
 };

@@ -212,7 +212,7 @@ export type CardsPlayedQueryVariables = Exact<{
 }>;
 
 
-export type CardsPlayedQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, currentRound: { __typename?: 'CurrentRound', id: number, cardsPlayed: Array<{ __typename?: 'PlayedCard', playerId: string, card: { __typename: 'SpecialCard', id: string, type: string, selection?: Maybe<string> } | { __typename: 'ColoredCard', id: string, color: string, number: number } }> } }> };
+export type CardsPlayedQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, currentRound: { __typename?: 'CurrentRound', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', playerId: string, card: { __typename: 'SpecialCard', id: string, type: string, selection?: Maybe<string> } | { __typename: 'ColoredCard', id: string, color: string, number: number } }> } }> };
 
 export type ScorecardQueryVariables = Exact<{
   gameId: Scalars['String'];
@@ -519,6 +519,7 @@ export const CardsPlayedDocument = gql`
     id
     currentRound {
       id
+      phase
       cardsPlayed {
         playerId
         card {

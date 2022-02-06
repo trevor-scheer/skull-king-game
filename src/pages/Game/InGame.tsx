@@ -49,7 +49,7 @@ export const InGame: React.FunctionComponent = function () {
   return (
     <div>
       In Game: {playerToken}
-      {phase === "play" && <PlayedCards />}
+      <PlayedCards />
       <Hand />
       {phase === "bid" && (
         <>

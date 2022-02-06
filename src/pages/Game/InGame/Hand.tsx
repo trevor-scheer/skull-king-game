@@ -10,6 +10,7 @@ import {
 } from "../../../types/graphqlTypes";
 import { isColoredCard, isSpecialCard } from "../../../utils";
 import { Card } from "./Card";
+import "./Hand.scss";
 
 export const Hand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -114,29 +115,28 @@ export const Hand: React.FunctionComponent = function () {
   if (loading) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
   return (
-    <>
+    <div className="Hand">
       <p>My hand:</p>
-      <ul>
+      <ul className="Hand-playerHand">
         {me?.hand.map((card) => {
           if (isColoredCard(card)) {
             return (
-              <li key={card.id}>
-                <Card
-                  disabled={!myTurn || !canPlayCard(card) || justClicked}
-                  card={card}
-                  onClick={() => {
-                    debounceClick(() =>
-                      playColoredCard({
-                        variables: {
-                          gameId,
-                          playerToken,
-                          cardId: card.id,
-                        },
-                      })
-                    );
-                  }}
-                />
-              </li>
+              <Card
+                key={card.id}
+                disabled={!myTurn || !canPlayCard(card) || justClicked}
+                card={card}
+                onClick={() => {
+                  debounceClick(() =>
+                    playColoredCard({
+                      variables: {
+                        gameId,
+                        playerToken,
+                        cardId: card.id,
+                      },
+                    })
+                  );
+                }}
+              />
             );
           } else if (isSpecialCard(card)) {
             return card.type === "tigress" ? (
@@ -195,6 +195,6 @@ export const Hand: React.FunctionComponent = function () {
           }
         })}
       </ul>
-    </>
+    </div>
   );
 };

@@ -1,6 +1,8 @@
 .Card {
-  height: 100px;
-  width: 50px;
-  padding: 10px;
-  margin: 10px;
+  &-content {
+    height: 175px;
+    width: 125px;
+    padding: 10px;
+    margin: 10px;
+  }
 }

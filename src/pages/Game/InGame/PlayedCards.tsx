@@ -3,6 +3,7 @@ import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { CardsPlayedQuery } from "../../../types/graphqlTypes";
 import { Card } from "./Card";
+import "./PlayedCards.scss";
 
 export const PlayedCards: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -16,6 +17,7 @@ export const PlayedCards: React.FunctionComponent = function () {
           id
           currentRound {
             id
+            phase
             cardsPlayed {
               playerId
               card {
@@ -42,21 +44,23 @@ export const PlayedCards: React.FunctionComponent = function () {
     }
   );
 
-  const cardsPlayed = data?.state?.currentRound?.cardsPlayed;
+  const { phase, cardsPlayed } = data?.state?.currentRound ?? {};
 
   if (loading) return <div>Loading...</div>;
   if (!cardsPlayed) return null;
 
   return (
-    <>
-      <p>Cards played</p>
-      <ol>
-        {cardsPlayed.map(({ playerId, card }) => (
-          <li key={playerId}>
-            <Card card={card} disabled={true} />
-          </li>
-        ))}
-      </ol>
-    </>
+    <div className="PlayedCards">
+      <p>Cards played:</p>
+      {phase === "play" && (
+        <ol>
+          {cardsPlayed.map(({ playerId, card }) => (
+            <li key={playerId}>
+              <Card card={card} disabled={true} />
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
   );
 };
