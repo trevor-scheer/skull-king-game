@@ -1,0 +1,8 @@
+.Hand {
+  padding: 10px;
+  height: 214px;
+  &-playerHand {
+    display: flex;
+    flex-direction: row;
+  }
+}
