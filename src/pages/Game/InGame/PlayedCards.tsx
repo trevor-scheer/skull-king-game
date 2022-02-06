@@ -48,12 +48,15 @@ export const PlayedCards: React.FunctionComponent = function () {
   if (!cardsPlayed) return null;
 
   return (
-    <ol>
-      {cardsPlayed.map(({ playerId, card }) => (
-        <li key={playerId}>
-          <Card card={card} disabled={true} />
-        </li>
-      ))}
-    </ol>
+    <>
+      <p>Cards played</p>
+      <ol>
+        {cardsPlayed.map(({ playerId, card }) => (
+          <li key={playerId}>
+            <Card card={card} disabled={true} />
+          </li>
+        ))}
+      </ol>
+    </>
   );
 };

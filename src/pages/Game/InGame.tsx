@@ -49,6 +49,7 @@ export const InGame: React.FunctionComponent = function () {
   return (
     <div>
       In Game: {playerToken}
+      {phase === "play" && <PlayedCards />}
       <Hand />
       {phase === "bid" && (
         <>
@@ -60,7 +61,6 @@ export const InGame: React.FunctionComponent = function () {
           {myBid ? <AwaitingBids bid={myBid} /> : <BidForm />}
         </>
       )}
-      {phase === "play" && <PlayedCards />}
       <Scorecard />
     </div>
   );
