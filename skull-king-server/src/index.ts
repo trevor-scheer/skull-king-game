@@ -12,6 +12,7 @@ import typeDefs from "./typeDefs";
     context() {
       return { games };
     },
+    introspection: true,
     plugins: [
       {
         async requestDidStart({ request }) {
