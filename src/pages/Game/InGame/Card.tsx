@@ -1,5 +1,6 @@
 import { Card as CardType } from "../../../types/graphqlTypes";
 import { isSpecialCard } from "../../../utils";
+import "./Card.scss";
 
 export const Card: React.FunctionComponent<{
   disabled: boolean;
