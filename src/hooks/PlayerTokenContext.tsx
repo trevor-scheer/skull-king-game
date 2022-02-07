@@ -17,7 +17,7 @@ export const PlayerTokenProvider: FunctionComponent = ({ children }) => {
   const { id: gameId } = useParams<{ id: string }>();
   const [skullKingTokens, setSkullKingTokens] = useLocalStorage(
     "skullKing",
-    {}
+    {} as Record<string, string>
   );
 
   const [playerToken, setToken] = useState<null | string>(

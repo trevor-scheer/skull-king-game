@@ -1,11 +1,16 @@
 import { gql, useMutation } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { useGameId } from "../../hooks/useGameId";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
   function ({ onJoin }) {
     const gameId = useGameId();
-    const [name, updateName] = useState<string | undefined>("");
+    const [defaultName, setDefaultName] = useLocalStorage(
+      "skullKing-defaultName",
+      ""
+    );
+    const [name, updateName] = useState<string>(defaultName);
 
     const [createPlayer, result] = useMutation(
       gql`
@@ -30,6 +35,7 @@ export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
         onSubmit={(e) => {
           e.preventDefault();
           createPlayer();
+          setDefaultName(name);
         }}
       >
         <input onChange={(e) => updateName(e.target.value)} value={name} />
@@ -37,6 +43,7 @@ export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
           onClick={(e) => {
             e.preventDefault();
             createPlayer();
+            setDefaultName(name);
           }}
           type="submit"
         >

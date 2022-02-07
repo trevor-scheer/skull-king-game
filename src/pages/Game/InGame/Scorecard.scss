@@ -1,0 +1,40 @@
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.Scorecard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+
+  &-header {
+    margin-bottom: 10px;
+  }
+
+  &-tableHeader {
+    padding: 5px;
+
+    &-content {
+      text-align: center;
+    }
+  }
+  &-roundNumberCell {
+    padding: 5px;
+  }
+  &-scoreCell {
+    &-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      width: 150px;
+      padding: 5px;
+    }
+    &-entry {
+      padding: 5px;
+    }
+  }
+}

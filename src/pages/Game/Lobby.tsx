@@ -3,6 +3,7 @@ import { usePlayerToken } from "../../hooks/PlayerTokenContext";
 import { useGameId } from "../../hooks/useGameId";
 import { JoinGame } from "./JoinGame";
 import { StartGame } from "./StartGame";
+import "./Lobby.scss";
 
 export const Lobby: React.FunctionComponent = function () {
   const gameId = useGameId();
@@ -32,10 +33,9 @@ export const Lobby: React.FunctionComponent = function () {
 
   // TODO: any
   return (
-    <div>
-      <p>{playerToken}</p>
-      {JSON.stringify(data, null, 2)}
-      <ol>
+    <div className="Lobby">
+      <p className="Lobby-header">Players in lobby</p>
+      <ol className="Lobby-playerList">
         {data.state.players.map((player: any) => (
           <li key={player.name}>{player.name}</li>
         ))}

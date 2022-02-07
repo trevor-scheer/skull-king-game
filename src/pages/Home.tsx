@@ -1,8 +1,11 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, Redirect } from "react-router-dom";
 import { GamesQuery, NewGameMutation } from "../types/graphqlTypes";
 
 export function Home() {
+  const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+  
   const { data, loading, error } = useQuery<GamesQuery>(
     gql`
       query Games {
@@ -22,13 +25,17 @@ export function Home() {
     { refetchQueries: ["Games"] }
   );
 
-  if (loading) {
+  if (redirectTo) {
+    return <Redirect to={`/game/${redirectTo}`} />;
+  } else if (loading) {
     return <p>Loading...</p>;
   } else if (data?.games) {
     return (
       <>
         <GamesList games={data.games} />
-        <button onClick={() => createGame()}>Add Game</button>
+        <button onClick={() => createGame().then(result => {
+          setRedirectTo(result.data?.newGame);
+        })}>Add Game</button>
       </>
     );
   } else {

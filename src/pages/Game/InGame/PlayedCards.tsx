@@ -55,9 +55,7 @@ export const PlayedCards: React.FunctionComponent = function () {
       {phase === "play" && (
         <ol>
           {cardsPlayed.map(({ playerId, card }) => (
-            <li key={playerId}>
-              <Card card={card} disabled={true} />
-            </li>
+            <Card card={card} disabled={true} key={playerId} />
           ))}
         </ol>
       )}
