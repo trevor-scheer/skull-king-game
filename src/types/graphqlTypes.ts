@@ -185,7 +185,7 @@ export type MyHandQueryVariables = Exact<{
 }>;
 
 
-export type MyHandQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, me?: Maybe<{ __typename?: 'Player', id: string, name: string, hand: Array<{ __typename: 'SpecialCard', id: string, type: string } | { __typename: 'ColoredCard', id: string, color: string, number: number }> }>, currentRound: { __typename?: 'CurrentRound', id: number, phase: string, playerTurn: string, trickColor?: Maybe<Color> } }> };
+export type MyHandQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, me?: Maybe<{ __typename?: 'Player', id: string, name: string, hand: Array<{ __typename: 'SpecialCard', id: string, type: string } | { __typename: 'ColoredCard', id: string, color: string, number: number }> }>, currentRound: { __typename?: 'CurrentRound', id: number, phase: string, playerTurn: string, trickColor?: Maybe<Color>, myBid?: Maybe<number> } }> };
 
 export type PlaySpecialCardMutationVariables = Exact<{
   gameId: Scalars['String'];
@@ -408,6 +408,7 @@ export const MyHandDocument = gql`
       phase
       playerTurn
       trickColor
+      myBid
     }
   }
 }

@@ -44,6 +44,7 @@ export const Hand: React.FunctionComponent = function () {
             phase
             playerTurn
             trickColor
+            myBid
           }
         }
       }
@@ -116,7 +117,7 @@ export const Hand: React.FunctionComponent = function () {
   if (!playerToken) return <div>No player token</div>;
   return (
     <div className="Hand">
-      <p>My hand:</p>
+      <p>My hand (my bid: {currentRound?.myBid}):</p>
       <ul className="Hand-playerHand">
         {me?.hand.map((card) => {
           if (isColoredCard(card)) {
