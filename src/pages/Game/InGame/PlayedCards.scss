@@ -1,4 +1,9 @@
 .PlayedCards {
   padding: 10px;
   height: 214px;
+
+  &-cards {
+    display: flex;
+    list-style-type: none;
+  }
 }
