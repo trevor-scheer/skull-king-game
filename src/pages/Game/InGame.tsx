@@ -49,23 +49,19 @@ export const InGame: React.FunctionComponent = function () {
   const { phase, myBid, leader } = data?.state?.currentRound ?? {};
   return (
     <div className="InGame">
-      <div className="InGame-main">
-        <PlayedCards />
-        <Hand />
-        {phase === "bid" && (
-          <>
-            {leader === me?.name ? (
-              <p>You lead this round</p>
-            ) : (
-              <p>{`${leader} leads this round`}</p>
-            )}
-            {myBid ? <AwaitingBids bid={myBid} /> : <BidForm />}
-          </>
-        )}
-      </div>
-      <div className="InGame-scorecard">
-        <Scorecard />
-      </div>
+      <PlayedCards />
+      <Hand />
+      {phase === "bid" && (
+        <>
+          {leader === me?.name ? (
+            <p>You lead this round</p>
+          ) : (
+            <p>{`${leader} leads this round`}</p>
+          )}
+          {myBid ? <AwaitingBids bid={myBid} /> : <BidForm />}
+        </>
+      )}
+      <Scorecard />
     </div>
   );
 };

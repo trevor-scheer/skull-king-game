@@ -74,34 +74,17 @@ export const Scorecard: React.FunctionComponent = function () {
                         {block.bonusPoints}
                       </p>
                       <p className="Scorecard-scoreCell-entry">
-                        {block.bidPoints}
+                        {showPlusIfPositive(block.bidPoints)}
                       </p>
                     </div>
                     <div className="Scorecard-scoreCell-row">
                       <p className="Scorecard-scoreCell-entry">
-                        {block.bonusPoints + block.bidPoints}
+                        {showPlusIfPositive(block.bonusPoints + block.bidPoints)}
                       </p>
-                      <p className="Scorecard-scoreCell-entry">
-                        {block.totalPoints}
+                      <p className="Scorecard-scoreCell-entry Scorecard-scoreCell-totalScore">
+                        {showPlusIfPositive(block.totalPoints)}
                       </p>
                     </div>
-                    {/* <table>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <p>
-                              {block.tricksBid} / {block.tricksWon}
-                            </p>
-                          </td>
-                          <td>{block.bonusPoints}</td>
-                          <td>{block.bonusPoints}</td>
-                        </tr>
-                        <tr>
-                          <td>{block.bonusPoints + block.bonusPoints}</td>
-                          <td>{block.totalPoints}</td>
-                        </tr>
-                      </tbody>
-                    </table> */}
                   </td>
                 ))}
               </tr>
@@ -112,3 +95,7 @@ export const Scorecard: React.FunctionComponent = function () {
     </div>
   );
 };
+
+function showPlusIfPositive(value: number) {
+  return value > 0 ? "+" + value : value;
+}

@@ -1,10 +1,5 @@
 .InGame {
   display: flex;
-
-  &-main {
-    flex-grow: 1;
-  }
-  &-scorecard {
-    flex-grow: 0;
-  }
+  flex-direction: column;
+  justify-content: center;
 }

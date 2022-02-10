@@ -1,7 +1,6 @@
 table, th, td {
   border: 1px solid black;
   border-collapse: collapse;
-  width: 100%;
 }
 
 .Scorecard {
@@ -35,6 +34,10 @@ table, th, td {
     }
     &-entry {
       padding: 5px;
+    }
+    &-totalScore {
+      border: 1px solid black;
+      border-radius: 5px;
     }
   }
 }
