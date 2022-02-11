@@ -2,7 +2,11 @@
   &-content {
     height: 175px;
     width: 125px;
-    padding: 10px;
+    padding: 0;
     margin: 10px;
+  }
+
+  &-image {
+    height: 100%;
   }
 }

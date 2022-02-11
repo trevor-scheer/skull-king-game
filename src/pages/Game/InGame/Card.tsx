@@ -1,5 +1,4 @@
 import { Card as CardType } from "../../../types/graphqlTypes";
-import { isSpecialCard } from "../../../utils";
 import "./Card.scss";
 
 export const Card: React.FunctionComponent<{
@@ -14,15 +13,7 @@ export const Card: React.FunctionComponent<{
         disabled={disabled}
         onClick={() => onClick?.()}
       >
-        <div>
-          {isSpecialCard(card) ? (
-            <p>{card.type}</p>
-          ) : (
-            <p>
-              {card.color} {card.number}
-            </p>
-          )}
-        </div>
+        <img className="Card-image" src={`/cards/${card.id}.jpg`} />
       </button>
     </li>
   );
