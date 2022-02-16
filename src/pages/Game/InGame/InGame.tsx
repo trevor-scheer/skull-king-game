@@ -1,12 +1,12 @@
 import { gql, useQuery } from "@apollo/client";
-import { usePlayerToken } from "../../hooks/PlayerTokenContext";
-import { useGameId } from "../../hooks/useGameId";
-import { GameStateQuery } from "../../types/graphqlTypes";
-import { AwaitingBids } from "./InGame/AwaitingBids";
-import { BidForm } from './InGame/BidForm';
-import { Hand } from "./InGame/Hand";
-import { PlayedCards } from "./InGame/PlayedCards";
-import { Scorecard } from "./InGame/Scorecard";
+import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
+import { useGameId } from "../../../hooks/useGameId";
+import { GameStateQuery } from "../../../types/graphqlTypes";
+import { AwaitingBids } from "./AwaitingBids";
+import { BidForm } from './BidForm/BidForm';
+import { Hand } from "./Hand";
+import { PlayedCards } from "./PlayedCards";
+import { Scorecard } from "./Scorecard/Scorecard";
 import "./InGame.scss";
 
 export const InGame: React.FunctionComponent = function () {

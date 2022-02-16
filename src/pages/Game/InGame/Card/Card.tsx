@@ -1,4 +1,4 @@
-import { Card as CardType } from "../../../types/graphqlTypes";
+import { Card as CardType } from "../../../../types/graphqlTypes";
 import "./Card.scss";
 
 export const Card: React.FunctionComponent<{

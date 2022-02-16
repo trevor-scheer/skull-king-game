@@ -1,8 +1,8 @@
 import { gql, useQuery } from "@apollo/client";
-import { usePlayerToken } from "../../hooks/PlayerTokenContext";
-import { useGameId } from "../../hooks/useGameId";
-import { JoinGame } from "./JoinGame";
-import { StartGame } from "./StartGame";
+import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
+import { useGameId } from "../../../hooks/useGameId";
+import { JoinGame } from "../JoinGame/JoinGame";
+import { StartGame } from "../StartGame/StartGame";
 import "./Lobby.scss";
 
 export const Lobby: React.FunctionComponent = function () {
@@ -27,6 +27,7 @@ export const Lobby: React.FunctionComponent = function () {
       pollInterval: 2000,
     }
   );
+
   if (error) console.error(error);
 
   if (loading) return <div>Loading...</div>;

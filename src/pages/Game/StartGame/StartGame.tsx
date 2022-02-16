@@ -1,5 +1,5 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { useGameId } from "../../hooks/useGameId";
+import { useGameId } from "../../../hooks/useGameId";
 
 export const StartGame: React.FunctionComponent = function () {
   const gameId = useGameId();

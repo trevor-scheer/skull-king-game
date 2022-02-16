@@ -1,6 +1,6 @@
 overwrite: true
 schema: "https://skull-king-graphql.herokuapp.com"
-documents: "src/**/*.tsx"
+documents: "src/**/*.{tsx,graphql}"
 generates:
   src/types/graphqlTypes.ts:
     plugins:

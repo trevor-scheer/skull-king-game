@@ -1,40 +1,39 @@
-import { gql, useQuery } from "@apollo/client";
-import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
-import { useGameId } from "../../../hooks/useGameId";
-import { ScorecardQuery } from "../../../types/graphqlTypes";
+import { gql } from "@apollo/client";
+import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
+import { useGameId } from "../../../../hooks/useGameId";
+import { useScorecardQuery } from "../../../../types/graphqlTypes";
 import { JollyRogerSvg } from "./JollyRogerSvg";
 import "./Scorecard.scss";
+
+gql`
+  query Scorecard($gameId: String!, $playerToken: String!) {
+    state(gameId: $gameId, playerToken: $playerToken) {
+      id
+      me {
+        id
+        name
+      }
+      scorecard {
+        playerName
+        tricksBid
+        tricksWon
+        bidPoints
+        bonusPoints
+        totalPoints
+      }
+    }
+  }
+`;
 
 export const Scorecard: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
   // TODO: error handling
-  const { data, loading } = useQuery<ScorecardQuery>(
-    gql`
-      query Scorecard($gameId: String!, $playerToken: String!) {
-        state(gameId: $gameId, playerToken: $playerToken) {
-          id
-          me {
-            id
-            name
-          }
-          scorecard {
-            playerName
-            tricksBid
-            tricksWon
-            bidPoints
-            bonusPoints
-            totalPoints
-          }
-        }
-      }
-    `,
-    {
-      variables: { gameId, playerToken },
-      pollInterval: 2000,
-    }
-  );
+  const { data, loading } = useScorecardQuery({
+    variables: { gameId, playerToken: playerToken! },
+    pollInterval: 2000,
+  });
 
   if (loading) return <div>Loading...</div>;
 

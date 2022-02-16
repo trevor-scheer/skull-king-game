@@ -1,0 +1,6 @@
+query GamePhase($gameId: String!) {
+  state(gameId: $gameId) {
+    id
+    phase
+  }
+}

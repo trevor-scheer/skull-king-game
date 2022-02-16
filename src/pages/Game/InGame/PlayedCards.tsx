@@ -2,7 +2,7 @@ import { gql, useQuery } from "@apollo/client";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { CardsPlayedQuery } from "../../../types/graphqlTypes";
-import { Card } from "./Card";
+import { Card } from "./Card/Card";
 import "./PlayedCards.scss";
 
 export const PlayedCards: React.FunctionComponent = function () {

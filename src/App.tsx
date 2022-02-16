@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { ApolloProvider } from "@apollo/client";
 import "./App.css";
 import { Home } from "./pages/Home";
-import { Game } from "./pages/Game";
+import { Game } from "./pages/Game/Game";
 import { client } from "./client";
 import { PlayerTokenProvider } from "./hooks/PlayerTokenContext";
 

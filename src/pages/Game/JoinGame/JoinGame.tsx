@@ -1,7 +1,7 @@
 import { gql, useMutation } from "@apollo/client";
 import { useEffect, useState } from "react";
-import { useGameId } from "../../hooks/useGameId";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useGameId } from "../../../hooks/useGameId";
+import { useLocalStorage } from "../../../hooks/useLocalStorage";
 
 export const JoinGame: React.FunctionComponent<{ onJoin: Function }> =
   function ({ onJoin }) {

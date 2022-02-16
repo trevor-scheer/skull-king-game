@@ -1,15 +1,17 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import {
   Card as CardType,
+  ColoredCard,
   MyHandQuery,
   PlaySpecialCardMutation,
   PlaySpecialCardMutationVariables,
+  SpecialCard,
 } from "../../../types/graphqlTypes";
 import { isColoredCard, isSpecialCard } from "../../../utils";
-import { Card } from "./Card";
+import { Card } from "./Card/Card";
 import "./Hand.scss";
 
 export const Hand: React.FunctionComponent = function () {
@@ -93,6 +95,17 @@ export const Hand: React.FunctionComponent = function () {
   const me = data?.state?.me;
   const myTurn = phase === "play" && playerTurn === me?.name;
 
+  useEffect(() => {
+    if (myTurn) {
+      const audio = new Audio("/audio/smb3_coin.wav");
+      try {
+        audio.play();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [myTurn]);
+
   function canPlayCard(card: CardType) {
     if (isSpecialCard(card)) return true;
     if (trickColor === null) return true;
@@ -115,11 +128,16 @@ export const Hand: React.FunctionComponent = function () {
 
   if (loading) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
+
+  const sortedHand = [...(me?.hand!)].sort((a, b) => {
+    return getSortOrder(a) - getSortOrder(b);
+  });
+
   return (
     <div className="Hand">
       <p>My hand (my bid: {currentRound?.myBid}):</p>
       <ul className="Hand-playerHand">
-        {me?.hand.map((card) => {
+        {sortedHand.map((card) => {
           if (isColoredCard(card)) {
             return (
               <Card
@@ -189,6 +207,7 @@ export const Hand: React.FunctionComponent = function () {
                     })
                   );
                 }}
+                key={card.id}
               />
             );
           } else {
@@ -199,3 +218,22 @@ export const Hand: React.FunctionComponent = function () {
     </div>
   );
 };
+
+function getSortOrder(card: SpecialCard | ColoredCard) {
+  const bases: Record<string, number> = {
+    YELLOW: 0,
+    GREEN: 20,
+    PURPLE: 40,
+    BLACK: 60,
+    pirate: 80,
+    tigress: 85,
+    skullKing: 90,
+    escape: 91,
+  };
+
+  if (isColoredCard(card)) {
+    return bases[card.color] + card.number;
+  } else {
+    return bases[card.type];
+  }
+}
