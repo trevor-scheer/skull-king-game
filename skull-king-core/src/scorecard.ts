@@ -2,7 +2,7 @@ import { Card, isColoredCard } from "./cards";
 import { Round } from "./game";
 import { findSpecial } from "./utils/findSpecial";
 
-type Round = Map<string, ScoreBlock>;
+type ScoredRound = Map<string, ScoreBlock>;
 
 export interface ScoreBlock {
   playerName: string;
@@ -14,14 +14,14 @@ export interface ScoreBlock {
 }
 
 export class Scorecard {
-  private rounds: Round[] = [];
+  private rounds: ScoredRound[] = [];
 
   constructor(private playerNames: Set<string>) {}
 
   public scoreRound(
     round: Pick<Round, "tricksWon" | "bids" | "roundNumber">
   ) {
-    const scoredRound: Round = new Map();
+    const scoredRound: ScoredRound = new Map();
     const { tricksWon, bids, roundNumber } = round;
 
     for (const playerName of this.playerNames) {
