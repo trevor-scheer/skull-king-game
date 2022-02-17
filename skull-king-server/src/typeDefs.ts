@@ -35,7 +35,8 @@ const typeDefs = gql`
     phase: String!
     me: Player
     players: [Player!]!
-    currentRound: CurrentRound!
+    currentRound: Round!
+    lastRound: Round
     # deck: Deck!
     scorecard: [[ScoreBlock!]!]
   }
@@ -60,7 +61,7 @@ const typeDefs = gql`
     number: Int!
   }
 
-  type CurrentRound {
+  type Round {
     id: Int!
     roundNumber: Int!
     phase: String!

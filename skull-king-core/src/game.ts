@@ -5,7 +5,7 @@ import { assert } from "./utils/assert";
 import { Scorecard } from "./scorecard";
 import { randomUUID } from "crypto";
 
-export interface CurrentRound {
+export interface Round {
   roundNumber: number;
   phase: "bid" | "play";
   bids: Map<string, number>;
@@ -25,7 +25,8 @@ export class Game {
   private options: GameOptions;
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
-  private currentRound: CurrentRound | null;
+  private currentRound: Round;
+  private lastRound: Round | null;
 
   constructor(id: string, options?: GameOptions) {
     this.id = id;
@@ -46,6 +47,7 @@ export class Game {
       trickColor: null,
       tricksWon: new Map(),
     };
+    this.lastRound = null;
   }
 
   public addPlayer(name: string) {
@@ -358,6 +360,7 @@ export class Game {
     const newDealer = (newRoundNumber - 1) % this.players.length;
     const newLeader = (newDealer + 1) % this.players.length;
 
+    this.lastRound = this.currentRound;
     this.currentRound = {
       roundNumber: newRoundNumber,
       phase: "bid",
@@ -418,7 +421,6 @@ export class Game {
 
   private endGame() {
     this.phase = "postgame";
-    this.currentRound = null;
   }
 
   public getStateForPlayer(playerToken?: string) {

@@ -1,5 +1,5 @@
 import { Card, isColoredCard } from "./cards";
-import { CurrentRound } from "./game";
+import { Round } from "./game";
 import { findSpecial } from "./utils/findSpecial";
 
 type Round = Map<string, ScoreBlock>;
@@ -19,7 +19,7 @@ export class Scorecard {
   constructor(private playerNames: Set<string>) {}
 
   public scoreRound(
-    round: Pick<CurrentRound, "tricksWon" | "bids" | "roundNumber">
+    round: Pick<Round, "tricksWon" | "bids" | "roundNumber">
   ) {
     const scoredRound: Round = new Map();
     const { tricksWon, bids, roundNumber } = round;
