@@ -9,11 +9,23 @@ export interface Round {
   roundNumber: number;
   phase: "bid" | "play";
   bids: Map<string, number>;
-  cardsPlayed: { playerId: string; card: Card }[];
+  cardsPlayed: PlayedCard[];
   dealer: number;
   leader: number;
   trickColor: Color | null;
   tricksWon: Map<string, Card[][]>;
+  hands: Hand[];
+}
+
+export interface Hand {
+  trickColor: Color | null;
+  cardsPlayed: PlayedCard[];
+  winningCard: PlayedCard | null;
+}
+
+export interface PlayedCard {
+  playerId: string;
+  card: Card;
 }
 export class Game {
   private id: String;
@@ -26,7 +38,6 @@ export class Game {
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
   private currentRound: Round;
-  private lastRound: Round | null;
 
   constructor(id: string, options?: GameOptions) {
     this.id = id;
@@ -46,8 +57,8 @@ export class Game {
       leader: 1,
       trickColor: null,
       tricksWon: new Map(),
+      hands: [],
     };
-    this.lastRound = null;
   }
 
   public addPlayer(name: string) {
@@ -191,18 +202,27 @@ export class Game {
 
     // End hand
     const trickWinner = this.determineWinningCard();
-    const playersTricks = tricksWon.get(trickWinner);
+    const playersTricks = tricksWon.get(trickWinner.playerId);
     const cardsInTrick = cardsPlayed.map(({ card }) => card);
     if (!playersTricks) {
-      tricksWon.set(trickWinner, [cardsInTrick]);
+      tricksWon.set(trickWinner.playerId, [cardsInTrick]);
     } else {
       playersTricks.push(cardsInTrick);
     }
 
+    this.currentRound.hands = [
+      ...this.currentRound.hands,
+      {
+        trickColor: this.currentRound.trickColor,
+        cardsPlayed: this.currentRound.cardsPlayed,
+        winningCard: trickWinner,
+      },
+    ];
+
     this.currentRound.trickColor = null;
     this.currentRound.cardsPlayed = [];
     this.currentRound.leader = this.players.findIndex(
-      (player) => player.name === trickWinner
+      (player) => player.name === trickWinner.playerId
     );
 
     // end round
@@ -224,7 +244,7 @@ export class Game {
       ({ card }) => isSpecialCard(card) && card.type === "skullKing"
     );
     if (skullKingIndex > -1) {
-      return cardsPlayed[skullKingIndex].playerId;
+      return cardsPlayed[skullKingIndex];
     }
 
     const firstPiratePlayedIndex = cardsPlayed.findIndex(
@@ -234,7 +254,7 @@ export class Game {
           (card.type === "tigress" && card.selection === "pirate"))
     );
     if (firstPiratePlayedIndex > -1) {
-      return cardsPlayed[firstPiratePlayedIndex].playerId;
+      return cardsPlayed[firstPiratePlayedIndex];
     }
 
     // TODO: DRY with below
@@ -255,7 +275,7 @@ export class Game {
         { playerId: "", card: { id: "", number: 0, color: "BLACK" } }
       );
 
-      return winningCard.playerId;
+      return winningCard;
     }
 
     if (trickColor) {
@@ -274,7 +294,7 @@ export class Game {
         },
         { playerId: "", card: { id: "", number: 0, color: trickColor } }
       );
-      return winningCard.playerId;
+      return winningCard;
     }
 
     if (
@@ -285,10 +305,9 @@ export class Game {
             (card.type === "tigress" && card.selection === "escape"))
       )
     ) {
-      return cardsPlayed[0].playerId;
+      return cardsPlayed[0];
     }
 
-    debugger;
     throw Error("Programming error, unhandled win condition");
   }
 
@@ -360,7 +379,6 @@ export class Game {
     const newDealer = (newRoundNumber - 1) % this.players.length;
     const newLeader = (newDealer + 1) % this.players.length;
 
-    this.lastRound = this.currentRound;
     this.currentRound = {
       roundNumber: newRoundNumber,
       phase: "bid",
@@ -370,6 +388,7 @@ export class Game {
       leader: newLeader,
       trickColor: null,
       tricksWon: new Map(),
+      hands: [],
     };
 
     this.shuffle();

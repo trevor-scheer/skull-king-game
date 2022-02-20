@@ -36,7 +36,6 @@ const typeDefs = gql`
     me: Player
     players: [Player!]!
     currentRound: Round!
-    lastRound: Round
     # deck: Deck!
     scorecard: [[ScoreBlock!]!]
   }
@@ -70,6 +69,14 @@ const typeDefs = gql`
     myBid: Int
     trickColor: Color
     cardsPlayed: [PlayedCard!]!
+    hands: [Hand!]!
+  }
+
+  type Hand {
+    id: String!
+    trickColor: Color
+    cardsPlayed: [PlayedCard!]!
+    winningCard: PlayedCard
   }
 
   type PlayedCard {
