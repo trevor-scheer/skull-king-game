@@ -18,6 +18,7 @@ export interface Round {
 }
 
 export interface Hand {
+  id: string;
   trickColor: Color | null;
   cardsPlayed: PlayedCard[];
   winningCard: PlayedCard | null;
@@ -213,6 +214,7 @@ export class Game {
     this.currentRound.hands = [
       ...this.currentRound.hands,
       {
+        id: randomUUID(),
         trickColor: this.currentRound.trickColor,
         cardsPlayed: this.currentRound.cardsPlayed,
         winningCard: trickWinner,
