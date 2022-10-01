@@ -1,11 +1,12 @@
 import {
   createContext,
   FunctionComponent,
+  ReactNode,
   useContext,
   useEffect,
   useState,
 } from "react";
-import { useParams } from "react-router-dom";
+import { useGameId } from "./useGameId";
 import { useLocalStorage } from "./useLocalStorage";
 
 const PlayerTokenContext = createContext<{
@@ -13,8 +14,10 @@ const PlayerTokenContext = createContext<{
   setPlayerToken: (token: string) => void;
 }>({ playerToken: null, setPlayerToken: () => {} });
 
-export const PlayerTokenProvider: FunctionComponent = ({ children }) => {
-  const { id: gameId } = useParams<{ id: string }>();
+export const PlayerTokenProvider: FunctionComponent<{
+  children: ReactNode;
+}> = ({ children }) => {
+  const gameId = useGameId();
   const [skullKingTokens, setSkullKingTokens] = useLocalStorage(
     "skullKing",
     {} as Record<string, string>

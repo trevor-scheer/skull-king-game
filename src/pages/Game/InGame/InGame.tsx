@@ -8,6 +8,7 @@ import { Hand } from "./Hand";
 import { PlayedCards } from "./PlayedCards";
 import { Scorecard } from "./Scorecard/Scorecard";
 import "./InGame.scss";
+import { PreviousHand } from "./PreviousHand/PreviousHand";
 
 export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -62,6 +63,7 @@ export const InGame: React.FunctionComponent = function () {
         </>
       )}
       <Scorecard />
+      <PreviousHand />
     </div>
   );
 };

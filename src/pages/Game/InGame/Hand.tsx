@@ -29,7 +29,6 @@ export const Hand: React.FunctionComponent = function () {
             id
             name
             hand {
-              __typename
               ... on SpecialCard {
                 id
                 type
@@ -113,9 +112,10 @@ export const Hand: React.FunctionComponent = function () {
     const noMatches = me?.hand.every((card) => {
       if (card.__typename === "SpecialCard") {
         return true;
-      } else {
+      } else if (card.__typename === "ColoredCard") {
         return card.color !== trickColor;
       }
+      return false;
     });
     const matchesTrickColor = card.color === trickColor;
     return noMatches || matchesTrickColor;
@@ -129,6 +129,7 @@ export const Hand: React.FunctionComponent = function () {
   if (loading) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
 
+  debugger;
   const sortedHand = [...(me?.hand!)].sort((a, b) => {
     return getSortOrder(a) - getSortOrder(b);
   });

@@ -1,4 +1,4 @@
-import { Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { usePlayerToken } from "../../hooks/PlayerTokenContext";
 import { useGameId } from "../../hooks/useGameId";
 import { useGamePhaseQuery } from "../../types/graphqlTypes";
@@ -14,12 +14,14 @@ export function Game() {
   const { data, loading } = useGamePhaseQuery({
     variables: { gameId },
     pollInterval: 2000,
-  })
+  });
 
   if (loading) return <div>Loading...</div>;
 
   // No game found
-  if (!data?.state) return <Redirect to="/" />;
+  if (!data?.state) {
+    return <Navigate to="/" />;
+  }
 
   if (data.state.phase === "setup") return <Lobby />;
 
