@@ -5,7 +5,7 @@ import { useSubmitBidMutation, useRoundNumberQuery } from "../../../../types/gra
 
 export const BidForm: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
-  const gameId = useGameId();
+  const gameId = useGameId() ?? ""; // TODO: hacky fallback
 
   const [submitted, setSubmitted] = useState<boolean>(false);
 

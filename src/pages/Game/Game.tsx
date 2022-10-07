@@ -7,7 +7,7 @@ import { Lobby } from "./Lobby/Lobby";
 import { Spectator } from "./Spectator/Spectator";
 
 export function Game() {
-  const gameId = useGameId();
+  const gameId = useGameId() ?? ""; // TODO: hacky fallback
   const [playerToken] = usePlayerToken();
 
   // TODO: error handling

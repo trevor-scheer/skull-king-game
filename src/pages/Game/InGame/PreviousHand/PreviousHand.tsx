@@ -4,7 +4,7 @@ import { usePreviousHandQuery } from "../../../../types/graphqlTypes";
 
 export const PreviousHand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
-  const gameId = useGameId();
+  const gameId = useGameId() ?? ""; // TODO: hacky fallback
 
   const { data, loading } = usePreviousHandQuery({
     variables: {

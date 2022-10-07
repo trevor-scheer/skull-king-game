@@ -19,6 +19,7 @@ export const PlayedCards: React.FunctionComponent = function () {
             id
             phase
             cardsPlayed {
+              id
               playerId
               card {
                 __typename

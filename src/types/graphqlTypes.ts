@@ -1,10 +1,11 @@
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
 export type Maybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-const defaultOptions =  {}
+const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -14,53 +15,48 @@ export type Scalars = {
   Float: number;
 };
 
-export type Card = SpecialCard | ColoredCard;
+export type Card = ColoredCard | SpecialCard;
 
 export enum Color {
-  Yellow = 'YELLOW',
+  Black = 'BLACK',
   Green = 'GREEN',
   Purple = 'PURPLE',
-  Black = 'BLACK'
+  Yellow = 'YELLOW'
 }
 
 export type ColoredCard = {
   __typename?: 'ColoredCard';
-  id: Scalars['String'];
   color: Scalars['String'];
+  id: Scalars['String'];
   number: Scalars['Int'];
 };
 
 export type GameState = {
   __typename?: 'GameState';
-  id: Scalars['String'];
-  phase: Scalars['String'];
-  me?: Maybe<Player>;
-  players: Array<Player>;
   currentRound: Round;
+  id: Scalars['String'];
+  me?: Maybe<Player>;
+  phase: Scalars['String'];
+  players: Array<Player>;
   scorecard?: Maybe<Array<Array<ScoreBlock>>>;
 };
 
 export type Hand = {
   __typename?: 'Hand';
+  cardsPlayed: Array<PlayedCard>;
   id: Scalars['String'];
   trickColor?: Maybe<Color>;
-  cardsPlayed: Array<PlayedCard>;
   winningCard?: Maybe<PlayedCard>;
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  newGame: Scalars['String'];
-  startGame: Scalars['Boolean'];
   addPlayer: Scalars['String'];
-  submitBid: Scalars['Boolean'];
+  newGame: Scalars['String'];
   playColoredCard: Scalars['Boolean'];
   playSpecialCard: Scalars['Boolean'];
-};
-
-
-export type MutationStartGameArgs = {
-  gameId: Scalars['String'];
+  startGame: Scalars['Boolean'];
+  submitBid: Scalars['Boolean'];
 };
 
 
@@ -70,44 +66,50 @@ export type MutationAddPlayerArgs = {
 };
 
 
-export type MutationSubmitBidArgs = {
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
-  count: Scalars['Int'];
-};
-
-
 export type MutationPlayColoredCardArgs = {
+  cardId: Scalars['String'];
   gameId: Scalars['String'];
   playerToken: Scalars['String'];
-  cardId: Scalars['String'];
 };
 
 
 export type MutationPlaySpecialCardArgs = {
+  cardId: Scalars['String'];
   gameId: Scalars['String'];
   playerToken: Scalars['String'];
-  cardId: Scalars['String'];
-  selection?: Maybe<Scalars['String']>;
+  selection?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationStartGameArgs = {
+  gameId: Scalars['String'];
+};
+
+
+export type MutationSubmitBidArgs = {
+  count: Scalars['Int'];
+  gameId: Scalars['String'];
+  playerToken: Scalars['String'];
 };
 
 export type PlayedCard = {
   __typename?: 'PlayedCard';
-  playerId: Scalars['String'];
   card: Card;
+  id: Scalars['String'];
+  playerId: Scalars['String'];
 };
 
 export type Player = {
   __typename?: 'Player';
+  hand: Array<Card>;
   id: Scalars['String'];
   name: Scalars['String'];
-  hand: Array<Card>;
 };
 
 export type Query = {
   __typename?: 'Query';
-  players: Scalars['String'];
   games: Array<Scalars['String']>;
+  players: Scalars['String'];
   state?: Maybe<GameState>;
 };
 
@@ -119,37 +121,37 @@ export type QueryPlayersArgs = {
 
 export type QueryStateArgs = {
   gameId: Scalars['String'];
-  playerToken?: Maybe<Scalars['String']>;
+  playerToken?: InputMaybe<Scalars['String']>;
 };
 
 export type Round = {
   __typename?: 'Round';
-  id: Scalars['Int'];
-  roundNumber: Scalars['Int'];
-  phase: Scalars['String'];
-  leader: Scalars['String'];
-  playerTurn: Scalars['String'];
-  myBid?: Maybe<Scalars['Int']>;
-  trickColor?: Maybe<Color>;
   cardsPlayed: Array<PlayedCard>;
   hands: Array<Hand>;
+  id: Scalars['Int'];
+  leader: Scalars['String'];
+  myBid?: Maybe<Scalars['Int']>;
+  phase: Scalars['String'];
+  playerTurn: Scalars['String'];
+  roundNumber: Scalars['Int'];
+  trickColor?: Maybe<Color>;
 };
 
 export type ScoreBlock = {
   __typename?: 'ScoreBlock';
-  playerName: Scalars['String'];
-  tricksBid: Scalars['Int'];
-  tricksWon: Scalars['Int'];
   bidPoints: Scalars['Int'];
   bonusPoints: Scalars['Int'];
+  playerName: Scalars['String'];
   totalPoints: Scalars['Int'];
+  tricksBid: Scalars['Int'];
+  tricksWon: Scalars['Int'];
 };
 
 export type SpecialCard = {
   __typename?: 'SpecialCard';
   id: Scalars['String'];
-  type: Scalars['String'];
   selection?: Maybe<Scalars['String']>;
+  type: Scalars['String'];
 };
 
 export type Subscription = {
@@ -161,7 +163,7 @@ export type Subscription = {
 
 export type SubscriptionStateArgs = {
   gameId: Scalars['String'];
-  playerToken?: Maybe<Scalars['String']>;
+  playerToken?: InputMaybe<Scalars['String']>;
 };
 
 export type GamePhaseQueryVariables = Exact<{
@@ -169,7 +171,7 @@ export type GamePhaseQueryVariables = Exact<{
 }>;
 
 
-export type GamePhaseQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, phase: string }> };
+export type GamePhaseQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string } | null };
 
 export type RoundNumberQueryVariables = Exact<{
   gameId: Scalars['String'];
@@ -177,7 +179,7 @@ export type RoundNumberQueryVariables = Exact<{
 }>;
 
 
-export type RoundNumberQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, roundNumber: number } }> };
+export type RoundNumberQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, roundNumber: number } } | null };
 
 export type SubmitBidMutationVariables = Exact<{
   gameId: Scalars['String'];
@@ -194,13 +196,13 @@ export type MyHandQueryVariables = Exact<{
 }>;
 
 
-export type MyHandQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, me?: Maybe<{ __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'SpecialCard', id: string, type: string } | { __typename?: 'ColoredCard', id: string, color: string, number: number }> }>, currentRound: { __typename?: 'Round', id: number, phase: string, playerTurn: string, trickColor?: Maybe<Color>, myBid?: Maybe<number> } }> };
+export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound: { __typename?: 'Round', id: number, phase: string, playerTurn: string, trickColor?: Color | null, myBid?: number | null } } | null };
 
 export type PlaySpecialCardMutationVariables = Exact<{
   gameId: Scalars['String'];
   playerToken: Scalars['String'];
   cardId: Scalars['String'];
-  selection?: Maybe<Scalars['String']>;
+  selection?: InputMaybe<Scalars['String']>;
 }>;
 
 
@@ -221,7 +223,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: Maybe<{ __typename?: 'Player', id: string, name: string }>, currentRound: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn: string, myBid?: Maybe<number> } }> };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn: string, myBid?: number | null } } | null };
 
 export type CardsPlayedQueryVariables = Exact<{
   gameId: Scalars['String'];
@@ -229,7 +231,7 @@ export type CardsPlayedQueryVariables = Exact<{
 }>;
 
 
-export type CardsPlayedQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', playerId: string, card: { __typename: 'SpecialCard', id: string, type: string, selection?: Maybe<string> } | { __typename: 'ColoredCard', id: string, color: string, number: number } }> } }> };
+export type CardsPlayedQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }> } } | null };
 
 export type PreviousHandQueryVariables = Exact<{
   gameId: Scalars['String'];
@@ -237,13 +239,13 @@ export type PreviousHandQueryVariables = Exact<{
 }>;
 
 
-export type PreviousHandQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, hands: Array<{ __typename?: 'Hand', id: string, trickColor?: Maybe<Color>, cardsPlayed: Array<{ __typename?: 'PlayedCard', playerId: string, card: { __typename: 'SpecialCard', id: string, type: string, selection?: Maybe<string> } | { __typename: 'ColoredCard', id: string, color: string, number: number } }>, winningCard?: Maybe<{ __typename?: 'PlayedCard', playerId: string, card: { __typename: 'SpecialCard', id: string, type: string, selection?: Maybe<string> } | { __typename: 'ColoredCard', id: string, color: string, number: number } }> }> } }> };
-
-type CardFragment_SpecialCard_Fragment = { __typename: 'SpecialCard', id: string, type: string, selection?: Maybe<string> };
+export type PreviousHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, hands: Array<{ __typename?: 'Hand', id: string, trickColor?: Color | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null }> } } | null };
 
 type CardFragment_ColoredCard_Fragment = { __typename: 'ColoredCard', id: string, color: string, number: number };
 
-export type CardFragmentFragment = CardFragment_SpecialCard_Fragment | CardFragment_ColoredCard_Fragment;
+type CardFragment_SpecialCard_Fragment = { __typename: 'SpecialCard', id: string, type: string, selection?: string | null };
+
+export type CardFragmentFragment = CardFragment_ColoredCard_Fragment | CardFragment_SpecialCard_Fragment;
 
 export type ScorecardQueryVariables = Exact<{
   gameId: Scalars['String'];
@@ -251,7 +253,7 @@ export type ScorecardQueryVariables = Exact<{
 }>;
 
 
-export type ScorecardQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, me?: Maybe<{ __typename?: 'Player', id: string, name: string }>, scorecard?: Maybe<Array<Array<{ __typename?: 'ScoreBlock', playerName: string, tricksBid: number, tricksWon: number, bidPoints: number, bonusPoints: number, totalPoints: number }>>> }> };
+export type ScorecardQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', id: string, name: string } | null, scorecard?: Array<Array<{ __typename?: 'ScoreBlock', playerName: string, tricksBid: number, tricksWon: number, bidPoints: number, bonusPoints: number, totalPoints: number }>> | null } | null };
 
 export type AddPlayerMutationVariables = Exact<{
   gameId: Scalars['String'];
@@ -263,18 +265,18 @@ export type AddPlayerMutation = { __typename?: 'Mutation', addPlayer: string };
 
 export type LobbyQueryQueryVariables = Exact<{
   gameId: Scalars['String'];
-  playerToken?: Maybe<Scalars['String']>;
+  playerToken?: InputMaybe<Scalars['String']>;
 }>;
 
 
-export type LobbyQueryQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }> }> };
+export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
 
 export type PlayersQueryVariables = Exact<{
   gameId: Scalars['String'];
 }>;
 
 
-export type PlayersQuery = { __typename?: 'Query', state?: Maybe<{ __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }> }> };
+export type PlayersQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
 
 export type StartGameMutationVariables = Exact<{
   gameId: Scalars['String'];
@@ -606,6 +608,7 @@ export const CardsPlayedDocument = gql`
       id
       phase
       cardsPlayed {
+        id
         playerId
         card {
           __typename
@@ -664,6 +667,7 @@ export const PreviousHandDocument = gql`
         id
         trickColor
         cardsPlayed {
+          id
           playerId
           card {
             ...CardFragment

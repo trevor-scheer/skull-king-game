@@ -27,7 +27,7 @@ gql`
 
 export const Scorecard: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
-  const gameId = useGameId();
+  const gameId = useGameId() ?? ""; // TODO: hacky fallback
 
   // TODO: error handling
   const { data, loading } = useScorecardQuery({

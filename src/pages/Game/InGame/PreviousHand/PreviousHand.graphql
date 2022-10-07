@@ -7,6 +7,7 @@ query PreviousHand($gameId: String!, $playerToken: String!) {
         id
         trickColor
         cardsPlayed {
+          id
           playerId
           card {
             ...CardFragment

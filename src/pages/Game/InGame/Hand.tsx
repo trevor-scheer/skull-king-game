@@ -16,7 +16,7 @@ import "./Hand.scss";
 
 export const Hand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
-  const gameId = useGameId();
+  const gameId = useGameId() ?? ""; // TODO: hacky fallback
   const [justClicked, setJustClicked] = useState(false);
 
   // TODO: error handling
@@ -129,7 +129,6 @@ export const Hand: React.FunctionComponent = function () {
   if (loading) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
 
-  debugger;
   const sortedHand = [...(me?.hand!)].sort((a, b) => {
     return getSortOrder(a) - getSortOrder(b);
   });
