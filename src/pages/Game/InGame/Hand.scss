@@ -1,8 +1,15 @@
 .Hand {
-  padding: 10px;
-  height: 214px;
   &-playerHand {
+    padding-top: 5vh;
     display: flex;
     flex-direction: row;
+
+    & .Card:hover {
+      transform: translateY(-5%);
+    }
+
+    & .Card:not(:first-child) {
+      margin-left: -16vh;
+    }
   }
 }

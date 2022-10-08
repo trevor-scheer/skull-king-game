@@ -1,9 +1,14 @@
 .Card {
+  border-width: 1px;
+  border-color: lightgray;
+  border-style: solid;
+  border-radius: 2px;
+  background-color: white;
+  padding: 0.5vh;
+  height: 32vh;
+
   &-content {
-    height: 175px;
-    width: 125px;
-    padding: 5px;
-    margin: 10px;
+    height: 100%;
   }
 
   &-image {

@@ -15,6 +15,18 @@ export const client = new ApolloClient({
       PlayedCard: {
         keyFields: ["card", ["id"]],
       },
+      Player: {
+        fields: {
+          hand: {
+            merge(_existing, incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+    },
+    possibleTypes: {
+      Card: ["SpecialCard", "ColoredCard"],
     },
   }),
 });

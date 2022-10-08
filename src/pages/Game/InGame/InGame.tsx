@@ -50,7 +50,7 @@ export const InGame: React.FunctionComponent = function () {
   const { phase, myBid, leader } = data?.state?.currentRound ?? {};
   return (
     <div className="InGame">
-      <PlayedCards />
+      {phase === "play" && <PlayedCards />}
       <Hand />
       {phase === "bid" && (
         <>

@@ -1,5 +1,5 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import {
@@ -94,16 +94,16 @@ export const Hand: React.FunctionComponent = function () {
   const me = data?.state?.me;
   const myTurn = phase === "play" && playerTurn === me?.name;
 
-  useEffect(() => {
-    if (myTurn) {
-      const audio = new Audio("/audio/smb3_coin.wav");
-      try {
-        audio.play();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, [myTurn]);
+  // useEffect(() => {
+  //   if (myTurn) {
+  //     const audio = new Audio("/audio/smb3_coin.wav");
+  //     try {
+  //       audio.play();
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   }
+  // }, [myTurn]);
 
   function canPlayCard(card: CardType) {
     if (isSpecialCard(card)) return true;
@@ -135,7 +135,7 @@ export const Hand: React.FunctionComponent = function () {
 
   return (
     <div className="Hand">
-      <p>My hand (my bid: {currentRound?.myBid}):</p>
+      {phase === "play" && <p>My hand (my bid: {currentRound?.myBid}):</p>}
       <ul className="Hand-playerHand">
         {sortedHand.map((card) => {
           if (isColoredCard(card)) {

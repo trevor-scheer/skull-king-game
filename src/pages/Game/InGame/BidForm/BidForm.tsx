@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../../hooks/useGameId";
-import { useSubmitBidMutation, useRoundNumberQuery } from "../../../../types/graphqlTypes";
+import {
+  useSubmitBidMutation,
+  useRoundNumberQuery,
+} from "../../../../types/graphqlTypes";
+import "./BidForm.scss";
 
 export const BidForm: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -14,7 +18,7 @@ export const BidForm: React.FunctionComponent = function () {
   const { data, loading } = useRoundNumberQuery({
     variables: { gameId, playerToken: playerToken! },
     pollInterval: 2000,
-  })
+  });
 
   function handleSubmit(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -26,14 +30,14 @@ export const BidForm: React.FunctionComponent = function () {
     });
   }
 
-  useEffect(() => {
-    const audio = new Audio("/audio/smb3_coin.wav");
-    try {
-      audio.play();
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const audio = new Audio("/audio/smb3_coin.wav");
+  //   try {
+  //     audio.play();
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // }, []);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -43,11 +47,11 @@ export const BidForm: React.FunctionComponent = function () {
     ...new Array(data?.state?.currentRound?.roundNumber! + 1),
   ]).map((_, i) => i);
 
-
   return (
-    <div style={{display: "flex"}}>
+    <div className="BidForm">
       {roundNumber.map((count) => (
         <button
+          className="BidForm-button"
           id={String(count)}
           key={count}
           onClick={handleSubmit}
