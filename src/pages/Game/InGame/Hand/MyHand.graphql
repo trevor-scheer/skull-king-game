@@ -1,0 +1,27 @@
+query MyHand($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    me {
+      id
+      name
+      hand {
+        ... on SpecialCard {
+          id
+          type
+        }
+        ... on ColoredCard {
+          id
+          color
+          number
+        }
+      }
+    }
+    currentRound {
+      id
+      phase
+      playerTurn
+      trickColor
+      myBid
+    }
+  }
+}

@@ -1,38 +1,19 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
 import { useGameId } from "../../../hooks/useGameId";
+import {
+  usePlayersQuery,
+  useStartGameMutation,
+} from "../../../types/graphqlTypes";
 
 export const StartGame: React.FunctionComponent = function () {
   const gameId = useGameId();
 
-  const { loading, data } = useQuery(
-    gql`
-      query Players($gameId: String!) {
-        state(gameId: $gameId) {
-          id
-          players {
-            id
-            name
-          }
-        }
-      }
-    `,
-    { variables: { gameId } }
-  );
+  const { loading, data } = usePlayersQuery({ variables: { gameId: gameId! } });
+  const [startGame] = useStartGameMutation({ variables: { gameId: gameId! } });
 
-  const [startGame] = useMutation(
-    gql`
-      mutation StartGame($gameId: String!) {
-        startGame(gameId: $gameId)
-      }
-    `,
-    { variables: { gameId } }
-  );
+  const disabled = loading || (data?.state?.players?.length ?? 0) < 2;
 
   return (
-    <button
-      onClick={() => startGame()}
-      disabled={loading || data.state.players.length < 2}
-    >
+    <button onClick={() => startGame()} disabled={disabled}>
       Start Game
     </button>
   );

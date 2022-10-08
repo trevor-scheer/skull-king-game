@@ -1,48 +1,22 @@
-import { gql, useQuery } from "@apollo/client";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
-import { GameStateQuery } from "../../../types/graphqlTypes";
+import { useGameStateQuery } from "../../../types/graphqlTypes";
 import { AwaitingBids } from "./AwaitingBids";
-import { BidForm } from './BidForm/BidForm';
-import { Hand } from "./Hand";
-import { PlayedCards } from "./PlayedCards";
+import { BidForm } from "./BidForm/BidForm";
+import { Hand } from "./Hand/Hand";
+import { PlayedCards } from "./PlayedCards/PlayedCards";
 import { Scorecard } from "./Scorecard/Scorecard";
-import "./InGame.scss";
 import { PreviousHand } from "./PreviousHand/PreviousHand";
+import "./InGame.scss";
 
 export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
   // TODO: error handling
-  const { data, loading } = useQuery<GameStateQuery>(
-    gql`
-      query GameState($gameId: String!, $playerToken: String!) {
-        state(gameId: $gameId, playerToken: $playerToken) {
-          id
-          players {
-            id
-            name
-          }
-          me {
-            id
-            name
-          }
-          currentRound {
-            id
-            phase
-            leader
-            playerTurn
-            myBid
-          }
-        }
-      }
-    `,
-    {
-      variables: { gameId, playerToken },
-      pollInterval: 2000,
-    }
-  );
+  const { data, loading } = useGameStateQuery({
+    variables: { gameId: gameId!, playerToken: playerToken! },
+  });
 
   if (loading) return <div>Loading...</div>;
 

@@ -10,6 +10,11 @@ const devLink = new HttpLink({
 
 export const client = new ApolloClient({
   link: devLink,
+  defaultOptions: {
+    query: {
+      pollInterval: 2000,
+    },
+  },
   cache: new InMemoryCache({
     typePolicies: {
       PlayedCard: {

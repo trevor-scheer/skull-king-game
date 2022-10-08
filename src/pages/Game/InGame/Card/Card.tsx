@@ -7,7 +7,7 @@ export const Card: React.FunctionComponent<{
   card: CardType;
 }> = function ({ disabled, onClick, card }) {
   return (
-    <li className="Card">
+    <li className={`Card${disabled ? " Card-disabled" : ""}`}>
       <button
         className="Card-content"
         disabled={disabled}

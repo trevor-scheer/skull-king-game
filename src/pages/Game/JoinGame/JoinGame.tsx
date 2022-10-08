@@ -1,7 +1,7 @@
-import { gql, useMutation } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { useGameId } from "../../../hooks/useGameId";
 import { useLocalStorage } from "../../../hooks/useLocalStorage";
+import { useAddPlayerMutation } from "../../../types/graphqlTypes";
 
 export const JoinGame: React.FunctionComponent<{
   onJoin: (playerToken: string | null) => void;
@@ -13,17 +13,10 @@ export const JoinGame: React.FunctionComponent<{
   );
   const [name, updateName] = useState<string>(defaultName);
 
-  const [createPlayer, result] = useMutation(
-    gql`
-      mutation AddPlayer($gameId: String!, $name: String!) {
-        addPlayer(gameId: $gameId, name: $name)
-      }
-    `,
-    {
-      variables: { gameId, name },
-      onError: console.error,
-    }
-  );
+  const [createPlayer, result] = useAddPlayerMutation({
+    variables: { gameId: gameId!, name },
+    onError: console.error,
+  });
 
   useEffect(() => {
     if (result.data?.addPlayer) {

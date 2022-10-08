@@ -1,0 +1,7 @@
+mutation PlayColoredCard(
+  $gameId: String!
+  $playerToken: String!
+  $cardId: String!
+) {
+  playColoredCard(gameId: $gameId, playerToken: $playerToken, cardId: $cardId)
+}

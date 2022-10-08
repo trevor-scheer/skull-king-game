@@ -1,0 +1,26 @@
+query CardsPlayed($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    currentRound {
+      id
+      phase
+      cardsPlayed {
+        id
+        playerId
+        card {
+          __typename
+          ... on SpecialCard {
+            id
+            type
+            selection
+          }
+          ... on ColoredCard {
+            id
+            color
+            number
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,17 +1,16 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
 import { useState } from "react";
-import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
-import { useGameId } from "../../../hooks/useGameId";
+import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
+import { useGameId } from "../../../../hooks/useGameId";
 import {
   Card as CardType,
   ColoredCard,
-  MyHandQuery,
-  PlaySpecialCardMutation,
-  PlaySpecialCardMutationVariables,
   SpecialCard,
-} from "../../../types/graphqlTypes";
-import { isColoredCard, isSpecialCard } from "../../../utils";
-import { Card } from "./Card/Card";
+  useMyHandQuery,
+  usePlayColoredCardMutation,
+  usePlaySpecialCardMutation,
+} from "../../../../types/graphqlTypes";
+import { isColoredCard, isSpecialCard } from "../../../../utils";
+import { Card } from "../Card/Card";
 import "./Hand.scss";
 
 export const Hand: React.FunctionComponent = function () {
@@ -20,74 +19,12 @@ export const Hand: React.FunctionComponent = function () {
   const [justClicked, setJustClicked] = useState(false);
 
   // TODO: error handling
-  const { data, loading } = useQuery<MyHandQuery>(
-    gql`
-      query MyHand($gameId: String!, $playerToken: String!) {
-        state(gameId: $gameId, playerToken: $playerToken) {
-          id
-          me {
-            id
-            name
-            hand {
-              ... on SpecialCard {
-                id
-                type
-              }
-              ... on ColoredCard {
-                id
-                color
-                number
-              }
-            }
-          }
-          currentRound {
-            id
-            phase
-            playerTurn
-            trickColor
-            myBid
-          }
-        }
-      }
-    `,
-    {
-      variables: { gameId, playerToken },
-      pollInterval: 2000,
-    }
-  );
+  const { data, loading } = useMyHandQuery({
+    variables: { gameId, playerToken: playerToken! },
+  });
 
-  const [playSpecialCard] = useMutation<
-    PlaySpecialCardMutation,
-    PlaySpecialCardMutationVariables
-  >(gql`
-    mutation PlaySpecialCard(
-      $gameId: String!
-      $playerToken: String!
-      $cardId: String!
-      $selection: String
-    ) {
-      playSpecialCard(
-        gameId: $gameId
-        playerToken: $playerToken
-        cardId: $cardId
-        selection: $selection
-      )
-    }
-  `);
-
-  const [playColoredCard] = useMutation(gql`
-    mutation PlayColoredCard(
-      $gameId: String!
-      $playerToken: String!
-      $cardId: String!
-    ) {
-      playColoredCard(
-        gameId: $gameId
-        playerToken: $playerToken
-        cardId: $cardId
-      )
-    }
-  `);
+  const [playSpecialCard] = usePlaySpecialCardMutation();
+  const [playColoredCard] = usePlayColoredCardMutation();
 
   const currentRound = data?.state?.currentRound;
   const { phase, playerTurn, trickColor } = currentRound ?? {};

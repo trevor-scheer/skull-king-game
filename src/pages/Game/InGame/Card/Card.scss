@@ -7,6 +7,10 @@
   padding: 0.5vh;
   height: 32vh;
 
+  &-disabled {
+    color: gray;
+  }
+
   &-content {
     height: 100%;
   }

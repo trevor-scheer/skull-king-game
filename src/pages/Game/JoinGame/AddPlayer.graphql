@@ -1,0 +1,3 @@
+mutation AddPlayer($gameId: String!, $name: String!) {
+  addPlayer(gameId: $gameId, name: $name)
+}

@@ -1,45 +1,18 @@
-import { gql, useQuery } from "@apollo/client";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
-import { LobbyQueryQuery } from "../../../types/graphqlTypes";
+import { useLobbyQueryQuery } from "../../../types/graphqlTypes";
 import { JoinGame } from "../JoinGame/JoinGame";
 import { StartGame } from "../StartGame/StartGame";
 import "./Lobby.scss";
-
-// gql`
-//   query LobbyQuery($gameId: String!, $playerToken: String) {
-//     state(gameId: $gameId, playerToken: $playerToken) {
-//       id
-//       players {
-//         id
-//         name
-//       }
-//     }
-//   }
-// `;
 
 export const Lobby: React.FunctionComponent = function () {
   const gameId = useGameId() ?? ""; // TODO: hacky fallback
   const [playerToken, setToken] = usePlayerToken();
   const variables = { gameId, playerToken };
 
-  const { data, loading, error } = useQuery<LobbyQueryQuery>(
-    gql`
-      query LobbyQuery($gameId: String!, $playerToken: String) {
-        state(gameId: $gameId, playerToken: $playerToken) {
-          id
-          players {
-            id
-            name
-          }
-        }
-      }
-    `,
-    {
-      variables,
-      pollInterval: 2000,
-    }
-  );
+  const { data, loading, error } = useLobbyQueryQuery({
+    variables,
+  });
 
   function onJoin(playerToken: string | null) {
     if (!playerToken) return; // TODO: throw error?

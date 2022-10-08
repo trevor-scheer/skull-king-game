@@ -1,32 +1,18 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { GamesQuery, NewGameMutation } from "../types/graphqlTypes";
+import { useGamesQuery, useNewGameMutation } from "../../types/graphqlTypes";
 
 export function Home() {
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
 
-  const { data, loading, error } = useQuery<GamesQuery>(
-    gql`
-      query Games {
-        games
-      }
-    `
-  );
+  const { data, loading, error } = useGamesQuery();
 
   if (error) console.error(error);
 
-  const [createGame] = useMutation<NewGameMutation>(
-    gql`
-      mutation NewGame {
-        newGame
-      }
-    `,
-    { refetchQueries: ["Games"] }
-  );
+  const [createGame] = useNewGameMutation({ refetchQueries: ["Games"] });
 
   if (redirectTo) {
-    return <Navigate to={`/game/${redirectTo}`} />
+    return <Navigate to={`/game/${redirectTo}`} />;
   } else if (loading) {
     return <p>Loading...</p>;
   } else if (data?.games) {
@@ -47,7 +33,7 @@ export function Home() {
   } else {
     throw Error("unexpected missing data");
   }
-};
+}
 
 const GamesList: React.FunctionComponent<{ games: string[] }> = function ({
   games,
