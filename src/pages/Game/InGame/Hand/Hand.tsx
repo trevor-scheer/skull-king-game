@@ -104,43 +104,96 @@ export const Hand: React.FunctionComponent = function () {
             );
           } else if (isSpecialCard(card)) {
             return card.type === "tigress" ? (
-              <li key={card.id} style={{ zIndex: index }}>
-                Tigress
-                <button
-                  disabled={!myTurn || !canPlayCard(card) || justClicked}
-                  onClick={() => {
-                    debounceClick(() =>
-                      playSpecialCard({
-                        variables: {
-                          gameId,
-                          playerToken,
-                          cardId: card.id,
-                          selection: "escape",
-                        },
-                      })
-                    );
-                  }}
-                >
-                  Escape
-                </button>
-                <button
-                  disabled={!myTurn || !canPlayCard(card) || justClicked}
-                  onClick={() => {
-                    debounceClick(() =>
-                      playSpecialCard({
-                        variables: {
-                          gameId,
-                          playerToken,
-                          cardId: card.id,
-                          selection: "pirate",
-                        },
-                      })
-                    );
-                  }}
-                >
-                  Pirate
-                </button>
-              </li>
+              // <li key={card.id} style={{ zIndex: index }}>
+              //   Tigress
+              //   <button
+              //     disabled={!myTurn || !canPlayCard(card) || justClicked}
+              //     onClick={() => {
+              //       debounceClick(() =>
+              //         playSpecialCard({
+              //           variables: {
+              //             gameId,
+              //             playerToken,
+              //             cardId: card.id,
+              //             selection: "escape",
+              //           },
+              //         })
+              //       );
+              //     }}
+              //   >
+              //     Escape
+              //   </button>
+              //   <button
+              //     disabled={!myTurn || !canPlayCard(card) || justClicked}
+              //     onClick={() => {
+              //       debounceClick(() =>
+              //         playSpecialCard({
+              //           variables: {
+              //             gameId,
+              //             playerToken,
+              //             cardId: card.id,
+              //             selection: "pirate",
+              //           },
+              //         })
+              //       );
+              //     }}
+              //   >
+              //     Pirate
+              //   </button>
+              // </li>
+              <Card {...commonProps}>
+                <div className="Card-content">
+                  <button
+                    style={{
+                      position: "relative",
+                      top: "10px",
+                      left: "10px",
+                      height: "30px",
+                      width: "10px",
+                    }}
+                    disabled={!myTurn || !canPlayCard(card) || justClicked}
+                    onClick={() => {
+                      debounceClick(() =>
+                        playSpecialCard({
+                          variables: {
+                            gameId,
+                            playerToken,
+                            cardId: card.id,
+                            selection: "escape",
+                          },
+                        })
+                      );
+                    }}
+                  />
+                  <button
+                    style={{
+                      position: "relative",
+                      top: "10px",
+                      left: "30px",
+                      height: "30px",
+                      width: "10px",
+                    }}
+                    disabled={!myTurn || !canPlayCard(card) || justClicked}
+                    onClick={() => {
+                      debounceClick(() =>
+                        playSpecialCard({
+                          variables: {
+                            gameId,
+                            playerToken,
+                            cardId: card.id,
+                            selection: "pirate",
+                          },
+                        })
+                      );
+                    }}
+                  />
+                  <img
+                    className="Card-image"
+                    src={`/cards/${card.id}.jpg`}
+                    alt={"Tigress"}
+                  />
+                </div>
+              </Card>
             ) : (
               <Card
                 {...commonProps}

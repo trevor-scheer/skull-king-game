@@ -7,7 +7,8 @@ export const Card: React.FunctionComponent<{
   card: CardType;
   grayOut: boolean;
   index: number;
-}> = function ({ disabled, onClick, card, grayOut, index }) {
+  children?: React.ReactNode;
+}> = function ({ disabled, onClick, card, grayOut, index, children }) {
   const altText = (() => {
     switch (card.__typename) {
       case "ColoredCard":
@@ -22,22 +23,25 @@ export const Card: React.FunctionComponent<{
         return "";
     }
   })();
+
   return (
     <li
       className={`Card${grayOut ? " Card-disabled" : ""}`}
       style={{ zIndex: index }}
     >
-      <button
-        className="Card-content"
-        disabled={disabled}
-        onClick={() => onClick?.()}
-      >
-        <img
-          className="Card-image"
-          src={`/cards/${card.id}.jpg`}
-          alt={altText}
-        />
-      </button>
+      {children ?? (
+        <button
+          className="Card-content"
+          disabled={disabled}
+          onClick={() => onClick?.()}
+        >
+          <img
+            className="Card-image"
+            src={`/cards/${card.id}.jpg`}
+            alt={altText}
+          />
+        </button>
+      )}
     </li>
   );
 };
