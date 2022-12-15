@@ -7,7 +7,10 @@ import {
 export const StartGame: React.FunctionComponent = function () {
   const gameId = useGameId();
 
-  const { loading, data } = usePlayersQuery({ variables: { gameId: gameId! } });
+  const { loading, data } = usePlayersQuery({
+    variables: { gameId: gameId! },
+    pollInterval: 2000,
+  });
   const [startGame] = useStartGameMutation({ variables: { gameId: gameId! } });
 
   const disabled = loading || (data?.state?.players?.length ?? 0) < 2;

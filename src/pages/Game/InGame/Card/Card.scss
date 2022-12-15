@@ -2,13 +2,13 @@
   border-width: 1px;
   border-color: lightgray;
   border-style: solid;
-  border-radius: 2px;
+  border-radius: 6px;
   background-color: white;
   padding: 0.5vh;
   height: 32vh;
 
   &-disabled {
-    color: gray;
+    filter: contrast(0.5) brightness(0.9);
   }
 
   &-content {

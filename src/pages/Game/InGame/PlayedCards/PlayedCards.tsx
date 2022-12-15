@@ -11,6 +11,8 @@ export const PlayedCards: React.FunctionComponent = function () {
   // TODO: error handling
   const { data, loading } = useCardsPlayedQuery({
     variables: { gameId: gameId!, playerToken: playerToken! },
+    pollInterval: 2000,
+
   });
 
   const { phase, cardsPlayed } = data?.state?.currentRound ?? {};
@@ -23,8 +25,14 @@ export const PlayedCards: React.FunctionComponent = function () {
       <p>Cards played:</p>
       {phase === "play" && (
         <ol className="PlayedCards-cards">
-          {cardsPlayed.map(({ playerId, card }) => (
-            <Card card={card} disabled={true} key={playerId} />
+          {cardsPlayed.map(({ playerId, card }, index) => (
+            <Card
+              card={card}
+              disabled={true}
+              grayOut={false}
+              key={playerId}
+              index={index}
+            />
           ))}
         </ol>
       )}

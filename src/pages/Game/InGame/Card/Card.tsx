@@ -5,7 +5,9 @@ export const Card: React.FunctionComponent<{
   disabled: boolean;
   onClick?: Function;
   card: CardType;
-}> = function ({ disabled, onClick, card }) {
+  grayOut: boolean;
+  index: number;
+}> = function ({ disabled, onClick, card, grayOut, index }) {
   const altText = (() => {
     switch (card.__typename) {
       case "ColoredCard":
@@ -21,7 +23,10 @@ export const Card: React.FunctionComponent<{
     }
   })();
   return (
-    <li className={`Card${disabled ? " Card-disabled" : ""}`}>
+    <li
+      className={`Card${grayOut ? " Card-disabled" : ""}`}
+      style={{ zIndex: index }}
+    >
       <button
         className="Card-content"
         disabled={disabled}

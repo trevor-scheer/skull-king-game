@@ -13,6 +13,7 @@ export function Game() {
   // TODO: error handling
   const { data, loading } = useGamePhaseQuery({
     variables: { gameId },
+    pollInterval: 2000,
   });
 
   if (loading) return <div>Loading...</div>;

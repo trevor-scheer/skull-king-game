@@ -10,11 +10,6 @@ const devLink = new HttpLink({
 
 export const client = new ApolloClient({
   link: devLink,
-  defaultOptions: {
-    query: {
-      pollInterval: 2000,
-    },
-  },
   cache: new InMemoryCache({
     typePolicies: {
       PlayedCard: {
@@ -23,6 +18,15 @@ export const client = new ApolloClient({
       Player: {
         fields: {
           hand: {
+            merge(_existing, incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+      Round: {
+        fields: {
+          cardsPlayed: {
             merge(_existing, incoming) {
               return incoming;
             },

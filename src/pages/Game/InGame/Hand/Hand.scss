@@ -1,5 +1,7 @@
 .Hand {
   &-playerHand {
+    // set height to match cards for when no cards are present
+    height: 34vh;
     padding-top: 5vh;
     display: flex;
     flex-direction: row;

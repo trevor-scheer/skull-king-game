@@ -21,10 +21,14 @@ export const Hand: React.FunctionComponent = function () {
   // TODO: error handling
   const { data, loading } = useMyHandQuery({
     variables: { gameId, playerToken: playerToken! },
+    pollInterval: 2000,
   });
 
   const [playSpecialCard] = usePlaySpecialCardMutation();
   const [playColoredCard] = usePlayColoredCardMutation();
+
+  if (loading) return <div>Loading...</div>;
+  if (!playerToken) return <div>No player token</div>;
 
   const currentRound = data?.state?.currentRound;
   const { phase, playerTurn, trickColor } = currentRound ?? {};
@@ -63,10 +67,7 @@ export const Hand: React.FunctionComponent = function () {
     fn().then(() => setJustClicked(false));
   }
 
-  if (loading) return <div>Loading...</div>;
-  if (!playerToken) return <div>No player token</div>;
-
-  const sortedHand = [...(me?.hand!)].sort((a, b) => {
+  const sortedHand = [...me?.hand!].sort((a, b) => {
     return getSortOrder(a) - getSortOrder(b);
   });
 
@@ -74,13 +75,20 @@ export const Hand: React.FunctionComponent = function () {
     <div className="Hand">
       {phase === "play" && <p>My hand (my bid: {currentRound?.myBid}):</p>}
       <ul className="Hand-playerHand">
-        {sortedHand.map((card) => {
+        {sortedHand.map((card, index) => {
+          const commonProps = {
+            key: card.id,
+            disabled: !myTurn || !canPlayCard(card) || justClicked,
+            grayOut:
+              phase === "play" &&
+              (!myTurn || !canPlayCard(card) || justClicked),
+            card,
+            index,
+          };
           if (isColoredCard(card)) {
             return (
               <Card
-                key={card.id}
-                disabled={!myTurn || !canPlayCard(card) || justClicked}
-                card={card}
+                {...commonProps}
                 onClick={() => {
                   debounceClick(() =>
                     playColoredCard({
@@ -96,7 +104,7 @@ export const Hand: React.FunctionComponent = function () {
             );
           } else if (isSpecialCard(card)) {
             return card.type === "tigress" ? (
-              <li key={card.id}>
+              <li key={card.id} style={{ zIndex: index }}>
                 Tigress
                 <button
                   disabled={!myTurn || !canPlayCard(card) || justClicked}
@@ -135,8 +143,7 @@ export const Hand: React.FunctionComponent = function () {
               </li>
             ) : (
               <Card
-                disabled={!myTurn || !canPlayCard(card) || justClicked}
-                card={card}
+                {...commonProps}
                 onClick={() => {
                   debounceClick(() =>
                     playSpecialCard({
@@ -144,7 +151,6 @@ export const Hand: React.FunctionComponent = function () {
                     })
                   );
                 }}
-                key={card.id}
               />
             );
           } else {

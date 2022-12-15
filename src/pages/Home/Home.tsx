@@ -5,7 +5,7 @@ import { useGamesQuery, useNewGameMutation } from "../../types/graphqlTypes";
 export function Home() {
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
 
-  const { data, loading, error } = useGamesQuery();
+  const { data, loading, error } = useGamesQuery({ pollInterval: 2000 });
 
   if (error) console.error(error);
 
