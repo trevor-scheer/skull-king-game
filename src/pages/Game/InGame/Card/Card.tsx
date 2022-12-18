@@ -37,7 +37,9 @@ export const Card: React.FunctionComponent<{
         >
           <img
             className="Card-image"
-            src={`/cards/${card.id}.jpg`}
+            src={`/cards/${card.id}${
+              "selection" in card ? "-" + card.selection : ""
+            }.jpg`}
             alt={altText}
           />
         </button>

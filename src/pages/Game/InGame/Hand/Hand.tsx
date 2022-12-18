@@ -142,14 +142,14 @@ export const Hand: React.FunctionComponent = function () {
               //   </button>
               // </li>
               <Card {...commonProps}>
-                <div className="Card-content">
+                <div className="Card-content" style={{ position: "relative" }}>
                   <button
                     style={{
-                      position: "relative",
-                      top: "10px",
-                      left: "10px",
-                      height: "30px",
-                      width: "10px",
+                      position: "absolute",
+                      left: "5%",
+                      height: "20%",
+                      width: "12%",
+                      cursor: "pointer",
                     }}
                     disabled={!myTurn || !canPlayCard(card) || justClicked}
                     onClick={() => {
@@ -167,11 +167,11 @@ export const Hand: React.FunctionComponent = function () {
                   />
                   <button
                     style={{
-                      position: "relative",
-                      top: "10px",
-                      left: "30px",
-                      height: "30px",
-                      width: "10px",
+                      position: "absolute",
+                      left: "18%",
+                      height: "20%",
+                      width: "12%",
+                      cursor: "pointer",
                     }}
                     disabled={!myTurn || !canPlayCard(card) || justClicked}
                     onClick={() => {
