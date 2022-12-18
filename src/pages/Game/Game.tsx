@@ -4,6 +4,7 @@ import { useGameId } from "../../hooks/useGameId";
 import { useGamePhaseQuery } from "../../types/graphqlTypes";
 import { InGame } from "./InGame/InGame";
 import { Lobby } from "./Lobby/Lobby";
+import { PostGame } from "./PostGame/PostGame";
 import { Spectator } from "./Spectator/Spectator";
 
 export function Game() {
@@ -24,6 +25,8 @@ export function Game() {
   }
 
   if (data.state.phase === "setup") return <Lobby />;
+
+  if (data.state.phase === "postgame") return <PostGame />;
 
   return playerToken ? <InGame /> : <Spectator />;
 }

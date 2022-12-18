@@ -104,43 +104,6 @@ export const Hand: React.FunctionComponent = function () {
             );
           } else if (isSpecialCard(card)) {
             return card.type === "tigress" ? (
-              // <li key={card.id} style={{ zIndex: index }}>
-              //   Tigress
-              //   <button
-              //     disabled={!myTurn || !canPlayCard(card) || justClicked}
-              //     onClick={() => {
-              //       debounceClick(() =>
-              //         playSpecialCard({
-              //           variables: {
-              //             gameId,
-              //             playerToken,
-              //             cardId: card.id,
-              //             selection: "escape",
-              //           },
-              //         })
-              //       );
-              //     }}
-              //   >
-              //     Escape
-              //   </button>
-              //   <button
-              //     disabled={!myTurn || !canPlayCard(card) || justClicked}
-              //     onClick={() => {
-              //       debounceClick(() =>
-              //         playSpecialCard({
-              //           variables: {
-              //             gameId,
-              //             playerToken,
-              //             cardId: card.id,
-              //             selection: "pirate",
-              //           },
-              //         })
-              //       );
-              //     }}
-              //   >
-              //     Pirate
-              //   </button>
-              // </li>
               <Card {...commonProps}>
                 <div className="Card-content" style={{ position: "relative" }}>
                   <button
