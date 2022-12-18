@@ -80,6 +80,7 @@ const typeDefs = gql`
   }
 
   type PlayedCard {
+    id: String!
     playerId: String!
     card: Card!
   }

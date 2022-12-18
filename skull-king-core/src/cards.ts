@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto";
-
 export type Card = ColoredCard | SpecialCard;
 
 export type Color = "YELLOW" | "GREEN" | "PURPLE" | "BLACK";

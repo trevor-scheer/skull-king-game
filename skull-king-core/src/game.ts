@@ -25,6 +25,7 @@ export interface Hand {
 }
 
 export interface PlayedCard {
+  id: string;
   playerId: string;
   card: Card;
 }
@@ -176,7 +177,11 @@ export class Game {
     // Set the trick color if necessary
     this.maybeSetTrickColor(card);
 
-    this.currentRound.cardsPlayed.push({ playerId, card });
+    this.currentRound.cardsPlayed.push({
+      id: `${playerId}-${card.id}`,
+      playerId,
+      card,
+    });
 
     this.maybeEndHand();
   }
@@ -274,7 +279,7 @@ export class Game {
             ? nextCard
             : highestCard;
         },
-        { playerId: "", card: { id: "", number: 0, color: "BLACK" } }
+        { id: "", playerId: "", card: { id: "", number: 0, color: "BLACK" } }
       );
 
       return winningCard;
@@ -294,7 +299,7 @@ export class Game {
             ? nextCard
             : highestCard;
         },
-        { playerId: "", card: { id: "", number: 0, color: trickColor } }
+        { id: "", playerId: "", card: { id: "", number: 0, color: trickColor } }
       );
       return winningCard;
     }

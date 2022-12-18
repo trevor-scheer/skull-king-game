@@ -29,60 +29,29 @@ const resolvers: Config["resolvers"] = {
     startGame(_, { gameId }, { games }) {
       const game: Game = games.get(gameId);
       game.start();
-      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
-      //   state: game.getStateForPlayer(),
-      // });
       return true;
     },
     addPlayer(_, { gameId, name }, { games }) {
       const game: Game = games.get(gameId);
       const token = game.addPlayer(name);
-
-      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
-      //   state: game.getStateForPlayer(),
-      // });
-
       return token;
     },
     submitBid(_, { gameId, playerToken, count }, { games }) {
       const game: Game = games.get(gameId);
       game.submitBid({ playerToken, count });
-      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
-      //   state: game.getStateForPlayer(playerToken),
-      // });
       return true;
     },
     playColoredCard(_, { gameId, playerToken, cardId }, { games }) {
       const game: Game = games.get(gameId);
       game.playCard({ playerToken, cardId });
-      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
-      //   state: game.getStateForPlayer(playerToken),
-      // });
       return true;
     },
     playSpecialCard(_, { gameId, playerToken, cardId, selection }, { games }) {
       const game: Game = games.get(gameId);
       game.playCard({ playerToken, cardId, selection });
-      // pubSub.publish(`GAME_UPDATED_${gameId}`, {
-      //   state: game.getStateForPlayer(playerToken),
-      // });
       return true;
     },
   },
-  // Subscription: {
-  //   hello: {
-  //     subscribe: async function* () {
-  //       yield { hello: "Hello World!" };
-  //     },
-  //   },
-  //   state: {
-  //     subscribe(_, { gameId, playerToken }) {
-  //       console.log(gameId, playerToken);
-  //       const asyncIterator = pubSub.asyncIterator(`GAME_UPDATED_${gameId}`);
-  //       return asyncIterator;
-  //     },
-  //   },
-  // },
   Card: {
     __resolveType(card: Card) {
       return isSpecialCard(card) ? "SpecialCard" : "ColoredCard";

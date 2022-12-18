@@ -31,29 +31,4 @@ import typeDefs from "./typeDefs";
       📭  Query at https://studio.apollographql.com/dev
     `);
   });
-
-  // const subscriptionServer = SubscriptionServer.create(
-  //   {
-  //     // This is the `schema` created in Step 6 above.
-  //     schema,
-  //     // These were imported from `graphql` in Step 5 above.
-  //     execute,
-  //     subscribe,
-  //     async onConnect(
-  //       headers: any,
-  //       _socket: WebSocket,
-  //       connectionContext: ConnectionContext
-  //     ) {
-  //       // console.log(headers);
-  //       return { games, ...headers };
-  //     },
-  //   },
-  //   {
-  //     // This is the `httpServer` created in Step 9 above.
-  //     server: wsServer,
-
-  //     // This `server` is the instance returned from `new ApolloServer`.
-  //     path: server.graphqlPath,
-  //   }
-  // );
 })();
