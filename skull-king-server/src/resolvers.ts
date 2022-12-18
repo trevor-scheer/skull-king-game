@@ -23,6 +23,9 @@ const resolvers: Config["resolvers"] = {
     newGame(_, __, context) {
       const id = randomUUID();
       const game = new Game(id);
+      game.onGameEnd(() => {
+        setTimeout(() => context.games.delete(id), 1000 * 60 * 10);
+      });
       context.games.set(id, game);
       return id;
     },

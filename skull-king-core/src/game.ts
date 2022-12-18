@@ -40,6 +40,7 @@ export class Game {
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
   private currentRound: Round;
+  private endGameListeners: (() => void)[] = [];
 
   constructor(id: string, options?: GameOptions) {
     this.id = id;
@@ -61,6 +62,10 @@ export class Game {
       tricksWon: new Map(),
       hands: [],
     };
+  }
+
+  public onGameEnd(listener: () => void) {
+    this.endGameListeners.push(listener);
   }
 
   public addPlayer(name: string) {
@@ -356,7 +361,7 @@ export class Game {
     assert(
       this.currentRound,
       "Programming error: `currentRound` is unexpectedly `null`"
-      );
+    );
     // We can use cards played so far to determine whose turn it is
     const { cardsPlayed } = this.currentRound;
     // Number of cards played correlates to the index of the player whose turn it is from the order array
@@ -447,6 +452,7 @@ export class Game {
 
   private endGame() {
     this.phase = "postgame";
+    this.endGameListeners.forEach((listener) => listener());
   }
 
   public getStateForPlayer(playerToken?: string) {
