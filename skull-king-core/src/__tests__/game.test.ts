@@ -373,8 +373,8 @@ describe("Game", () => {
     it("doesn't accept bids or plays after the 10th round", () => {
       const { game } = gameAfterTenthRound();
 
-      expect(game.__debugDump().scorecard.getPlayerScore("Trevor")).toBe(-310);
-      expect(game.__debugDump().scorecard.getPlayerScore("Seth")).toBe(-250);
+      expect(game.__debugDump().scorecard?.getPlayerScore("Trevor")).toBe(-310);
+      expect(game.__debugDump().scorecard?.getPlayerScore("Seth")).toBe(-250);
 
     });
   });
