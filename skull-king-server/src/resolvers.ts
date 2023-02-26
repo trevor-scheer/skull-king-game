@@ -1,11 +1,9 @@
-import type { Config } from "apollo-server";
+import type { ApolloServerOptions } from "@apollo/server";
 import { Game, Card, isSpecialCard } from "@skull-king/core";
 import { randomUUID } from "crypto";
+import { Context } from ".";
 
-interface Context {
-  games: Map<string, Game>;
-}
-const resolvers: Config["resolvers"] = {
+const resolvers: ApolloServerOptions<Context>["resolvers"] = {
   Query: {
     players(_, { gameId }, { games }: Context) {
       const game = games.get(gameId);
@@ -30,27 +28,32 @@ const resolvers: Config["resolvers"] = {
       return id;
     },
     startGame(_, { gameId }, { games }) {
-      const game: Game = games.get(gameId);
+      const game = games.get(gameId);
+      assertGame(game, gameId);
       game.start();
       return true;
     },
     addPlayer(_, { gameId, name }, { games }) {
-      const game: Game = games.get(gameId);
+      const game = games.get(gameId);
+      assertGame(game, gameId);
       const token = game.addPlayer(name);
       return token;
     },
     submitBid(_, { gameId, playerToken, count }, { games }) {
-      const game: Game = games.get(gameId);
+      const game = games.get(gameId);
+      assertGame(game, gameId);
       game.submitBid({ playerToken, count });
       return true;
     },
     playColoredCard(_, { gameId, playerToken, cardId }, { games }) {
-      const game: Game = games.get(gameId);
+      const game = games.get(gameId);
+      assertGame(game, gameId);
       game.playCard({ playerToken, cardId });
       return true;
     },
     playSpecialCard(_, { gameId, playerToken, cardId, selection }, { games }) {
-      const game: Game = games.get(gameId);
+      const game = games.get(gameId);
+      assertGame(game, gameId);
       game.playCard({ playerToken, cardId, selection });
       return true;
     },
@@ -61,5 +64,11 @@ const resolvers: Config["resolvers"] = {
     },
   },
 };
+
+function assertGame(game: Game | undefined, gameId?: string): asserts game {
+  if (!game) {
+    throw Error(`No game found with ID: ${gameId}`);
+  }
+}
 
 export default resolvers;

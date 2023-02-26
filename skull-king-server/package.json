@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@skull-king/core": "1.0.1",
-    "apollo-server": "3.x",
+    "@apollo/server": "4.x",
     "graphql": "16.x"
   }
 }

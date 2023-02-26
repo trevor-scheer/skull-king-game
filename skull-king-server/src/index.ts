@@ -1,17 +1,19 @@
-import { ApolloServer } from "apollo-server";
-import { Game } from "@skull-king/core";
+import {  ApolloServer } from "@apollo/server";
+import {  startStandaloneServer } from "@apollo/server/standalone";
+import {  Game } from "@skull-king/core";
 import resolvers from "./resolvers";
 import typeDefs from "./typeDefs";
 
-(async function () {
-  const games: Map<number, Game> = new Map();
+export interface Context {
+  games: Map<string, Game>;
+}
 
-  const server = new ApolloServer({
+(async function () {
+  const games: Map<string, Game> = new Map();
+
+  const server = new ApolloServer<Context>({
     typeDefs,
     resolvers,
-    context() {
-      return { games };
-    },
     introspection: true,
     plugins: [
       {
@@ -25,10 +27,18 @@ import typeDefs from "./typeDefs";
       },
     ],
   });
-  server.listen({ port: process.env.PORT || 4000 }).then(({ url }) => {
-    console.log(`
-      🚀  Server is ready at ${url}
-      📭  Query at https://studio.apollographql.com/dev
-    `);
+
+  const { url } = await startStandaloneServer(server, {
+    async context() {
+      return { games };
+    },
+    listen: {
+      port: Number(process.env.PORT ?? 4000)
+    }
   });
+
+  console.log(`
+    🚀  Server is ready at ${url}
+    📭  Query at https://studio.apollographql.com/dev
+  `);
 })();

@@ -1,6 +1,4 @@
-import { gql } from "apollo-server-core";
-
-const typeDefs = gql`
+const typeDefs = `#graphql
   type Query {
     players(gameId: String!): String!
     games: [String!]!
