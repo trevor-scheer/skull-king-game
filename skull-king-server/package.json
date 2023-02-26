@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@skull-king/core": "file:../skull-king-core",
+    "@skull-king/core": "1.0.1",
     "apollo-server": "3.x",
     "graphql": "16.x"
   }
