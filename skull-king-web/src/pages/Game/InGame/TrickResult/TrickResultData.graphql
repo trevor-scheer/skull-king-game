@@ -1,0 +1,46 @@
+query TrickResultData($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    currentRound {
+      id
+      phase
+      lastCompletedHand {
+        id
+        cardsPlayed {
+          id
+          playerId
+          card {
+            __typename
+            ... on SpecialCard {
+              id
+              type
+              selection
+            }
+            ... on ColoredCard {
+              id
+              color
+              number
+            }
+          }
+        }
+        winningCard {
+          id
+          playerId
+          card {
+            __typename
+            ... on SpecialCard {
+              id
+              type
+              selection
+            }
+            ... on ColoredCard {
+              id
+              color
+              number
+            }
+          }
+        }
+      }
+    }
+  }
+}

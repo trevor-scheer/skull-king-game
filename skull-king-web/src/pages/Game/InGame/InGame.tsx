@@ -7,6 +7,7 @@ import { GameTable } from "./GameTable/GameTable";
 import { Hand } from "./Hand/Hand";
 import { PlayedCards } from "./PlayedCards/PlayedCards";
 import { Scorecard } from "./Scorecard/Scorecard";
+import { TrickResult } from "./TrickResult/TrickResult";
 import "./InGame.scss";
 
 // Extended type for currentRound with fields that may not be in generated types yet
@@ -49,6 +50,7 @@ export const InGame: React.FunctionComponent = function () {
       >
         {/* Center content based on game phase */}
         {phase === "play" && <PlayedCards />}
+        {phase === "trick_result" && <TrickResult />}
         {phase === "bid" && (
           <div className="InGame-bidPhase">
             <p className="InGame-leaderInfo">

@@ -7,7 +7,7 @@ import { randomUUID } from "crypto";
 
 export interface Round {
   roundNumber: number;
-  phase: "bid" | "play";
+  phase: "bid" | "play" | "trick_result";
   bids: Map<string, number>;
   cardsPlayed: PlayedCard[];
   dealer: number;
@@ -15,6 +15,7 @@ export interface Round {
   trickColor: Color | null;
   tricksWon: Map<string, Card[][]>;
   hands: Hand[];
+  lastCompletedHand: Hand | null;
 }
 
 export interface Hand {
@@ -61,6 +62,7 @@ export class Game {
       trickColor: null,
       tricksWon: new Map(),
       hands: [],
+      lastCompletedHand: null,
     };
   }
 
@@ -208,10 +210,10 @@ export class Game {
       this.currentRound,
       "Programming error: `currentRound` is unexpectedly `null`"
     );
-    const { cardsPlayed, roundNumber, tricksWon } = this.currentRound;
+    const { cardsPlayed, tricksWon } = this.currentRound;
     if (cardsPlayed.length < this.players.length) return;
 
-    // End hand
+    // End hand - determine winner and store result
     const trickWinner = this.determineWinningCard();
     const playersTricks = tricksWon.get(trickWinner.playerId);
     const cardsInTrick = cardsPlayed.map(({ card }) => card);
@@ -221,26 +223,49 @@ export class Game {
       playersTricks.push(cardsInTrick);
     }
 
-    this.currentRound.hands = [
-      ...this.currentRound.hands,
-      {
-        id: randomUUID(),
-        trickColor: this.currentRound.trickColor,
-        cardsPlayed: this.currentRound.cardsPlayed,
-        winningCard: trickWinner,
-      },
-    ];
+    // Store the completed hand for display during trick_result phase
+    const completedHand: Hand = {
+      id: randomUUID(),
+      trickColor: this.currentRound.trickColor,
+      cardsPlayed: this.currentRound.cardsPlayed,
+      winningCard: trickWinner,
+    };
 
-    this.currentRound.trickColor = null;
-    this.currentRound.cardsPlayed = [];
+    this.currentRound.hands = [...this.currentRound.hands, completedHand];
+    this.currentRound.lastCompletedHand = completedHand;
     this.currentRound.leader = this.players.findIndex(
       (player) => player.name === trickWinner.playerId
     );
 
-    // end round
+    // Transition to trick_result phase so players can see who won
+    this.currentRound.phase = "trick_result";
+  }
+
+  // Advance from trick_result phase to continue the game
+  public advanceFromTrickResult() {
+    assert(
+      this.currentRound,
+      "Programming error: `currentRound` is unexpectedly `null`"
+    );
+    assert(
+      this.currentRound.phase === "trick_result",
+      "Can only advance from trick_result phase"
+    );
+
+    const { roundNumber, tricksWon } = this.currentRound;
+
+    // Clear the trick for the next hand
+    this.currentRound.trickColor = null;
+    this.currentRound.cardsPlayed = [];
+    this.currentRound.lastCompletedHand = null;
+
+    // Check if round is complete
     if (Array.from(tricksWon.values()).flat().length === roundNumber) {
       this.updateScores();
       this.nextRound();
+    } else {
+      // Continue to next trick
+      this.currentRound.phase = "play";
     }
   }
 
@@ -401,6 +426,7 @@ export class Game {
       trickColor: null,
       tricksWon: new Map(),
       hands: [],
+      lastCompletedHand: null,
     };
 
     this.shuffle();
@@ -452,24 +478,25 @@ export class Game {
 
   private endGame() {
     this.phase = "postgame";
+    // Clear currentRound in postgame - game is over
+    (this as any).currentRound = null;
     this.endGameListeners.forEach((listener) => listener());
   }
 
   public getStateForPlayer(playerToken?: string) {
-    assert(
-      this.currentRound,
-      "Programming error: `currentRound` is unexpectedly `null`"
-    );
+    // In postgame, currentRound is null
+    const currentRoundData = this.currentRound ? {
+      ...this.currentRound,
+      id: this.currentRound.roundNumber,
+      myBid: undefined as number | undefined,
+      leader: this.players[this.currentRound.leader]?.name ?? null,
+      playerTurn: this.playerTurn(),
+    } : null;
+
     const gameState = {
       id: this.id,
       phase: this.phase,
-      currentRound: {
-        ...this.currentRound,
-        id: this.currentRound.roundNumber,
-        myBid: undefined as number | undefined,
-        leader: this.players[this.currentRound.leader]?.name ?? null,
-        playerTurn: this.playerTurn(),
-      },
+      currentRound: currentRoundData,
       scorecard: this.scorecard?.getScoreCard(),
       options: this.options,
       players: this.players.map((player) => ({
@@ -478,11 +505,17 @@ export class Game {
       })),
       me: undefined as Player | undefined,
     };
-    if (playerToken) {
+    if (playerToken && this.currentRound) {
       const playerName = this.playerTokens.get(playerToken);
       const me = this.players.find((player) => player.name === playerName)!;
       gameState.me = me;
-      gameState.currentRound.myBid = this.currentRound.bids.get(me.name);
+      if (currentRoundData) {
+        currentRoundData.myBid = this.currentRound.bids.get(me.name);
+      }
+    } else if (playerToken) {
+      const playerName = this.playerTokens.get(playerToken);
+      const me = this.players.find((player) => player.name === playerName)!;
+      gameState.me = me;
     }
 
     return gameState;

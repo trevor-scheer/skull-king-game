@@ -1,0 +1,3 @@
+mutation AdvanceTrick($gameId: String!) {
+  advanceTrick(gameId: $gameId)
+}

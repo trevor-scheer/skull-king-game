@@ -57,6 +57,12 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       game.playCard({ playerToken, cardId, selection });
       return true;
     },
+    advanceTrick(_, { gameId }, { games }) {
+      const game = games.get(gameId);
+      assertGame(game, gameId);
+      game.advanceFromTrickResult();
+      return true;
+    },
   },
   Card: {
     __resolveType(card: Card) {
