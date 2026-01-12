@@ -1,0 +1,39 @@
+query PreviousHand($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    currentRound {
+      id
+      hands {
+        id
+        trickColor
+        cardsPlayed {
+          id
+          playerId
+          card {
+            ...CardFragment
+          }
+        }
+        winningCard {
+          playerId
+          card {
+            ...CardFragment
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment CardFragment on Card {
+  __typename
+  ... on SpecialCard {
+    id
+    type
+    selection
+  }
+  ... on ColoredCard {
+    id
+    color
+    number
+  }
+}

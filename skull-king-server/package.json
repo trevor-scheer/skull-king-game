@@ -1,17 +1,14 @@
 {
   "name": "@skull-king/server",
   "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "Skull King GraphQL API server",
   "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
+  "author": "Trevor Scheer <trevor.scheer@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@skull-king/core": "1.0.1",
-    "@apollo/server": "4.x",
-    "graphql": "16.x"
+    "@apollo/server": "^4.11.3",
+    "@skull-king/core": "workspace:*",
+    "graphql": "^16.10.0"
   }
 }

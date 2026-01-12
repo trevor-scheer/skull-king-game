@@ -1,0 +1,13 @@
+mutation PlaySpecialCard(
+  $gameId: String!
+  $playerToken: String!
+  $cardId: String!
+  $selection: String
+) {
+  playSpecialCard(
+    gameId: $gameId
+    playerToken: $playerToken
+    cardId: $cardId
+    selection: $selection
+  )
+}

@@ -1,0 +1,144 @@
+// ===========================================
+// SKULL KING - PIRATE THEME VARIABLES
+// ===========================================
+
+// -----------------------------
+// COLOR PALETTE
+// -----------------------------
+
+// Primary - Deep Ocean
+$color-ocean-dark: #0d1b2a;
+$color-ocean-medium: #1b3a4b;
+$color-ocean-light: #2d5a6b;
+
+// Secondary - Weathered Wood
+$color-wood-dark: #2c1810;
+$color-wood-medium: #4a3228;
+$color-wood-light: #6b4c3a;
+$color-wood-grain: #3d2817;
+
+// Accent - Gold & Treasure
+$color-gold-dark: #9a7b4f;
+$color-gold-medium: #d4a84b;
+$color-gold-light: #f4d03f;
+$color-gold-shine: #ffe66d;
+
+// Parchment & Paper
+$color-parchment-dark: #c9b896;
+$color-parchment-medium: #e8dcc4;
+$color-parchment-light: #f5f0e1;
+
+// Functional Colors
+$color-danger: #8b0000;
+$color-danger-light: #c41e3a;
+$color-success: #2d5a3d;
+$color-success-light: #4a8c5e;
+
+// Text Colors
+$color-text-light: #f5f0e1;
+$color-text-dark: #2c1810;
+$color-text-muted: #8b7355;
+
+// -----------------------------
+// CSS CUSTOM PROPERTIES (for runtime theming)
+// -----------------------------
+:root {
+  // Colors
+  --color-bg-primary: #{$color-wood-dark};
+  --color-bg-secondary: #{$color-wood-medium};
+  --color-bg-table: #{$color-wood-grain};
+
+  --color-accent-primary: #{$color-gold-medium};
+  --color-accent-secondary: #{$color-gold-light};
+  --color-accent-highlight: #{$color-gold-shine};
+
+  --color-surface: #{$color-parchment-medium};
+  --color-surface-light: #{$color-parchment-light};
+  --color-surface-dark: #{$color-parchment-dark};
+
+  --color-text-primary: #{$color-text-light};
+  --color-text-secondary: #{$color-text-muted};
+  --color-text-on-surface: #{$color-text-dark};
+
+  --color-danger: #{$color-danger};
+  --color-success: #{$color-success};
+
+  // Shadows
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.7);
+  --shadow-glow-gold: 0 0 20px rgba(212, 168, 75, 0.5);
+
+  // Border Radius
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-card: 8px;
+
+  // Spacing
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  // Card Dimensions
+  --card-width: 120px;
+  --card-height: 168px;
+  --card-width-sm: 80px;
+  --card-height-sm: 112px;
+  --card-width-lg: 150px;
+  --card-height-lg: 210px;
+
+  // Transitions
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+  --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  // Z-index layers
+  --z-base: 0;
+  --z-card: 10;
+  --z-card-hover: 20;
+  --z-ui: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+}
+
+// -----------------------------
+// TYPOGRAPHY
+// -----------------------------
+$font-display: 'Pirata One', cursive;
+$font-body: 'Crimson Text', Georgia, serif;
+$font-ui: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-base: 1rem;
+$font-size-lg: 1.25rem;
+$font-size-xl: 1.5rem;
+$font-size-2xl: 2rem;
+$font-size-3xl: 2.5rem;
+$font-size-4xl: 3rem;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// -----------------------------
+// BREAKPOINTS (desktop-first for now)
+// -----------------------------
+$breakpoint-xl: 1400px;
+$breakpoint-lg: 1200px;
+$breakpoint-md: 992px;
+$breakpoint-sm: 768px;
+
+// -----------------------------
+// TABLE LAYOUT
+// -----------------------------
+$table-size: min(85vh, 900px);
+$player-area-size: 180px;

@@ -1,42 +1,37 @@
 {
   "name": "skull-king-monorepo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Skull King card game monorepo",
   "engines": {
-    "node": "18.x",
-    "npm": "9.x"
+    "node": ">=18"
   },
+  "packageManager": "yarn@4.6.0",
   "scripts": {
-    "postinstall": "npm run build",
     "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./*/tsconfig*tsbuildinfo",
     "build": "tsc -b",
+    "build:web": "yarn workspace @skull-king/web build",
     "watch": "tsc -b -w",
     "test": "jest",
     "dev": "nodemon ./skull-king-server/dist/index.js",
+    "dev:web": "yarn workspace @skull-king/web dev",
     "start": "node ./skull-king-server/dist/index.js",
     "heroku": "node ./skull-king-server/dist/index.js",
-    "debug": "node --inspect-brk ./skull-king-server/dist/index.js"
+    "debug": "node --inspect-brk ./skull-king-server/dist/index.js",
+    "codegen": "yarn workspace @skull-king/web codegen"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "workspaces": [
     "skull-king-core",
-    "skull-king-server"
+    "skull-king-server",
+    "skull-king-web"
   ],
   "devDependencies": {
-    "@types/jest": "^29.4.0",
-    "@types/node": "^18.14.1",
-    "jest": "^29.4.3",
-    "nodemon": "^2.0.20",
-    "prettier": "^2.8.4",
-    "pretty-format": "^29.4.3",
-    "ts-jest": "^29.0.5",
-    "typescript": "^4.9.5"
-  },
-  "volta": {
-    "node": "18.14.2",
-    "npm": "9.5.1"
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.7",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.4.2",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.3"
   }
 }

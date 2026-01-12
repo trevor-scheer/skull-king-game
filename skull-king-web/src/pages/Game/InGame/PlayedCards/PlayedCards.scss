@@ -1,0 +1,150 @@
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/mixins' as *;
+
+.PlayedCards {
+  // Center play area container
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-lg);
+  min-width: 400px;
+  min-height: 280px;
+
+  // Semi-transparent container for cards
+  background: radial-gradient(
+    ellipse at center,
+    rgba($color-ocean-dark, 0.3) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+
+  // Header area
+  &-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+  }
+
+  &-title {
+    font-family: $font-display;
+    font-size: $font-size-xl;
+    @include gold-text;
+  }
+
+  &-count {
+    font-family: $font-body;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+
+  // Card list container
+  &-cards {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0;
+    list-style: none;
+    padding: var(--space-md);
+    position: relative;
+
+    // Fan layout with overlap
+    .PlayedCards-cardWrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform var(--transition-normal);
+
+      &:not(:first-child) {
+        margin-left: calc(var(--card-width) * -0.35);
+      }
+
+      // Stagger rotation for visual interest
+      @for $i from 1 through 8 {
+        &:nth-child(#{$i}) {
+          $rotation: ($i - 4.5) * 5deg;
+          transform: rotate($rotation);
+          z-index: $i;
+
+          // Entry animation
+          animation: card-play 0.4s ease-out backwards;
+          animation-delay: #{($i - 1) * 0.1}s;
+        }
+      }
+
+      &:hover {
+        transform: translateY(-10px) scale(1.05);
+        z-index: 20;
+      }
+    }
+
+    // Cards in play area
+    .Card {
+      box-shadow:
+        var(--shadow-card),
+        0 0 20px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Player label under each card
+  &-playerLabel {
+    margin-top: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba($color-wood-dark, 0.85);
+    border: 1px solid rgba($color-gold-dark, 0.3);
+    border-radius: var(--radius-sm);
+    font-family: $font-body;
+    font-size: $font-size-sm;
+    color: $color-text-light;
+    white-space: nowrap;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+
+  // Loading state
+  &--loading {
+    @include flex-center;
+    min-height: 200px;
+  }
+
+  &-loadingText {
+    font-family: $font-display;
+    font-size: $font-size-lg;
+    @include gold-text;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  // Empty state
+  &--empty {
+    @include flex-center;
+    min-height: 200px;
+  }
+
+  &-emptyText {
+    font-family: $font-body;
+    font-size: $font-size-lg;
+    color: $color-text-muted;
+    font-style: italic;
+  }
+}
+
+// Card play animation
+@keyframes card-play {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.8) rotate(0deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -1,0 +1,71 @@
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/mixins' as *;
+
+.Hand {
+  // Hand container at bottom of screen
+  position: relative;
+  width: 100%;
+
+  // Label styling
+  &-label {
+    font-family: $font-display;
+    font-size: $font-size-lg;
+    @include gold-text;
+    margin-bottom: var(--space-sm);
+    text-align: center;
+  }
+
+  &-playerHand {
+    // Fixed height to maintain layout when no cards
+    min-height: calc(var(--card-height) + var(--space-xl));
+    padding: var(--space-lg) var(--space-xl);
+
+    // Fan layout for cards
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+
+    // Card overlap
+    & .Card:not(:first-child) {
+      margin-left: calc(var(--card-width) * -0.55);
+    }
+
+    // Hover effects for playable cards
+    & .Card:not(.Card-disabled) {
+      cursor: pointer;
+
+      &:hover {
+        // Lift card up and increase shadow
+        transform: translateY(-20px) scale(1.05);
+        box-shadow: var(--shadow-card-hover);
+        z-index: 50 !important;
+
+        // Expand adjacent cards slightly on hover
+        & + .Card {
+          margin-left: calc(var(--card-width) * -0.45);
+        }
+      }
+
+      &:active {
+        transform: translateY(-15px) scale(1.02);
+      }
+    }
+
+    // Dealing animation - stagger cards
+    & .Card--dealing {
+      @for $i from 1 through 13 {
+        &:nth-child(#{$i}) {
+          animation-delay: #{$i * 0.08}s;
+        }
+      }
+    }
+  }
+
+  // Turn indicator
+  &--myTurn {
+    .Hand-label {
+      animation: turn-pulse 2s ease-in-out infinite;
+    }
+  }
+}

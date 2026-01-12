@@ -1,0 +1,158 @@
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/mixins' as *;
+
+.Scorecard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  margin-top: var(--space-xl);
+
+  // Parchment-style container
+  @include parchment-card;
+  max-width: 90vw;
+  overflow-x: auto;
+
+  &-header {
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    @include gold-text;
+    margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+
+    &::before,
+    &::after {
+      content: '☠';
+      font-size: $font-size-lg;
+    }
+  }
+
+  // Table styling
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 3px solid $color-wood-medium;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: rgba($color-parchment-light, 0.9);
+  }
+
+  th, td {
+    border: 1px solid rgba($color-wood-medium, 0.5);
+    padding: var(--space-sm);
+    text-align: center;
+  }
+
+  thead {
+    tr {
+      background: linear-gradient(
+        180deg,
+        $color-wood-medium 0%,
+        $color-wood-dark 100%
+      );
+    }
+  }
+
+  &-tableHeader {
+    padding: var(--space-sm) var(--space-md);
+    min-width: 100px;
+
+    &-content {
+      font-family: $font-display;
+      font-size: $font-size-base;
+      color: $color-text-light;
+      margin: 0;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color var(--transition-fast);
+
+      &:nth-child(odd) {
+        background: rgba($color-parchment-dark, 0.2);
+      }
+
+      &:hover {
+        background: rgba($color-gold-medium, 0.1);
+      }
+    }
+  }
+
+  &-roundNumberCell {
+    font-family: $font-display;
+    font-size: $font-size-lg;
+    @include gold-text;
+    padding: var(--space-sm);
+    background: rgba($color-wood-dark, 0.1);
+    min-width: 40px;
+  }
+
+  &-scoreCell {
+    padding: var(--space-xs);
+
+    &-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs);
+
+      &:first-child {
+        border-bottom: 1px dashed rgba($color-wood-medium, 0.3);
+        font-size: $font-size-sm;
+        color: $color-text-muted;
+      }
+    }
+
+    &-entry {
+      font-family: $font-body;
+      font-size: $font-size-sm;
+      color: $color-text-dark;
+      margin: 0;
+      padding: var(--space-xs);
+      min-width: 30px;
+    }
+
+    &-totalScore {
+      font-family: $font-display;
+      font-weight: $font-weight-bold;
+      background: linear-gradient(
+        135deg,
+        $color-gold-light 0%,
+        $color-gold-medium 100%
+      );
+      border: 2px solid $color-gold-dark;
+      border-radius: var(--radius-sm);
+      color: $color-text-dark;
+      padding: var(--space-xs) var(--space-sm);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: $breakpoint-md) {
+  .Scorecard {
+    padding: var(--space-md);
+
+    table {
+      font-size: $font-size-sm;
+    }
+
+    &-tableHeader {
+      min-width: 80px;
+      padding: var(--space-xs);
+    }
+
+    &-scoreCell-row {
+      flex-direction: column;
+      gap: 2px;
+    }
+  }
+}
