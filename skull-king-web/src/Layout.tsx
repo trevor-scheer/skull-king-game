@@ -5,13 +5,15 @@ import "./Layout.scss";
 export function Layout() {
   return (
     <PlayerTokenProvider>
-      <header className="Header">
-        <nav>
-          <Link to="/">Home</Link>
-        </nav>
-      </header>
-      <div className="Layout">
-        <Outlet />
+      <div className="App">
+        <header className="Header">
+          <nav>
+            <Link to="/">Skull King</Link>
+          </nav>
+        </header>
+        <div className="Layout">
+          <Outlet />
+        </div>
       </div>
     </PlayerTokenProvider>
   );

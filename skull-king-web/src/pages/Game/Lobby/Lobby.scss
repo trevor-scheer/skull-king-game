@@ -1,16 +1,90 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
 .Lobby {
-  margin: 10px;
-  padding: 10px;
+  @include flex-column-center;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+  max-width: 500px;
+  margin: 0 auto;
+  animation: fade-in-up 0.4s ease-out;
+
+  // Ship's manifest style
+  @include parchment-card;
 
   &-header {
-    font-weight: 500;
+    font-family: $font-display;
+    font-size: $font-size-3xl;
+    @include gold-text;
+    margin: 0;
+    text-align: center;
+
+    &::before {
+      content: '⚓ ';
+    }
+    &::after {
+      content: ' ⚓';
+    }
   }
 
   &-playerList {
-    margin: 10px 0;
-    padding: 10px;
-    list-style-position: inside;
-    border: 1px solid;
-    border-radius: 10px;
+    width: 100%;
+    padding: var(--space-md);
+    margin: 0;
+    list-style: none;
+    background: rgba($color-wood-dark, 0.05);
+    border: 2px solid rgba($color-wood-medium, 0.3);
+    border-radius: var(--radius-md);
+    min-height: 100px;
+
+    li {
+      font-family: $font-body;
+      font-size: $font-size-lg;
+      color: $color-text-dark;
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px dashed rgba($color-wood-medium, 0.3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      animation: slide-in-left 0.3s ease-out backwards;
+
+      @for $i from 1 through 8 {
+        &:nth-child(#{$i}) {
+          animation-delay: #{$i * 0.1}s;
+        }
+      }
+
+      &::before {
+        content: '☠';
+        font-size: $font-size-base;
+        color: $color-gold-medium;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    // Empty state
+    &:empty::after {
+      content: 'Waiting for crew members...';
+      display: block;
+      font-family: $font-body;
+      font-size: $font-size-base;
+      color: $color-text-muted;
+      font-style: italic;
+      text-align: center;
+      padding: var(--space-lg);
+    }
+  }
+
+  // Loading state
+  &-loading {
+    @include flex-center;
+    min-height: 200px;
+    font-family: $font-display;
+    font-size: $font-size-lg;
+    @include gold-text;
+    animation: pulse 2s ease-in-out infinite;
   }
 }

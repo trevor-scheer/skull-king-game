@@ -3,6 +3,7 @@ import {
   usePlayersQuery,
   useStartGameMutation,
 } from "../../../types/graphqlTypes";
+import "./StartGame.scss";
 
 export const StartGame: React.FunctionComponent = function () {
   const gameId = useGameId();
@@ -11,13 +12,27 @@ export const StartGame: React.FunctionComponent = function () {
     variables: { gameId: gameId! },
     pollInterval: 2000,
   });
-  const [startGame] = useStartGameMutation({ variables: { gameId: gameId! } });
+  const [startGame, { loading: starting }] = useStartGameMutation({
+    variables: { gameId: gameId! },
+  });
 
-  const disabled = loading || (data?.state?.players?.length ?? 0) < 2;
+  const playerCount = data?.state?.players?.length ?? 0;
+  const disabled = loading || starting || playerCount < 2;
 
   return (
-    <button onClick={() => startGame()} disabled={disabled}>
-      Start Game
-    </button>
+    <div className="StartGame">
+      <p className="StartGame-hint">
+        {playerCount < 2
+          ? `Need at least 2 players to set sail (${playerCount}/2)`
+          : `${playerCount} crew members ready!`}
+      </p>
+      <button
+        className="StartGame-button"
+        onClick={() => startGame()}
+        disabled={disabled}
+      >
+        {starting ? "Setting Sail..." : "Set Sail!"}
+      </button>
+    </div>
   );
 };

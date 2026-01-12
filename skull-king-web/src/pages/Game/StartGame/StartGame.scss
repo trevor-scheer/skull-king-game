@@ -1,0 +1,46 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.StartGame {
+  @include flex-column-center;
+  gap: var(--space-md);
+  width: 100%;
+
+  &-hint {
+    font-family: $font-body;
+    font-size: $font-size-base;
+    color: $color-text-dark;
+    margin: 0;
+  }
+
+  &-button {
+    @include button-primary;
+    width: 100%;
+    padding: var(--space-md) var(--space-xl);
+    font-size: $font-size-lg;
+    position: relative;
+    overflow: hidden;
+
+    // Shimmer effect when ready
+    &:not(:disabled)::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 2s ease-in-out infinite;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
