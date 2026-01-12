@@ -1,0 +1,9 @@
+query RoundNumber($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    currentRound {
+      id
+      roundNumber
+    }
+  }
+}

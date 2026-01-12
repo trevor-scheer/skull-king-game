@@ -1,0 +1,63 @@
+{
+  "name": "skull-king-web",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "16.x",
+    "npm": "8.x"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.7.0",
+    "@testing-library/jest-dom": "^5.x",
+    "@testing-library/react": "^13.x",
+    "@testing-library/user-event": "^14.x",
+    "@types/jest": "^26.0.15",
+    "@types/node": "^12.0.0",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
+    "graphql": "^16.6.0",
+    "graphql-tag": "^2.12.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.4.1",
+    "react-scripts": "4.0.3",
+    "sass": "^1.55.0",
+    "subscriptions-transport-ws": "^0.11.0",
+    "typescript": "^4.8.4",
+    "web-vitals": "^1.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "codegen": "graphql-codegen --config codegen.yml"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "2.13.1",
+    "@graphql-codegen/typescript": "2.7.3",
+    "@graphql-codegen/typescript-document-nodes": "2.3.3",
+    "@graphql-codegen/typescript-operations": "2.5.3",
+    "@graphql-codegen/typescript-react-apollo": "3.3.3",
+    "@types/react-router-dom": "^5.3.3",
+    "ts-node": "^10.9.1"
+  }
+}

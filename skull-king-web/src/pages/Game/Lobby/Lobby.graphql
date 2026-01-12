@@ -1,0 +1,9 @@
+query LobbyQuery($gameId: String!, $playerToken: String) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    players {
+      id
+      name
+    }
+  }
+}

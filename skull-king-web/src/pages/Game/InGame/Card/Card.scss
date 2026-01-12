@@ -1,0 +1,21 @@
+.Card {
+  border-width: 1px;
+  border-color: lightgray;
+  border-style: solid;
+  border-radius: 6px;
+  background-color: white;
+  padding: 0.5vh;
+  height: 32vh;
+
+  &-disabled {
+    filter: contrast(0.5) brightness(0.9);
+  }
+
+  &-content {
+    height: 100%;
+  }
+
+  &-image {
+    height: 100%;
+  }
+}

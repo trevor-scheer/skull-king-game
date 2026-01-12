@@ -1,0 +1,9 @@
+query Players($gameId: String!) {
+  state(gameId: $gameId) {
+    id
+    players {
+      id
+      name
+    }
+  }
+}

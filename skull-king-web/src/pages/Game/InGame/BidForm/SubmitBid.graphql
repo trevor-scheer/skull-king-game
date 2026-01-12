@@ -1,0 +1,7 @@
+  mutation SubmitBid(
+    $gameId: String!
+    $playerToken: String!
+    $count: Int!
+  ) {
+    submitBid(gameId: $gameId, playerToken: $playerToken, count: $count)
+  }

@@ -1,0 +1,20 @@
+query GameState($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    players {
+      id
+      name
+    }
+    me {
+      id
+      name
+    }
+    currentRound {
+      id
+      phase
+      leader
+      playerTurn
+      myBid
+    }
+  }
+}
