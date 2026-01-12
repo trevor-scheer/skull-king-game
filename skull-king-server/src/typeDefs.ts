@@ -21,6 +21,7 @@ const typeDefs = `#graphql
       cardId: String!
       selection: String
     ): Boolean!
+    advanceTrick(gameId: String!): Boolean!
   }
 
   type Subscription {
@@ -68,6 +69,7 @@ const typeDefs = `#graphql
     trickColor: Color
     cardsPlayed: [PlayedCard!]!
     hands: [Hand!]!
+    lastCompletedHand: Hand
   }
 
   type Hand {
