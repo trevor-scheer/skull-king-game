@@ -1,5 +1,5 @@
 import type { ApolloServerOptions } from "@apollo/server";
-import { Game, Card, isSpecialCard } from "@skull-king/core";
+import { Game, Card, isSpecialCard, DeckConfiguration } from "@skull-king/core";
 import { randomUUID } from "crypto";
 import { Context } from ".";
 
@@ -18,9 +18,9 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
     },
   },
   Mutation: {
-    newGame(_, __, context) {
+    newGame(_, { deckConfig }: { deckConfig?: DeckConfiguration }, context) {
       const id = randomUUID();
-      const game = new Game(id);
+      const game = new Game(id, { deckConfig });
       game.onGameEnd(() => {
         setTimeout(() => context.games.delete(id), 1000 * 60 * 10);
       });

@@ -1,4 +1,4 @@
-import { Card, basicDeck } from "./cards";
+import { Card, basicDeck, buildDeck, DeckConfiguration } from "./cards";
 
 export class Deck {
   // A complete deck of cards - useful for restoring from. Do not modify.
@@ -9,7 +9,15 @@ export class Deck {
   private shuffleSeed: number | null;
 
   constructor(options?: DeckOptions) {
-    this.originalDeck = options?.customDeck ?? basicDeck;
+    // Priority: customDeck > deckConfig > basicDeck
+    if (options?.customDeck) {
+      this.originalDeck = options.customDeck;
+    } else if (options?.deckConfig) {
+      this.originalDeck = buildDeck(options.deckConfig);
+    } else {
+      this.originalDeck = basicDeck;
+    }
+
     this.cardMap = new Map(
       Object.entries(
         this.originalDeck.reduce((acc, card) => {
@@ -60,4 +68,5 @@ export class Deck {
 interface DeckOptions {
   shuffleSeed?: number;
   customDeck?: Card[];
+  deckConfig?: DeckConfiguration;
 }

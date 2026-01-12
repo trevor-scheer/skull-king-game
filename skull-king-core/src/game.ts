@@ -1,5 +1,5 @@
 import { Deck } from "./deck";
-import { Card, Color, isColoredCard, isSpecialCard } from "./cards";
+import { Card, Color, DeckConfiguration, isColoredCard, isSpecialCard } from "./cards";
 import { Player } from "./player";
 import { assert } from "./utils/assert";
 import { Scorecard } from "./scorecard";
@@ -23,6 +23,7 @@ export interface Hand {
   trickColor: Color | null;
   cardsPlayed: PlayedCard[];
   winningCard: PlayedCard | null;
+  trickDiscarded?: boolean;
 }
 
 export interface PlayedCard {
@@ -49,7 +50,7 @@ export class Game {
     this.players = [];
     this.playerNames = new Set();
     this.playerTokens = new Map();
-    this.deck = options?.deck ?? new Deck();
+    this.deck = options?.deck ?? new Deck({ deckConfig: options?.deckConfig });
     this.mode = options?.mode ?? "standard";
     this.phase = "setup";
     this.currentRound = {
@@ -214,13 +215,17 @@ export class Game {
     if (cardsPlayed.length < this.players.length) return;
 
     // End hand - determine winner and store result
-    const trickWinner = this.determineWinningCard();
-    const playersTricks = tricksWon.get(trickWinner.playerId);
-    const cardsInTrick = cardsPlayed.map(({ card }) => card);
-    if (!playersTricks) {
-      tricksWon.set(trickWinner.playerId, [cardsInTrick]);
-    } else {
-      playersTricks.push(cardsInTrick);
+    const { winner: trickWinner, trickDiscarded } = this.determineWinningCard();
+
+    // Only award the trick if it wasn't discarded (by Kraken or White Whale)
+    if (!trickDiscarded) {
+      const playersTricks = tricksWon.get(trickWinner.playerId);
+      const cardsInTrick = cardsPlayed.map(({ card }) => card);
+      if (!playersTricks) {
+        tricksWon.set(trickWinner.playerId, [cardsInTrick]);
+      } else {
+        playersTricks.push(cardsInTrick);
+      }
     }
 
     // Store the completed hand for display during trick_result phase
@@ -228,11 +233,13 @@ export class Game {
       id: randomUUID(),
       trickColor: this.currentRound.trickColor,
       cardsPlayed: this.currentRound.cardsPlayed,
-      winningCard: trickWinner,
+      winningCard: trickDiscarded ? null : trickWinner,
+      trickDiscarded,
     };
 
     this.currentRound.hands = [...this.currentRound.hands, completedHand];
     this.currentRound.lastCompletedHand = completedHand;
+    // The winner (or would-be winner for discarded tricks) leads the next trick
     this.currentRound.leader = this.players.findIndex(
       (player) => player.name === trickWinner.playerId
     );
@@ -252,15 +259,16 @@ export class Game {
       "Can only advance from trick_result phase"
     );
 
-    const { roundNumber, tricksWon } = this.currentRound;
+    const { roundNumber, hands } = this.currentRound;
 
     // Clear the trick for the next hand
     this.currentRound.trickColor = null;
     this.currentRound.cardsPlayed = [];
     this.currentRound.lastCompletedHand = null;
 
-    // Check if round is complete
-    if (Array.from(tricksWon.values()).flat().length === roundNumber) {
+    // Check if round is complete (based on number of hands played, not tricks won,
+    // since Kraken/White Whale can discard tricks)
+    if (hands.length === roundNumber) {
       this.updateScores();
       this.nextRound();
     } else {
@@ -269,79 +277,155 @@ export class Game {
     }
   }
 
-  private determineWinningCard() {
+  private determineWinningCard(): { winner: PlayedCard; trickDiscarded: boolean } {
     assert(
       this.currentRound,
       "Programming error: `currentRound` is unexpectedly `null`"
     );
     const { cardsPlayed, trickColor } = this.currentRound;
 
-    // TODO: DRY with below
+    // Helper to check if a card is an "escape-like" card
+    const isEscapeLike = (card: Card) =>
+      isSpecialCard(card) &&
+      (card.type === "escape" ||
+        card.type === "loot" ||
+        (card.type === "tigress" && card.selection === "escape"));
+
+    // Helper to check if a card is a pirate-like card
+    const isPirateLike = (card: Card) =>
+      isSpecialCard(card) &&
+      (card.type === "pirate" ||
+        (card.type === "tigress" && card.selection === "pirate"));
+
+    // Check for Kraken and White Whale interaction
+    const krakenIndex = cardsPlayed.findIndex(
+      ({ card }) => isSpecialCard(card) && card.type === "kraken"
+    );
+    const whiteWhaleIndex = cardsPlayed.findIndex(
+      ({ card }) => isSpecialCard(card) && card.type === "whiteWhale"
+    );
+
+    // If both Kraken and White Whale are played, only the second one's effect applies
+    const krakenActive = krakenIndex > -1 && (whiteWhaleIndex === -1 || krakenIndex > whiteWhaleIndex);
+    const whiteWhaleActive = whiteWhaleIndex > -1 && (krakenIndex === -1 || whiteWhaleIndex > krakenIndex);
+
+    // Kraken discards the trick - the "winner" would have been determined by normal rules
+    if (krakenActive) {
+      // Determine who would have won without the Kraken
+      const cardsWithoutKraken = cardsPlayed.filter(
+        ({ card }) => !(isSpecialCard(card) && card.type === "kraken")
+      );
+      if (cardsWithoutKraken.length === 0) {
+        // Only Kraken was played - Kraken player leads next
+        return { winner: cardsPlayed[krakenIndex], trickDiscarded: true };
+      }
+      // Recursively determine winner without Kraken, then discard
+      const wouldHaveWon = this.determineWinnerFromCards(cardsWithoutKraken, trickColor);
+      return { winner: wouldHaveWon, trickDiscarded: true };
+    }
+
+    // White Whale: all special cards become escapes, highest number wins regardless of suit
+    if (whiteWhaleActive) {
+      const numberedCards = cardsPlayed.filter(({ card }) => isColoredCard(card));
+      if (numberedCards.length === 0) {
+        // Only special cards played - trick discarded, White Whale player leads
+        return { winner: cardsPlayed[whiteWhaleIndex], trickDiscarded: true };
+      }
+      // Highest numbered card wins regardless of suit
+      const winner = numberedCards.reduce((highest, current) => {
+        assert(isColoredCard(highest.card) && isColoredCard(current.card), "Programming error");
+        return current.card.number > highest.card.number ? current : highest;
+      });
+      return { winner, trickDiscarded: false };
+    }
+
+    // Normal rules
+    return { winner: this.determineWinnerFromCards(cardsPlayed, trickColor), trickDiscarded: false };
+  }
+
+  // Helper method for determining winner from a set of cards (used for normal rules and Kraken fallback)
+  private determineWinnerFromCards(cardsPlayed: PlayedCard[], trickColor: Color | null): PlayedCard {
+    // Helper to check if a card is an "escape-like" card
+    const isEscapeLike = (card: Card) =>
+      isSpecialCard(card) &&
+      (card.type === "escape" ||
+        card.type === "loot" ||
+        (card.type === "tigress" && card.selection === "escape"));
+
+    // Helper to check if a card is a pirate-like card
+    const isPirateLike = (card: Card) =>
+      isSpecialCard(card) &&
+      (card.type === "pirate" ||
+        (card.type === "tigress" && card.selection === "pirate"));
+
+    // Check for Mermaid and Skull King
+    const mermaidIndex = cardsPlayed.findIndex(
+      ({ card }) => isSpecialCard(card) && card.type === "mermaid"
+    );
     const skullKingIndex = cardsPlayed.findIndex(
       ({ card }) => isSpecialCard(card) && card.type === "skullKing"
     );
+
+    // Mermaid beats Skull King (even if pirates are present)
+    if (mermaidIndex > -1 && skullKingIndex > -1) {
+      return cardsPlayed[mermaidIndex];
+    }
+
+    // Skull King beats everything else (except Mermaid)
     if (skullKingIndex > -1) {
       return cardsPlayed[skullKingIndex];
     }
 
-    const firstPiratePlayedIndex = cardsPlayed.findIndex(
-      ({ card }) =>
-        isSpecialCard(card) &&
-        (card.type === "pirate" ||
-          (card.type === "tigress" && card.selection === "pirate"))
-    );
-    if (firstPiratePlayedIndex > -1) {
-      return cardsPlayed[firstPiratePlayedIndex];
+    // First pirate wins (pirates beat mermaids and numbered cards)
+    const firstPirateIndex = cardsPlayed.findIndex(({ card }) => isPirateLike(card));
+    if (firstPirateIndex > -1) {
+      return cardsPlayed[firstPirateIndex];
     }
 
-    // TODO: DRY with below
+    // First mermaid wins (mermaids beat numbered cards)
+    if (mermaidIndex > -1) {
+      return cardsPlayed[mermaidIndex];
+    }
+
+    // Black cards (trump suit)
     const blackCards = cardsPlayed.filter(
       ({ card }) => isColoredCard(card) && card.color === "BLACK"
     );
     if (blackCards.length > 0) {
-      const winningCard = blackCards.reduce(
-        (nextCard, highestCard) => {
-          assert(
-            isColoredCard(highestCard.card) && isColoredCard(nextCard.card),
-            "Programming error"
-          );
-          return nextCard.card.number > highestCard.card.number
-            ? nextCard
-            : highestCard;
+      return blackCards.reduce(
+        (highest, current) => {
+          assert(isColoredCard(highest.card) && isColoredCard(current.card), "Programming error");
+          return current.card.number > highest.card.number ? current : highest;
         },
-        { id: "", playerId: "", card: { id: "", number: 0, color: "BLACK" } }
+        { id: "", playerId: "", card: { id: "", number: 0, color: "BLACK" as Color } }
       );
-
-      return winningCard;
     }
 
+    // Cards matching trick color
     if (trickColor) {
       const cardsMatchingTrickColor = cardsPlayed.filter(
         ({ card }) => isColoredCard(card) && card.color === trickColor
       );
-      const winningCard = cardsMatchingTrickColor.reduce(
-        (nextCard, highestCard) => {
-          assert(
-            isColoredCard(highestCard.card) && isColoredCard(nextCard.card),
-            "Programming error"
-          );
-          return nextCard.card.number > highestCard.card.number
-            ? nextCard
-            : highestCard;
-        },
-        { id: "", playerId: "", card: { id: "", number: 0, color: trickColor } }
-      );
-      return winningCard;
+      if (cardsMatchingTrickColor.length > 0) {
+        return cardsMatchingTrickColor.reduce(
+          (highest, current) => {
+            assert(isColoredCard(highest.card) && isColoredCard(current.card), "Programming error");
+            return current.card.number > highest.card.number ? current : highest;
+          },
+          { id: "", playerId: "", card: { id: "", number: 0, color: trickColor } }
+        );
+      }
     }
 
-    if (
-      cardsPlayed.every(
-        ({ card }) =>
-          isSpecialCard(card) &&
-          (card.type === "escape" ||
-            (card.type === "tigress" && card.selection === "escape"))
-      )
-    ) {
+    // All escape-like cards - first player wins
+    if (cardsPlayed.every(({ card }) => isEscapeLike(card))) {
+      // Special case: if loot is present and other escapes, loot player wins
+      const lootIndex = cardsPlayed.findIndex(
+        ({ card }) => isSpecialCard(card) && card.type === "loot"
+      );
+      if (lootIndex > -1) {
+        return cardsPlayed[lootIndex];
+      }
       return cardsPlayed[0];
     }
 
@@ -499,6 +583,12 @@ export class Game {
       currentRound: currentRoundData,
       scorecard: this.scorecard?.getScoreCard(),
       options: this.options,
+      deckConfig: {
+        includeMermaids: this.options.deckConfig?.includeMermaids ?? false,
+        includeKraken: this.options.deckConfig?.includeKraken ?? false,
+        includeWhiteWhale: this.options.deckConfig?.includeWhiteWhale ?? false,
+        includeLoot: this.options.deckConfig?.includeLoot ?? false,
+      },
       players: this.players.map((player) => ({
         ...player,
         hand: [],
@@ -534,7 +624,8 @@ export class Game {
   }
 }
 
-interface GameOptions {
+export interface GameOptions {
   mode?: "standard";
   deck?: Deck;
+  deckConfig?: DeckConfiguration;
 }
