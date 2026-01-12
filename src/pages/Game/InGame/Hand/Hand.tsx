@@ -72,8 +72,12 @@ export const Hand: React.FunctionComponent = function () {
   });
 
   return (
-    <div className="Hand">
-      {phase === "play" && <p>My hand (my bid: {currentRound?.myBid}):</p>}
+    <div className={`Hand${myTurn ? " Hand--myTurn" : ""}`}>
+      {phase === "play" && (
+        <p className="Hand-label">
+          {myTurn ? "Your Turn!" : "My Hand"} (Bid: {currentRound?.myBid})
+        </p>
+      )}
       <ul className="Hand-playerHand">
         {sortedHand.map((card, index) => {
           const commonProps = {
@@ -105,15 +109,9 @@ export const Hand: React.FunctionComponent = function () {
           } else if (isSpecialCard(card)) {
             return card.type === "tigress" ? (
               <Card {...commonProps}>
-                <div className="Card-content" style={{ position: "relative" }}>
+                <div className="Card-content">
                   <button
-                    style={{
-                      position: "absolute",
-                      left: "5%",
-                      height: "20%",
-                      width: "12%",
-                      cursor: "pointer",
-                    }}
+                    className="Card-tigress-btn Card-tigress-btn--escape"
                     disabled={!myTurn || !canPlayCard(card) || justClicked}
                     onClick={() => {
                       debounceClick(() =>
@@ -127,15 +125,10 @@ export const Hand: React.FunctionComponent = function () {
                         })
                       );
                     }}
+                    aria-label="Play as Escape"
                   />
                   <button
-                    style={{
-                      position: "absolute",
-                      left: "18%",
-                      height: "20%",
-                      width: "12%",
-                      cursor: "pointer",
-                    }}
+                    className="Card-tigress-btn Card-tigress-btn--pirate"
                     disabled={!myTurn || !canPlayCard(card) || justClicked}
                     onClick={() => {
                       debounceClick(() =>
@@ -149,11 +142,12 @@ export const Hand: React.FunctionComponent = function () {
                         })
                       );
                     }}
+                    aria-label="Play as Pirate"
                   />
                   <img
                     className="Card-image"
                     src={`/cards/${card.id}.jpg`}
-                    alt={"Tigress"}
+                    alt="Tigress"
                   />
                 </div>
               </Card>

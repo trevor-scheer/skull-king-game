@@ -1,7 +1,48 @@
-.Layout {
-  padding: 0 2vh;
+@use './styles/variables' as *;
+@use './styles/mixins' as *;
+@use './styles/animations';
+
+// Main app container with wood background
+.App {
+  min-height: 100vh;
+  @include wood-background;
+  position: relative;
+  @include vignette;
 }
 
 .Header {
-  padding: 2vh;
+  padding: var(--space-md) var(--space-lg);
+  position: relative;
+  z-index: var(--z-ui);
+  border-bottom: 2px solid rgba($color-gold-dark, 0.3);
+  background: linear-gradient(
+    180deg,
+    rgba($color-wood-dark, 0.9) 0%,
+    rgba($color-wood-dark, 0.7) 100%
+  );
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  a {
+    font-family: $font-display;
+    font-size: $font-size-xl;
+    @include gold-text;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: $color-gold-light;
+    }
+  }
+}
+
+.Layout {
+  padding: var(--space-lg) var(--space-xl);
+  position: relative;
+  z-index: var(--z-base);
+  min-height: calc(100vh - 80px);
 }

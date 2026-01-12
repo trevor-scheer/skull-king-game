@@ -1,0 +1,176 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.Home {
+  @include flex-column-center;
+  gap: var(--space-xxl);
+  padding: var(--space-xxl);
+  min-height: calc(100vh - 150px);
+
+  // Loading state
+  &--loading {
+    justify-content: center;
+
+    p {
+      font-family: $font-display;
+      font-size: $font-size-xl;
+      @include gold-text;
+      animation: pulse 2s ease-in-out infinite;
+    }
+  }
+
+  &-spinner {
+    width: 80px;
+    height: 80px;
+    border: 5px solid rgba($color-gold-dark, 0.3);
+    border-top-color: $color-gold-medium;
+    border-radius: 50%;
+    animation: rotate 1s linear infinite;
+    margin-bottom: var(--space-lg);
+  }
+
+  // Error state
+  &--error {
+    justify-content: center;
+
+    p {
+      font-family: $font-body;
+      font-size: $font-size-lg;
+      color: $color-text-light;
+    }
+  }
+
+  // Header
+  &-header {
+    text-align: center;
+    animation: fade-in-down 0.6s ease-out;
+  }
+
+  &-title {
+    font-family: $font-display;
+    font-size: clamp(3rem, 10vw, 5rem);
+    @include gold-text;
+    margin: 0;
+    letter-spacing: 4px;
+
+    // Skull decorations
+    &::before {
+      content: '☠ ';
+    }
+    &::after {
+      content: ' ☠';
+    }
+  }
+
+  &-tagline {
+    font-family: $font-body;
+    font-size: $font-size-xl;
+    color: $color-text-light;
+    margin: var(--space-md) 0 0;
+    font-style: italic;
+  }
+
+  // Content
+  &-content {
+    @include flex-column-center;
+    gap: var(--space-xl);
+    width: 100%;
+    max-width: 500px;
+    animation: fade-in-up 0.6s ease-out 0.2s backwards;
+  }
+
+  // Games list section
+  &-games {
+    width: 100%;
+    @include parchment-card;
+    padding: var(--space-lg);
+  }
+
+  &-sectionTitle {
+    font-family: $font-display;
+    font-size: $font-size-xl;
+    @include gold-text;
+    margin: 0 0 var(--space-md);
+    text-align: center;
+  }
+
+  &-gamesList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &-gameLink {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition:
+      background-color var(--transition-fast),
+      transform var(--transition-fast);
+
+    &:hover {
+      background: rgba($color-gold-medium, 0.1);
+      transform: translateX(5px);
+    }
+  }
+
+  &-gameIcon {
+    font-size: $font-size-xl;
+  }
+
+  &-gameId {
+    flex: 1;
+    font-family: $font-body;
+    font-size: $font-size-base;
+    color: $color-text-dark;
+  }
+
+  &-gameArrow {
+    font-size: $font-size-lg;
+    color: $color-gold-medium;
+    transition: transform var(--transition-fast);
+
+    .Home-gameLink:hover & {
+      transform: translateX(5px);
+    }
+  }
+
+  // Create button
+  &-createButton {
+    @include button-primary;
+    padding: var(--space-lg) var(--space-xxl);
+    font-size: $font-size-xl;
+
+    // Shimmer effect
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+}

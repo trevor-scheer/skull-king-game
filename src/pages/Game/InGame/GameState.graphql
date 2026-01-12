@@ -15,6 +15,11 @@ query GameState($gameId: String!, $playerToken: String!) {
       leader
       playerTurn
       myBid
+      roundNumber
+      cardsPlayed {
+        id
+        playerId
+      }
     }
   }
 }

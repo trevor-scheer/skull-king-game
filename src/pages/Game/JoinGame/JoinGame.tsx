@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useGameId } from "../../../hooks/useGameId";
 import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { useAddPlayerMutation } from "../../../types/graphqlTypes";
+import "./JoinGame.scss";
 
 export const JoinGame: React.FunctionComponent<{
   onJoin: (playerToken: string | null) => void;
@@ -24,24 +25,32 @@ export const JoinGame: React.FunctionComponent<{
     }
   }, [result.data?.addPlayer, onJoin]);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (name.trim()) {
+      createPlayer();
+      setDefaultName(name);
+    }
+  };
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        createPlayer();
-        setDefaultName(name);
-      }}
-    >
-      <input onChange={(e) => updateName(e.target.value)} value={name} />
+    <form className="JoinGame" onSubmit={handleSubmit}>
+      <label className="JoinGame-label">
+        Enter yer name, sailor:
+        <input
+          className="JoinGame-input"
+          onChange={(e) => updateName(e.target.value)}
+          value={name}
+          placeholder="Captain Jack..."
+          autoFocus
+        />
+      </label>
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          createPlayer();
-          setDefaultName(name);
-        }}
+        className="JoinGame-button"
         type="submit"
+        disabled={!name.trim() || result.loading}
       >
-        Join Game
+        {result.loading ? "Joining..." : "Board the Ship"}
       </button>
     </form>
   );

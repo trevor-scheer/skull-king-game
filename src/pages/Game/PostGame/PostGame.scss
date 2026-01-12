@@ -1,0 +1,55 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.PostGame {
+  @include flex-column-center;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+  animation: fade-in-up 0.5s ease-out;
+
+  &-header {
+    text-align: center;
+    animation: scale-in 0.6s ease-out 0.2s backwards;
+  }
+
+  &-title {
+    font-family: $font-display;
+    font-size: $font-size-4xl;
+    @include gold-text;
+    margin: 0;
+
+    // Celebration effect
+    animation: float 3s ease-in-out infinite;
+
+    &::before {
+      content: '🏴‍☠️ ';
+    }
+    &::after {
+      content: ' 🏴‍☠️';
+    }
+  }
+
+  &-subtitle {
+    font-family: $font-body;
+    font-size: $font-size-xl;
+    color: $color-text-light;
+    margin: var(--space-sm) 0 0;
+    font-style: italic;
+  }
+
+  &-footer {
+    margin-top: var(--space-lg);
+    animation: fade-in-up 0.5s ease-out 0.4s backwards;
+  }
+
+  &-button {
+    @include button-secondary;
+    padding: var(--space-md) var(--space-xl);
+    font-size: $font-size-lg;
+    text-decoration: none;
+
+    &::before {
+      content: '⚓ ';
+    }
+  }
+}

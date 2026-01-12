@@ -12,6 +12,7 @@ export const BidForm: React.FunctionComponent = function () {
   const gameId = useGameId() ?? ""; // TODO: hacky fallback
 
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [selectedBid, setSelectedBid] = useState<number | null>(null);
 
   const [submitBid] = useSubmitBidMutation();
 
@@ -23,43 +24,50 @@ export const BidForm: React.FunctionComponent = function () {
   function handleSubmit(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     const count = parseInt(event.currentTarget.id);
-    console.log(count);
+    setSelectedBid(count);
     setSubmitted(true);
     submitBid({
       variables: { gameId, playerToken: playerToken!, count },
     });
   }
 
-  // useEffect(() => {
-  //   const audio = new Audio("/audio/smb3_coin.wav");
-  //   try {
-  //     audio.play();
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }, []);
-
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="BidForm BidForm--loading">
+        <p className="BidForm-loadingText">Loading bids...</p>
+      </div>
+    );
   }
 
-  const roundNumber = Array.from([
-    ...new Array(data?.state?.currentRound?.roundNumber! + 1),
-  ]).map((_, i) => i);
+  const roundNumber = data?.state?.currentRound?.roundNumber ?? 0;
+  const bidOptions = Array.from({ length: roundNumber + 1 }, (_, i) => i);
 
   return (
     <div className="BidForm">
-      {roundNumber.map((count) => (
-        <button
-          className="BidForm-button"
-          id={String(count)}
-          key={count}
-          onClick={handleSubmit}
-          disabled={submitted}
-        >
-          {count}
-        </button>
-      ))}
+      <h3 className="BidForm-title">Place Your Bid</h3>
+      <p className="BidForm-subtitle">
+        How many tricks will ye win this round?
+      </p>
+      <div className="BidForm-buttons">
+        {bidOptions.map((count) => (
+          <button
+            className={`BidForm-button ${
+              selectedBid === count ? "BidForm-button--selected" : ""
+            }`}
+            id={String(count)}
+            key={count}
+            onClick={handleSubmit}
+            disabled={submitted}
+          >
+            {count}
+          </button>
+        ))}
+      </div>
+      {submitted && selectedBid !== null && (
+        <p className="BidForm-confirmation">
+          Bid placed: <strong>{selectedBid}</strong>
+        </p>
+      )}
     </div>
   );
 };

@@ -1,0 +1,59 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.AwaitingBids {
+  @include flex-column-center;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  animation: fade-in 0.3s ease-out;
+
+  // Loading spinner (ship wheel style)
+  &-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba($color-gold-dark, 0.3);
+    border-top-color: $color-gold-medium;
+    border-radius: 50%;
+    animation: rotate 1.2s linear infinite;
+
+    // Inner spokes
+    &::before {
+      content: '⚓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: $color-gold-medium;
+    }
+  }
+
+  &-text {
+    font-family: $font-body;
+    font-size: $font-size-lg;
+    color: $color-text-dark;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  &-bid {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: rgba($color-wood-dark, 0.1);
+    border-radius: var(--radius-md);
+    border: 2px solid rgba($color-gold-dark, 0.3);
+  }
+
+  &-bidLabel {
+    font-family: $font-body;
+    font-size: $font-size-base;
+    color: $color-text-dark;
+  }
+
+  &-bidValue {
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    @include gold-text;
+  }
+}

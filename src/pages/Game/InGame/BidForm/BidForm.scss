@@ -1,11 +1,119 @@
+@use '../../../../styles/variables' as *;
+@use '../../../../styles/mixins' as *;
+
 .BidForm {
-  display: flex;
+  @include flex-column-center;
+  gap: var(--space-md);
+  animation: fade-in-up 0.3s ease-out;
+
+  &-title {
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    @include gold-text;
+    margin: 0;
+  }
+
+  &-subtitle {
+    font-family: $font-body;
+    font-size: $font-size-base;
+    color: $color-text-dark;
+    font-style: italic;
+    margin: 0;
+  }
+
+  &-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-sm);
+    max-width: 400px;
+  }
 
   &-button {
-    min-width: 25px;
-    padding: 5px;
-    margin: 2px;
-    border: 1px lightgray solid;
-    border-radius: 5px;
+    @include button-base;
+    min-width: 48px;
+    height: 48px;
+    padding: var(--space-sm);
+    font-family: $font-display;
+    font-size: $font-size-xl;
+
+    // Gold coin style
+    background: linear-gradient(
+      145deg,
+      $color-gold-light 0%,
+      $color-gold-medium 50%,
+      $color-gold-dark 100%
+    );
+    color: $color-text-dark;
+    border: 3px solid $color-gold-dark;
+    border-radius: 50%;
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      inset 0 2px 0 rgba(255, 255, 255, 0.3);
+
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast),
+      background var(--transition-fast);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-3px) scale(1.1);
+      box-shadow:
+        0 6px 12px rgba(0, 0, 0, 0.4),
+        var(--shadow-glow-gold),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0) scale(0.95);
+      box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.3),
+        inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    &--selected {
+      background: linear-gradient(
+        145deg,
+        $color-gold-shine 0%,
+        $color-gold-light 50%,
+        $color-gold-medium 100%
+      );
+      box-shadow:
+        0 0 20px rgba($color-gold-light, 0.6),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4);
+      animation: turn-pulse 1s ease-in-out infinite;
+    }
+  }
+
+  &-confirmation {
+    font-family: $font-body;
+    font-size: $font-size-base;
+    color: $color-text-dark;
+    margin-top: var(--space-sm);
+
+    strong {
+      font-family: $font-display;
+      font-size: $font-size-xl;
+      @include gold-text;
+    }
+  }
+
+  // Loading state
+  &--loading {
+    min-height: 150px;
+    @include flex-center;
+  }
+
+  &-loadingText {
+    font-family: $font-display;
+    font-size: $font-size-lg;
+    @include gold-text;
+    animation: pulse 2s ease-in-out infinite;
   }
 }

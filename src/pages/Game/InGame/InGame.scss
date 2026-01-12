@@ -1,5 +1,38 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
 .InGame {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding-bottom: var(--space-xl);
+
+  // Loading state
+  &-loading {
+    @include flex-center;
+    height: 50vh;
+    font-family: $font-display;
+    font-size: $font-size-xl;
+    @include gold-text;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  // Bid phase container
+  &-bidPhase {
+    @include flex-column-center;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+    @include parchment-card;
+    min-width: 300px;
+    animation: fade-in-up 0.3s ease-out;
+  }
+
+  // Leader info text
+  &-leaderInfo {
+    font-family: $font-body;
+    font-size: $font-size-lg;
+    color: $color-text-dark;
+    text-align: center;
+  }
 }
