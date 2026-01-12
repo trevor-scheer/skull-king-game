@@ -138,6 +138,68 @@
     }
   }
 
+  // Optional cards section
+  &-optionalCards {
+    width: 100%;
+    @include parchment-card;
+    padding: var(--space-lg);
+  }
+
+  &-optionalCardsDescription {
+    font-family: $font-body;
+    font-size: $font-size-sm;
+    color: $color-text-dark;
+    text-align: center;
+    margin: 0 0 var(--space-md);
+    opacity: 0.8;
+  }
+
+  &-cardOptions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  &-cardOption {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+
+    &:hover {
+      background: rgba($color-gold-medium, 0.1);
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: $color-gold-medium;
+      cursor: pointer;
+    }
+  }
+
+  &-cardOptionContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &-cardName {
+    font-family: $font-display;
+    font-size: $font-size-base;
+    color: $color-text-dark;
+  }
+
+  &-cardDescription {
+    font-family: $font-body;
+    font-size: $font-size-sm;
+    color: $color-text-dark;
+    opacity: 0.7;
+  }
+
   // Create button
   &-createButton {
     @include button-primary;

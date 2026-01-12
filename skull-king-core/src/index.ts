@@ -1,4 +1,4 @@
-import { Game } from "./game";
-import { Card, isSpecialCard } from "./cards";
+import { Game, GameOptions } from "./game";
+import { Card, isSpecialCard, DeckConfiguration } from "./cards";
 
-export { Game, Card, isSpecialCard };
+export { Game, GameOptions, Card, isSpecialCard, DeckConfiguration };

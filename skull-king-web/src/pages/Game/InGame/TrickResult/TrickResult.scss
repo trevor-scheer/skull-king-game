@@ -13,7 +13,7 @@
   // Glowing background for winner reveal
   background: radial-gradient(
     ellipse at center,
-    rgba($color-gold-primary, 0.15) 0%,
+    rgba($color-gold-medium, 0.15) 0%,
     rgba($color-ocean-dark, 0.3) 40%,
     transparent 70%
   );
@@ -37,8 +37,8 @@
   &-winner {
     font-family: $font-display;
     font-size: $font-size-2xl;
-    color: $color-gold-primary;
-    text-shadow: 0 0 10px rgba($color-gold-primary, 0.5);
+    color: $color-gold-medium;
+    text-shadow: 0 0 10px rgba($color-gold-medium, 0.5);
   }
 
   // Card list container
@@ -80,14 +80,14 @@
 
       .Card {
         box-shadow:
-          0 0 20px rgba($color-gold-primary, 0.8),
-          0 0 40px rgba($color-gold-primary, 0.4),
+          0 0 20px rgba($color-gold-medium, 0.8),
+          0 0 40px rgba($color-gold-medium, 0.4),
           var(--shadow-card);
-        border: 2px solid $color-gold-primary;
+        border: 2px solid $color-gold-medium;
       }
 
       .TrickResult-playerLabel {
-        background: rgba($color-gold-primary, 0.9);
+        background: rgba($color-gold-medium, 0.9);
         color: $color-wood-dark;
         font-weight: bold;
         border-color: $color-gold-light;
@@ -153,10 +153,10 @@
 
 @keyframes winner-glow {
   0%, 100% {
-    text-shadow: 0 0 5px rgba($color-gold-primary, 0.5);
+    text-shadow: 0 0 5px rgba($color-gold-medium, 0.5);
   }
   50% {
-    text-shadow: 0 0 20px rgba($color-gold-primary, 0.8),
-                 0 0 30px rgba($color-gold-primary, 0.5);
+    text-shadow: 0 0 20px rgba($color-gold-medium, 0.8),
+                 0 0 30px rgba($color-gold-medium, 0.5);
   }
 }

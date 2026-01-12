@@ -5,8 +5,22 @@ const typeDefs = `#graphql
     state(gameId: String!, playerToken: String): GameState
   }
 
+  input DeckConfigInput {
+    includeMermaids: Boolean
+    includeKraken: Boolean
+    includeWhiteWhale: Boolean
+    includeLoot: Boolean
+  }
+
+  type DeckConfig {
+    includeMermaids: Boolean!
+    includeKraken: Boolean!
+    includeWhiteWhale: Boolean!
+    includeLoot: Boolean!
+  }
+
   type Mutation {
-    newGame: String!
+    newGame(deckConfig: DeckConfigInput): String!
     startGame(gameId: String!): Boolean!
     addPlayer(gameId: String!, name: String!): String!
     submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
@@ -37,6 +51,7 @@ const typeDefs = `#graphql
     currentRound: Round!
     # deck: Deck!
     scorecard: [[ScoreBlock!]!]
+    deckConfig: DeckConfig!
   }
 
   type Player {
@@ -77,6 +92,7 @@ const typeDefs = `#graphql
     trickColor: Color
     cardsPlayed: [PlayedCard!]!
     winningCard: PlayedCard
+    trickDiscarded: Boolean
   }
 
   type PlayedCard {

@@ -1,4 +1,5 @@
 import { Deck } from "../deck";
+import { buildDeck } from "../cards";
 import cardSerializer from "../serializers/cardSerializer";
 
 expect.addSnapshotSerializer(cardSerializer);
@@ -234,5 +235,51 @@ describe("deck", () => {
     expect(deck.draw()).toMatchInlineSnapshot(`GREEN 8`);
     expect(deck.draw()).toMatchInlineSnapshot(`GREEN 7`);
     expect(deck.draw()).toMatchInlineSnapshot(`TIGRESS`);
+  });
+});
+
+describe("deck configuration", () => {
+  it("includes mermaids when configured", () => {
+    const deck = buildDeck({ includeMermaids: true });
+    const mermaids = deck.filter((c) => "type" in c && c.type === "mermaid");
+    expect(mermaids).toHaveLength(2);
+  });
+
+  it("includes kraken when configured", () => {
+    const deck = buildDeck({ includeKraken: true });
+    const kraken = deck.filter((c) => "type" in c && c.type === "kraken");
+    expect(kraken).toHaveLength(1);
+  });
+
+  it("includes white whale when configured", () => {
+    const deck = buildDeck({ includeWhiteWhale: true });
+    const whiteWhale = deck.filter((c) => "type" in c && c.type === "whiteWhale");
+    expect(whiteWhale).toHaveLength(1);
+  });
+
+  it("includes loot cards when configured", () => {
+    const deck = buildDeck({ includeLoot: true });
+    const loot = deck.filter((c) => "type" in c && c.type === "loot");
+    expect(loot).toHaveLength(2);
+  });
+
+  it("includes all expansion cards when configured", () => {
+    const deck = buildDeck({
+      includeMermaids: true,
+      includeKraken: true,
+      includeWhiteWhale: true,
+      includeLoot: true,
+    });
+    // Base deck: 56 colored + 5 escapes + 5 pirates + tigress + skull king = 68
+    // Expansion: 2 mermaids + 1 kraken + 1 white whale + 2 loot = 6
+    expect(deck).toHaveLength(74);
+  });
+
+  it("creates deck via Deck class with config", () => {
+    const deck = new Deck({
+      deckConfig: { includeMermaids: true, includeKraken: true },
+    });
+    const originalDeck = deck.__debugDeck().originalDeck;
+    expect(originalDeck).toHaveLength(71); // 68 + 2 mermaids + 1 kraken
   });
 });

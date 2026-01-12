@@ -5,14 +5,16 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
 };
 
 export type Card = ColoredCard | SpecialCard;
@@ -26,17 +28,33 @@ export enum Color {
 
 export type ColoredCard = {
   __typename?: 'ColoredCard';
-  color: Scalars['String'];
-  id: Scalars['String'];
-  number: Scalars['Int'];
+  color: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  number: Scalars['Int']['output'];
+};
+
+export type DeckConfig = {
+  __typename?: 'DeckConfig';
+  includeKraken: Scalars['Boolean']['output'];
+  includeLoot: Scalars['Boolean']['output'];
+  includeMermaids: Scalars['Boolean']['output'];
+  includeWhiteWhale: Scalars['Boolean']['output'];
+};
+
+export type DeckConfigInput = {
+  includeKraken?: InputMaybe<Scalars['Boolean']['input']>;
+  includeLoot?: InputMaybe<Scalars['Boolean']['input']>;
+  includeMermaids?: InputMaybe<Scalars['Boolean']['input']>;
+  includeWhiteWhale?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type GameState = {
   __typename?: 'GameState';
   currentRound: Round;
-  id: Scalars['String'];
+  deckConfig: DeckConfig;
+  id: Scalars['String']['output'];
   me?: Maybe<Player>;
-  phase: Scalars['String'];
+  phase: Scalars['String']['output'];
   players: Array<Player>;
   scorecard?: Maybe<Array<Array<ScoreBlock>>>;
 };
@@ -44,198 +62,211 @@ export type GameState = {
 export type Hand = {
   __typename?: 'Hand';
   cardsPlayed: Array<PlayedCard>;
-  id: Scalars['String'];
+  id: Scalars['String']['output'];
   trickColor?: Maybe<Color>;
+  trickDiscarded?: Maybe<Scalars['Boolean']['output']>;
   winningCard?: Maybe<PlayedCard>;
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  addPlayer: Scalars['String'];
-  newGame: Scalars['String'];
-  playColoredCard: Scalars['Boolean'];
-  playSpecialCard: Scalars['Boolean'];
-  startGame: Scalars['Boolean'];
-  submitBid: Scalars['Boolean'];
+  addPlayer: Scalars['String']['output'];
+  advanceTrick: Scalars['Boolean']['output'];
+  newGame: Scalars['String']['output'];
+  playColoredCard: Scalars['Boolean']['output'];
+  playSpecialCard: Scalars['Boolean']['output'];
+  startGame: Scalars['Boolean']['output'];
+  submitBid: Scalars['Boolean']['output'];
 };
 
 
 export type MutationAddPlayerArgs = {
-  gameId: Scalars['String'];
-  name: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+};
+
+
+export type MutationAdvanceTrickArgs = {
+  gameId: Scalars['String']['input'];
+};
+
+
+export type MutationNewGameArgs = {
+  deckConfig?: InputMaybe<DeckConfigInput>;
 };
 
 
 export type MutationPlayColoredCardArgs = {
-  cardId: Scalars['String'];
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  cardId: Scalars['String']['input'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 };
 
 
 export type MutationPlaySpecialCardArgs = {
-  cardId: Scalars['String'];
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
-  selection?: InputMaybe<Scalars['String']>;
+  cardId: Scalars['String']['input'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  selection?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type MutationStartGameArgs = {
-  gameId: Scalars['String'];
+  gameId: Scalars['String']['input'];
 };
 
 
 export type MutationSubmitBidArgs = {
-  count: Scalars['Int'];
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  count: Scalars['Int']['input'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 };
 
 export type PlayedCard = {
   __typename?: 'PlayedCard';
   card: Card;
-  id: Scalars['String'];
-  playerId: Scalars['String'];
+  id: Scalars['String']['output'];
+  playerId: Scalars['String']['output'];
 };
 
 export type Player = {
   __typename?: 'Player';
   hand: Array<Card>;
-  id: Scalars['String'];
-  name: Scalars['String'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  games: Array<Scalars['String']>;
-  players: Scalars['String'];
+  games: Array<Scalars['String']['output']>;
+  players: Scalars['String']['output'];
   state?: Maybe<GameState>;
 };
 
 
 export type QueryPlayersArgs = {
-  gameId: Scalars['String'];
+  gameId: Scalars['String']['input'];
 };
 
 
 export type QueryStateArgs = {
-  gameId: Scalars['String'];
-  playerToken?: InputMaybe<Scalars['String']>;
+  gameId: Scalars['String']['input'];
+  playerToken?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Round = {
   __typename?: 'Round';
   cardsPlayed: Array<PlayedCard>;
   hands: Array<Hand>;
-  id: Scalars['Int'];
-  leader: Scalars['String'];
-  myBid?: Maybe<Scalars['Int']>;
-  phase: Scalars['String'];
-  playerTurn: Scalars['String'];
-  roundNumber: Scalars['Int'];
+  id: Scalars['Int']['output'];
+  lastCompletedHand?: Maybe<Hand>;
+  leader: Scalars['String']['output'];
+  myBid?: Maybe<Scalars['Int']['output']>;
+  phase: Scalars['String']['output'];
+  playerTurn: Scalars['String']['output'];
+  roundNumber: Scalars['Int']['output'];
   trickColor?: Maybe<Color>;
 };
 
 export type ScoreBlock = {
   __typename?: 'ScoreBlock';
-  bidPoints: Scalars['Int'];
-  bonusPoints: Scalars['Int'];
-  playerName: Scalars['String'];
-  totalPoints: Scalars['Int'];
-  tricksBid: Scalars['Int'];
-  tricksWon: Scalars['Int'];
+  bidPoints: Scalars['Int']['output'];
+  bonusPoints: Scalars['Int']['output'];
+  playerName: Scalars['String']['output'];
+  totalPoints: Scalars['Int']['output'];
+  tricksBid: Scalars['Int']['output'];
+  tricksWon: Scalars['Int']['output'];
 };
 
 export type SpecialCard = {
   __typename?: 'SpecialCard';
-  id: Scalars['String'];
-  selection?: Maybe<Scalars['String']>;
-  type: Scalars['String'];
+  id: Scalars['String']['output'];
+  selection?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
 };
 
 export type Subscription = {
   __typename?: 'Subscription';
-  hello?: Maybe<Scalars['String']>;
+  hello?: Maybe<Scalars['String']['output']>;
   state?: Maybe<GameState>;
 };
 
 
 export type SubscriptionStateArgs = {
-  gameId: Scalars['String'];
-  playerToken?: InputMaybe<Scalars['String']>;
+  gameId: Scalars['String']['input'];
+  playerToken?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GamePhaseQueryVariables = Exact<{
-  gameId: Scalars['String'];
+  gameId: Scalars['String']['input'];
 }>;
 
 
 export type GamePhaseQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string } | null };
 
 export type RoundNumberQueryVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 }>;
 
 
 export type RoundNumberQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, roundNumber: number } } | null };
 
 export type SubmitBidMutationVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
-  count: Scalars['Int'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  count: Scalars['Int']['input'];
 }>;
 
 
 export type SubmitBidMutation = { __typename?: 'Mutation', submitBid: boolean };
 
 export type GameStateQueryVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn: string, myBid?: number | null } } | null };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn: string, myBid?: number | null, roundNumber: number, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } } | null };
 
 export type MyHandQueryVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 }>;
 
 
 export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound: { __typename?: 'Round', id: number, phase: string, playerTurn: string, trickColor?: Color | null, myBid?: number | null } } | null };
 
 export type PlayColoredCardMutationVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
-  cardId: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  cardId: Scalars['String']['input'];
 }>;
 
 
 export type PlayColoredCardMutation = { __typename?: 'Mutation', playColoredCard: boolean };
 
 export type PlaySpecialCardMutationVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
-  cardId: Scalars['String'];
-  selection?: InputMaybe<Scalars['String']>;
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  cardId: Scalars['String']['input'];
+  selection?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type PlaySpecialCardMutation = { __typename?: 'Mutation', playSpecialCard: boolean };
 
 export type CardsPlayedQueryVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 }>;
 
 
 export type CardsPlayedQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }> } } | null };
 
 export type PreviousHandQueryVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 }>;
 
 
@@ -248,38 +279,53 @@ type CardFragment_SpecialCard_Fragment = { __typename: 'SpecialCard', id: string
 export type CardFragmentFragment = CardFragment_ColoredCard_Fragment | CardFragment_SpecialCard_Fragment;
 
 export type ScorecardQueryVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 }>;
 
 
 export type ScorecardQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', id: string, name: string } | null, scorecard?: Array<Array<{ __typename?: 'ScoreBlock', playerName: string, tricksBid: number, tricksWon: number, bidPoints: number, bonusPoints: number, totalPoints: number }>> | null } | null };
 
+export type AdvanceTrickMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+}>;
+
+
+export type AdvanceTrickMutation = { __typename?: 'Mutation', advanceTrick: boolean };
+
+export type TrickResultDataQueryVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+}>;
+
+
+export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, phase: string, lastCompletedHand?: { __typename?: 'Hand', id: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } } | null };
+
 export type AddPlayerMutationVariables = Exact<{
-  gameId: Scalars['String'];
-  name: Scalars['String'];
+  gameId: Scalars['String']['input'];
+  name: Scalars['String']['input'];
 }>;
 
 
 export type AddPlayerMutation = { __typename?: 'Mutation', addPlayer: string };
 
 export type LobbyQueryQueryVariables = Exact<{
-  gameId: Scalars['String'];
-  playerToken?: InputMaybe<Scalars['String']>;
+  gameId: Scalars['String']['input'];
+  playerToken?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
 
 export type PlayersQueryVariables = Exact<{
-  gameId: Scalars['String'];
+  gameId: Scalars['String']['input'];
 }>;
 
 
 export type PlayersQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
 
 export type StartGameMutationVariables = Exact<{
-  gameId: Scalars['String'];
+  gameId: Scalars['String']['input'];
 }>;
 
 
@@ -290,7 +336,9 @@ export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GamesQuery = { __typename?: 'Query', games: Array<string> };
 
-export type NewGameMutationVariables = Exact<{ [key: string]: never; }>;
+export type NewGameMutationVariables = Exact<{
+  deckConfig?: InputMaybe<DeckConfigInput>;
+}>;
 
 
 export type NewGameMutation = { __typename?: 'Mutation', newGame: string };
@@ -335,7 +383,7 @@ export const GamePhaseDocument = gql`
  *   },
  * });
  */
-export function useGamePhaseQuery(baseOptions: Apollo.QueryHookOptions<GamePhaseQuery, GamePhaseQueryVariables>) {
+export function useGamePhaseQuery(baseOptions: Apollo.QueryHookOptions<GamePhaseQuery, GamePhaseQueryVariables> & ({ variables: GamePhaseQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<GamePhaseQuery, GamePhaseQueryVariables>(GamePhaseDocument, options);
       }
@@ -343,8 +391,16 @@ export function useGamePhaseLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GamePhaseQuery, GamePhaseQueryVariables>(GamePhaseDocument, options);
         }
+// @ts-ignore
+export function useGamePhaseSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GamePhaseQuery, GamePhaseQueryVariables>): Apollo.UseSuspenseQueryResult<GamePhaseQuery, GamePhaseQueryVariables>;
+export function useGamePhaseSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GamePhaseQuery, GamePhaseQueryVariables>): Apollo.UseSuspenseQueryResult<GamePhaseQuery | undefined, GamePhaseQueryVariables>;
+export function useGamePhaseSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GamePhaseQuery, GamePhaseQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GamePhaseQuery, GamePhaseQueryVariables>(GamePhaseDocument, options);
+        }
 export type GamePhaseQueryHookResult = ReturnType<typeof useGamePhaseQuery>;
 export type GamePhaseLazyQueryHookResult = ReturnType<typeof useGamePhaseLazyQuery>;
+export type GamePhaseSuspenseQueryHookResult = ReturnType<typeof useGamePhaseSuspenseQuery>;
 export type GamePhaseQueryResult = Apollo.QueryResult<GamePhaseQuery, GamePhaseQueryVariables>;
 export const RoundNumberDocument = gql`
     query RoundNumber($gameId: String!, $playerToken: String!) {
@@ -375,7 +431,7 @@ export const RoundNumberDocument = gql`
  *   },
  * });
  */
-export function useRoundNumberQuery(baseOptions: Apollo.QueryHookOptions<RoundNumberQuery, RoundNumberQueryVariables>) {
+export function useRoundNumberQuery(baseOptions: Apollo.QueryHookOptions<RoundNumberQuery, RoundNumberQueryVariables> & ({ variables: RoundNumberQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<RoundNumberQuery, RoundNumberQueryVariables>(RoundNumberDocument, options);
       }
@@ -383,8 +439,16 @@ export function useRoundNumberLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<RoundNumberQuery, RoundNumberQueryVariables>(RoundNumberDocument, options);
         }
+// @ts-ignore
+export function useRoundNumberSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<RoundNumberQuery, RoundNumberQueryVariables>): Apollo.UseSuspenseQueryResult<RoundNumberQuery, RoundNumberQueryVariables>;
+export function useRoundNumberSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<RoundNumberQuery, RoundNumberQueryVariables>): Apollo.UseSuspenseQueryResult<RoundNumberQuery | undefined, RoundNumberQueryVariables>;
+export function useRoundNumberSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<RoundNumberQuery, RoundNumberQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<RoundNumberQuery, RoundNumberQueryVariables>(RoundNumberDocument, options);
+        }
 export type RoundNumberQueryHookResult = ReturnType<typeof useRoundNumberQuery>;
 export type RoundNumberLazyQueryHookResult = ReturnType<typeof useRoundNumberLazyQuery>;
+export type RoundNumberSuspenseQueryHookResult = ReturnType<typeof useRoundNumberSuspenseQuery>;
 export type RoundNumberQueryResult = Apollo.QueryResult<RoundNumberQuery, RoundNumberQueryVariables>;
 export const SubmitBidDocument = gql`
     mutation SubmitBid($gameId: String!, $playerToken: String!, $count: Int!) {
@@ -437,6 +501,11 @@ export const GameStateDocument = gql`
       leader
       playerTurn
       myBid
+      roundNumber
+      cardsPlayed {
+        id
+        playerId
+      }
     }
   }
 }
@@ -459,7 +528,7 @@ export const GameStateDocument = gql`
  *   },
  * });
  */
-export function useGameStateQuery(baseOptions: Apollo.QueryHookOptions<GameStateQuery, GameStateQueryVariables>) {
+export function useGameStateQuery(baseOptions: Apollo.QueryHookOptions<GameStateQuery, GameStateQueryVariables> & ({ variables: GameStateQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<GameStateQuery, GameStateQueryVariables>(GameStateDocument, options);
       }
@@ -467,8 +536,16 @@ export function useGameStateLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GameStateQuery, GameStateQueryVariables>(GameStateDocument, options);
         }
+// @ts-ignore
+export function useGameStateSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GameStateQuery, GameStateQueryVariables>): Apollo.UseSuspenseQueryResult<GameStateQuery, GameStateQueryVariables>;
+export function useGameStateSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GameStateQuery, GameStateQueryVariables>): Apollo.UseSuspenseQueryResult<GameStateQuery | undefined, GameStateQueryVariables>;
+export function useGameStateSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GameStateQuery, GameStateQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GameStateQuery, GameStateQueryVariables>(GameStateDocument, options);
+        }
 export type GameStateQueryHookResult = ReturnType<typeof useGameStateQuery>;
 export type GameStateLazyQueryHookResult = ReturnType<typeof useGameStateLazyQuery>;
+export type GameStateSuspenseQueryHookResult = ReturnType<typeof useGameStateSuspenseQuery>;
 export type GameStateQueryResult = Apollo.QueryResult<GameStateQuery, GameStateQueryVariables>;
 export const MyHandDocument = gql`
     query MyHand($gameId: String!, $playerToken: String!) {
@@ -517,7 +594,7 @@ export const MyHandDocument = gql`
  *   },
  * });
  */
-export function useMyHandQuery(baseOptions: Apollo.QueryHookOptions<MyHandQuery, MyHandQueryVariables>) {
+export function useMyHandQuery(baseOptions: Apollo.QueryHookOptions<MyHandQuery, MyHandQueryVariables> & ({ variables: MyHandQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<MyHandQuery, MyHandQueryVariables>(MyHandDocument, options);
       }
@@ -525,8 +602,16 @@ export function useMyHandLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyH
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<MyHandQuery, MyHandQueryVariables>(MyHandDocument, options);
         }
+// @ts-ignore
+export function useMyHandSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyHandQuery, MyHandQueryVariables>): Apollo.UseSuspenseQueryResult<MyHandQuery, MyHandQueryVariables>;
+export function useMyHandSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyHandQuery, MyHandQueryVariables>): Apollo.UseSuspenseQueryResult<MyHandQuery | undefined, MyHandQueryVariables>;
+export function useMyHandSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyHandQuery, MyHandQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyHandQuery, MyHandQueryVariables>(MyHandDocument, options);
+        }
 export type MyHandQueryHookResult = ReturnType<typeof useMyHandQuery>;
 export type MyHandLazyQueryHookResult = ReturnType<typeof useMyHandLazyQuery>;
+export type MyHandSuspenseQueryHookResult = ReturnType<typeof useMyHandSuspenseQuery>;
 export type MyHandQueryResult = Apollo.QueryResult<MyHandQuery, MyHandQueryVariables>;
 export const PlayColoredCardDocument = gql`
     mutation PlayColoredCard($gameId: String!, $playerToken: String!, $cardId: String!) {
@@ -646,7 +731,7 @@ export const CardsPlayedDocument = gql`
  *   },
  * });
  */
-export function useCardsPlayedQuery(baseOptions: Apollo.QueryHookOptions<CardsPlayedQuery, CardsPlayedQueryVariables>) {
+export function useCardsPlayedQuery(baseOptions: Apollo.QueryHookOptions<CardsPlayedQuery, CardsPlayedQueryVariables> & ({ variables: CardsPlayedQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<CardsPlayedQuery, CardsPlayedQueryVariables>(CardsPlayedDocument, options);
       }
@@ -654,8 +739,16 @@ export function useCardsPlayedLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<CardsPlayedQuery, CardsPlayedQueryVariables>(CardsPlayedDocument, options);
         }
+// @ts-ignore
+export function useCardsPlayedSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CardsPlayedQuery, CardsPlayedQueryVariables>): Apollo.UseSuspenseQueryResult<CardsPlayedQuery, CardsPlayedQueryVariables>;
+export function useCardsPlayedSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CardsPlayedQuery, CardsPlayedQueryVariables>): Apollo.UseSuspenseQueryResult<CardsPlayedQuery | undefined, CardsPlayedQueryVariables>;
+export function useCardsPlayedSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CardsPlayedQuery, CardsPlayedQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CardsPlayedQuery, CardsPlayedQueryVariables>(CardsPlayedDocument, options);
+        }
 export type CardsPlayedQueryHookResult = ReturnType<typeof useCardsPlayedQuery>;
 export type CardsPlayedLazyQueryHookResult = ReturnType<typeof useCardsPlayedLazyQuery>;
+export type CardsPlayedSuspenseQueryHookResult = ReturnType<typeof useCardsPlayedSuspenseQuery>;
 export type CardsPlayedQueryResult = Apollo.QueryResult<CardsPlayedQuery, CardsPlayedQueryVariables>;
 export const PreviousHandDocument = gql`
     query PreviousHand($gameId: String!, $playerToken: String!) {
@@ -702,7 +795,7 @@ export const PreviousHandDocument = gql`
  *   },
  * });
  */
-export function usePreviousHandQuery(baseOptions: Apollo.QueryHookOptions<PreviousHandQuery, PreviousHandQueryVariables>) {
+export function usePreviousHandQuery(baseOptions: Apollo.QueryHookOptions<PreviousHandQuery, PreviousHandQueryVariables> & ({ variables: PreviousHandQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<PreviousHandQuery, PreviousHandQueryVariables>(PreviousHandDocument, options);
       }
@@ -710,8 +803,16 @@ export function usePreviousHandLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<PreviousHandQuery, PreviousHandQueryVariables>(PreviousHandDocument, options);
         }
+// @ts-ignore
+export function usePreviousHandSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<PreviousHandQuery, PreviousHandQueryVariables>): Apollo.UseSuspenseQueryResult<PreviousHandQuery, PreviousHandQueryVariables>;
+export function usePreviousHandSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PreviousHandQuery, PreviousHandQueryVariables>): Apollo.UseSuspenseQueryResult<PreviousHandQuery | undefined, PreviousHandQueryVariables>;
+export function usePreviousHandSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PreviousHandQuery, PreviousHandQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PreviousHandQuery, PreviousHandQueryVariables>(PreviousHandDocument, options);
+        }
 export type PreviousHandQueryHookResult = ReturnType<typeof usePreviousHandQuery>;
 export type PreviousHandLazyQueryHookResult = ReturnType<typeof usePreviousHandLazyQuery>;
+export type PreviousHandSuspenseQueryHookResult = ReturnType<typeof usePreviousHandSuspenseQuery>;
 export type PreviousHandQueryResult = Apollo.QueryResult<PreviousHandQuery, PreviousHandQueryVariables>;
 export const ScorecardDocument = gql`
     query Scorecard($gameId: String!, $playerToken: String!) {
@@ -750,7 +851,7 @@ export const ScorecardDocument = gql`
  *   },
  * });
  */
-export function useScorecardQuery(baseOptions: Apollo.QueryHookOptions<ScorecardQuery, ScorecardQueryVariables>) {
+export function useScorecardQuery(baseOptions: Apollo.QueryHookOptions<ScorecardQuery, ScorecardQueryVariables> & ({ variables: ScorecardQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<ScorecardQuery, ScorecardQueryVariables>(ScorecardDocument, options);
       }
@@ -758,9 +859,133 @@ export function useScorecardLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<ScorecardQuery, ScorecardQueryVariables>(ScorecardDocument, options);
         }
+// @ts-ignore
+export function useScorecardSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ScorecardQuery, ScorecardQueryVariables>): Apollo.UseSuspenseQueryResult<ScorecardQuery, ScorecardQueryVariables>;
+export function useScorecardSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ScorecardQuery, ScorecardQueryVariables>): Apollo.UseSuspenseQueryResult<ScorecardQuery | undefined, ScorecardQueryVariables>;
+export function useScorecardSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ScorecardQuery, ScorecardQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ScorecardQuery, ScorecardQueryVariables>(ScorecardDocument, options);
+        }
 export type ScorecardQueryHookResult = ReturnType<typeof useScorecardQuery>;
 export type ScorecardLazyQueryHookResult = ReturnType<typeof useScorecardLazyQuery>;
+export type ScorecardSuspenseQueryHookResult = ReturnType<typeof useScorecardSuspenseQuery>;
 export type ScorecardQueryResult = Apollo.QueryResult<ScorecardQuery, ScorecardQueryVariables>;
+export const AdvanceTrickDocument = gql`
+    mutation AdvanceTrick($gameId: String!) {
+  advanceTrick(gameId: $gameId)
+}
+    `;
+export type AdvanceTrickMutationFn = Apollo.MutationFunction<AdvanceTrickMutation, AdvanceTrickMutationVariables>;
+
+/**
+ * __useAdvanceTrickMutation__
+ *
+ * To run a mutation, you first call `useAdvanceTrickMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAdvanceTrickMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [advanceTrickMutation, { data, loading, error }] = useAdvanceTrickMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *   },
+ * });
+ */
+export function useAdvanceTrickMutation(baseOptions?: Apollo.MutationHookOptions<AdvanceTrickMutation, AdvanceTrickMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AdvanceTrickMutation, AdvanceTrickMutationVariables>(AdvanceTrickDocument, options);
+      }
+export type AdvanceTrickMutationHookResult = ReturnType<typeof useAdvanceTrickMutation>;
+export type AdvanceTrickMutationResult = Apollo.MutationResult<AdvanceTrickMutation>;
+export type AdvanceTrickMutationOptions = Apollo.BaseMutationOptions<AdvanceTrickMutation, AdvanceTrickMutationVariables>;
+export const TrickResultDataDocument = gql`
+    query TrickResultData($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    currentRound {
+      id
+      phase
+      lastCompletedHand {
+        id
+        cardsPlayed {
+          id
+          playerId
+          card {
+            __typename
+            ... on SpecialCard {
+              id
+              type
+              selection
+            }
+            ... on ColoredCard {
+              id
+              color
+              number
+            }
+          }
+        }
+        winningCard {
+          id
+          playerId
+          card {
+            __typename
+            ... on SpecialCard {
+              id
+              type
+              selection
+            }
+            ... on ColoredCard {
+              id
+              color
+              number
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useTrickResultDataQuery__
+ *
+ * To run a query within a React component, call `useTrickResultDataQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTrickResultDataQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useTrickResultDataQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function useTrickResultDataQuery(baseOptions: Apollo.QueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables> & ({ variables: TrickResultDataQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<TrickResultDataQuery, TrickResultDataQueryVariables>(TrickResultDataDocument, options);
+      }
+export function useTrickResultDataLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<TrickResultDataQuery, TrickResultDataQueryVariables>(TrickResultDataDocument, options);
+        }
+// @ts-ignore
+export function useTrickResultDataSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>): Apollo.UseSuspenseQueryResult<TrickResultDataQuery, TrickResultDataQueryVariables>;
+export function useTrickResultDataSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>): Apollo.UseSuspenseQueryResult<TrickResultDataQuery | undefined, TrickResultDataQueryVariables>;
+export function useTrickResultDataSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<TrickResultDataQuery, TrickResultDataQueryVariables>(TrickResultDataDocument, options);
+        }
+export type TrickResultDataQueryHookResult = ReturnType<typeof useTrickResultDataQuery>;
+export type TrickResultDataLazyQueryHookResult = ReturnType<typeof useTrickResultDataLazyQuery>;
+export type TrickResultDataSuspenseQueryHookResult = ReturnType<typeof useTrickResultDataSuspenseQuery>;
+export type TrickResultDataQueryResult = Apollo.QueryResult<TrickResultDataQuery, TrickResultDataQueryVariables>;
 export const AddPlayerDocument = gql`
     mutation AddPlayer($gameId: String!, $name: String!) {
   addPlayer(gameId: $gameId, name: $name)
@@ -822,7 +1047,7 @@ export const LobbyQueryDocument = gql`
  *   },
  * });
  */
-export function useLobbyQueryQuery(baseOptions: Apollo.QueryHookOptions<LobbyQueryQuery, LobbyQueryQueryVariables>) {
+export function useLobbyQueryQuery(baseOptions: Apollo.QueryHookOptions<LobbyQueryQuery, LobbyQueryQueryVariables> & ({ variables: LobbyQueryQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<LobbyQueryQuery, LobbyQueryQueryVariables>(LobbyQueryDocument, options);
       }
@@ -830,8 +1055,16 @@ export function useLobbyQueryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<LobbyQueryQuery, LobbyQueryQueryVariables>(LobbyQueryDocument, options);
         }
+// @ts-ignore
+export function useLobbyQuerySuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<LobbyQueryQuery, LobbyQueryQueryVariables>): Apollo.UseSuspenseQueryResult<LobbyQueryQuery, LobbyQueryQueryVariables>;
+export function useLobbyQuerySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<LobbyQueryQuery, LobbyQueryQueryVariables>): Apollo.UseSuspenseQueryResult<LobbyQueryQuery | undefined, LobbyQueryQueryVariables>;
+export function useLobbyQuerySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<LobbyQueryQuery, LobbyQueryQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<LobbyQueryQuery, LobbyQueryQueryVariables>(LobbyQueryDocument, options);
+        }
 export type LobbyQueryQueryHookResult = ReturnType<typeof useLobbyQueryQuery>;
 export type LobbyQueryLazyQueryHookResult = ReturnType<typeof useLobbyQueryLazyQuery>;
+export type LobbyQuerySuspenseQueryHookResult = ReturnType<typeof useLobbyQuerySuspenseQuery>;
 export type LobbyQueryQueryResult = Apollo.QueryResult<LobbyQueryQuery, LobbyQueryQueryVariables>;
 export const PlayersDocument = gql`
     query Players($gameId: String!) {
@@ -861,7 +1094,7 @@ export const PlayersDocument = gql`
  *   },
  * });
  */
-export function usePlayersQuery(baseOptions: Apollo.QueryHookOptions<PlayersQuery, PlayersQueryVariables>) {
+export function usePlayersQuery(baseOptions: Apollo.QueryHookOptions<PlayersQuery, PlayersQueryVariables> & ({ variables: PlayersQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<PlayersQuery, PlayersQueryVariables>(PlayersDocument, options);
       }
@@ -869,8 +1102,16 @@ export function usePlayersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Pl
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<PlayersQuery, PlayersQueryVariables>(PlayersDocument, options);
         }
+// @ts-ignore
+export function usePlayersSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<PlayersQuery, PlayersQueryVariables>): Apollo.UseSuspenseQueryResult<PlayersQuery, PlayersQueryVariables>;
+export function usePlayersSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PlayersQuery, PlayersQueryVariables>): Apollo.UseSuspenseQueryResult<PlayersQuery | undefined, PlayersQueryVariables>;
+export function usePlayersSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PlayersQuery, PlayersQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PlayersQuery, PlayersQueryVariables>(PlayersDocument, options);
+        }
 export type PlayersQueryHookResult = ReturnType<typeof usePlayersQuery>;
 export type PlayersLazyQueryHookResult = ReturnType<typeof usePlayersLazyQuery>;
+export type PlayersSuspenseQueryHookResult = ReturnType<typeof usePlayersSuspenseQuery>;
 export type PlayersQueryResult = Apollo.QueryResult<PlayersQuery, PlayersQueryVariables>;
 export const StartGameDocument = gql`
     mutation StartGame($gameId: String!) {
@@ -932,12 +1173,20 @@ export function useGamesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Game
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GamesQuery, GamesQueryVariables>(GamesDocument, options);
         }
+// @ts-ignore
+export function useGamesSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GamesQuery, GamesQueryVariables>): Apollo.UseSuspenseQueryResult<GamesQuery, GamesQueryVariables>;
+export function useGamesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GamesQuery, GamesQueryVariables>): Apollo.UseSuspenseQueryResult<GamesQuery | undefined, GamesQueryVariables>;
+export function useGamesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GamesQuery, GamesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GamesQuery, GamesQueryVariables>(GamesDocument, options);
+        }
 export type GamesQueryHookResult = ReturnType<typeof useGamesQuery>;
 export type GamesLazyQueryHookResult = ReturnType<typeof useGamesLazyQuery>;
+export type GamesSuspenseQueryHookResult = ReturnType<typeof useGamesSuspenseQuery>;
 export type GamesQueryResult = Apollo.QueryResult<GamesQuery, GamesQueryVariables>;
 export const NewGameDocument = gql`
-    mutation NewGame {
-  newGame
+    mutation NewGame($deckConfig: DeckConfigInput) {
+  newGame(deckConfig: $deckConfig)
 }
     `;
 export type NewGameMutationFn = Apollo.MutationFunction<NewGameMutation, NewGameMutationVariables>;
@@ -955,6 +1204,7 @@ export type NewGameMutationFn = Apollo.MutationFunction<NewGameMutation, NewGame
  * @example
  * const [newGameMutation, { data, loading, error }] = useNewGameMutation({
  *   variables: {
+ *      deckConfig: // value for 'deckConfig'
  *   },
  * });
  */
