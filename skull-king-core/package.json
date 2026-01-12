@@ -1,13 +1,10 @@
 {
   "name": "@skull-king/core",
   "version": "1.0.1",
-  "description": "",
+  "private": true,
+  "description": "Skull King core game logic",
   "main": "dist/index.js",
   "scripts": {},
   "author": "Trevor Scheer <trevor.scheer@gmail.com>",
-  "license": "ISC",
-  "publishConfig": {
-    "access": "public"
-  },
-  "gitHead": "67229da7eac1c90b0b8ad5c7e7fba21978710fae"
+  "license": "ISC"
 }

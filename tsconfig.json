@@ -3,18 +3,11 @@
   "include": [],
   "compilerOptions": {
     "composite": true,
-    // needed for ts-jest?
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["ES2022"],
     "esModuleInterop": true
   },
   "references": [
-    {
-      "path": "./skull-king-core"
-    },
-    {
-      "path": "./skull-king-server"
-    }
+    { "path": "./skull-king-core" },
+    { "path": "./skull-king-server" }
   ]
 }
