@@ -4,7 +4,6 @@
   "private": true,
   "description": "Skull King core game logic",
   "main": "dist/index.js",
-  "scripts": {},
   "author": "Trevor Scheer <trevor.scheer@gmail.com>",
   "license": "ISC"
 }

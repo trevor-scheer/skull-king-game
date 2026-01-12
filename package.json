@@ -14,7 +14,7 @@
     "watch": "tsc -b -w",
     "test": "jest",
     "dev": "nodemon ./skull-king-server/dist/index.js",
-    "dev:web": "yarn workspace @skull-king/web start",
+    "dev:web": "yarn workspace @skull-king/web dev",
     "start": "node ./skull-king-server/dist/index.js",
     "heroku": "node ./skull-king-server/dist/index.js",
     "debug": "node --inspect-brk ./skull-king-server/dist/index.js",

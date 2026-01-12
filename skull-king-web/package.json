@@ -1,5 +1,5 @@
 {
-  "name": "skull-king-web",
+  "name": "@skull-king/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",

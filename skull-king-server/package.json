@@ -4,12 +4,11 @@
   "private": true,
   "description": "Skull King GraphQL API server",
   "main": "dist/index.js",
-  "scripts": {},
   "author": "Trevor Scheer <trevor.scheer@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@skull-king/core": "workspace:*",
     "@apollo/server": "^4.11.3",
+    "@skull-king/core": "workspace:*",
     "graphql": "^16.10.0"
   }
 }
