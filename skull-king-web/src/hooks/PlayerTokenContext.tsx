@@ -18,9 +18,9 @@ export const PlayerTokenProvider: FunctionComponent<{
   children: ReactNode;
 }> = ({ children }) => {
   const gameId = useGameId();
-  const [skullKingTokens, setSkullKingTokens] = useLocalStorage(
+  const [skullKingTokens, setSkullKingTokens] = useLocalStorage<Record<string, string>>(
     "skullKing",
-    {} as Record<string, string>
+    {}
   );
 
   const token = gameId ? skullKingTokens[gameId] : null;

@@ -15,20 +15,21 @@ import "./Hand.scss";
 
 export const Hand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
-  const gameId = useGameId() ?? ""; // TODO: hacky fallback
+  const gameId = useGameId();
   const [justClicked, setJustClicked] = useState(false);
 
-  // TODO: error handling
   const { data, loading } = useMyHandQuery({
-    variables: { gameId, playerToken: playerToken! },
+    variables: { gameId: gameId ?? "", playerToken: playerToken ?? "" },
     pollInterval: 2000,
+    skip: !gameId || !playerToken,
   });
 
   const [playSpecialCard] = usePlaySpecialCardMutation();
   const [playColoredCard] = usePlayColoredCardMutation();
 
-  if (loading) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
+  if (!gameId) return <div>No game ID</div>;
+  if (loading) return <div>Loading...</div>;
 
   const currentRound = data?.state?.currentRound;
   const { phase, playerTurn, trickColor } = currentRound ?? {};
@@ -62,12 +63,16 @@ export const Hand: React.FunctionComponent = function () {
     return noMatches || matchesTrickColor;
   }
 
-  function debounceClick(fn: any) {
+  function debounceClick(fn: () => Promise<unknown>) {
     setJustClicked(true);
-    fn().then(() => setJustClicked(false));
+    fn().finally(() => setJustClicked(false));
   }
 
-  const sortedHand = [...me?.hand!].sort((a, b) => {
+  if (!me?.hand) {
+    return <div>Loading hand...</div>;
+  }
+
+  const sortedHand = [...me.hand].sort((a, b) => {
     return getSortOrder(a) - getSortOrder(b);
   });
 

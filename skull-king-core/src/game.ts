@@ -41,7 +41,7 @@ export class Game {
   private options: GameOptions;
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
-  private currentRound: Round;
+  private currentRound: Round | null;
   private endGameListeners: (() => void)[] = [];
 
   constructor(id: string, options?: GameOptions) {
@@ -563,7 +563,7 @@ export class Game {
   private endGame() {
     this.phase = "postgame";
     // Clear currentRound in postgame - game is over
-    (this as any).currentRound = null;
+    this.currentRound = null;
     this.endGameListeners.forEach((listener) => listener());
   }
 
@@ -595,17 +595,15 @@ export class Game {
       })),
       me: undefined as Player | undefined,
     };
-    if (playerToken && this.currentRound) {
+    if (playerToken) {
       const playerName = this.playerTokens.get(playerToken);
-      const me = this.players.find((player) => player.name === playerName)!;
-      gameState.me = me;
-      if (currentRoundData) {
-        currentRoundData.myBid = this.currentRound.bids.get(me.name);
+      const me = this.players.find((player) => player.name === playerName);
+      if (me) {
+        gameState.me = me;
+        if (currentRoundData && this.currentRound) {
+          currentRoundData.myBid = this.currentRound.bids.get(me.name);
+        }
       }
-    } else if (playerToken) {
-      const playerName = this.playerTokens.get(playerToken);
-      const me = this.players.find((player) => player.name === playerName)!;
-      gameState.me = me;
     }
 
     return gameState;

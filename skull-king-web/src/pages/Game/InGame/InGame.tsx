@@ -20,10 +20,10 @@ export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
-  // TODO: error handling
   const { data, loading } = useGameStateQuery({
-    variables: { gameId: gameId!, playerToken: playerToken! },
+    variables: { gameId: gameId ?? "", playerToken: playerToken ?? "" },
     pollInterval: 2000,
+    skip: !gameId || !playerToken,
   });
 
   if (loading) return <div className="InGame-loading">Loading...</div>;
@@ -31,7 +31,8 @@ export const InGame: React.FunctionComponent = function () {
   const players = data?.state?.players ?? [];
   const me = data?.state?.me;
   const currentRound = data?.state?.currentRound;
-  const extendedRound = currentRound as typeof currentRound & ExtendedRound;
+  // Type assertion needed: GraphQL types may not include all Round fields
+  const extendedRound = currentRound as (typeof currentRound & ExtendedRound) | undefined;
 
   const { phase, myBid, leader, playerTurn } = currentRound ?? {};
   const roundNumber = extendedRound?.roundNumber ?? 1;

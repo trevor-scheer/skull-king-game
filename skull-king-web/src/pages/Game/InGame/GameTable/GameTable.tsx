@@ -1,5 +1,11 @@
+import { CSSProperties } from "react";
 import { CardBack } from "../Card/CardBack";
 import "./GameTable.scss";
+
+// Extend CSSProperties to allow CSS custom properties
+type CSSPropertiesWithVars = CSSProperties & {
+  [key: `--${string}`]: string | number;
+};
 
 interface PlayerInfo {
   id: string;
@@ -95,10 +101,10 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
 
           // Calculate position on the ellipse
           // Using CSS custom properties for positioning
-          const style = {
+          const style: CSSPropertiesWithVars = {
             "--angle": `${position?.angle ?? 270}deg`,
             "--index": index,
-          } as React.CSSProperties;
+          };
 
           return (
             <div
