@@ -1,4 +1,5 @@
 import { Navigate } from "react-router-dom";
+import { ErrorMessage } from "../../components/ErrorMessage";
 import { usePlayerToken } from "../../hooks/PlayerTokenContext";
 import { useGameId } from "../../hooks/useGameId";
 import { useGamePhaseQuery } from "../../types/graphqlTypes";
@@ -8,16 +9,28 @@ import { PostGame } from "./PostGame/PostGame";
 import { Spectator } from "./Spectator/Spectator";
 
 export function Game() {
-  const gameId = useGameId() ?? ""; // TODO: hacky fallback
+  const gameId = useGameId();
   const [playerToken] = usePlayerToken();
 
-  // TODO: error handling
-  const { data, loading } = useGamePhaseQuery({
-    variables: { gameId },
+  const { data, loading, error, refetch } = useGamePhaseQuery({
+    variables: { gameId: gameId ?? "" },
     pollInterval: 2000,
+    skip: !gameId,
   });
 
+  if (!gameId) {
+    return <Navigate to="/" />;
+  }
+
   if (loading) return <div>Loading...</div>;
+
+  if (error) {
+    return (
+      <div style={{ padding: "2rem" }}>
+        <ErrorMessage error={error} onRetry={() => refetch()} />
+      </div>
+    );
+  }
 
   // No game found
   if (!data?.state) {

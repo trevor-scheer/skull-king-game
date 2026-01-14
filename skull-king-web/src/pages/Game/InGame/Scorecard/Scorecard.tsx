@@ -1,4 +1,5 @@
 import { gql } from "@apollo/client";
+import { ErrorMessage } from "../../../../components/ErrorMessage";
 import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../../hooks/useGameId";
 import { useScorecardQuery } from "../../../../types/graphqlTypes";
@@ -27,16 +28,23 @@ gql`
 
 export const Scorecard: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
-  const gameId = useGameId() ?? ""; // TODO: hacky fallback
+  const gameId = useGameId();
 
-  // TODO: error handling
-  const { data, loading } = useScorecardQuery({
-    variables: { gameId, playerToken: playerToken! },
+  const { data, loading, error, refetch } = useScorecardQuery({
+    variables: { gameId: gameId ?? "", playerToken: playerToken! },
     pollInterval: 2000,
-
+    skip: !gameId || !playerToken,
   });
 
   if (loading) return <div>Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="Scorecard Scorecard--error">
+        <ErrorMessage error={error} onRetry={() => refetch()} />
+      </div>
+    );
+  }
 
   const scorecard = data?.state?.scorecard;
   if (!scorecard?.[0]) return null;

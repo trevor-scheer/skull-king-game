@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ErrorMessage } from "../../../components/ErrorMessage";
 import { useGameId } from "../../../hooks/useGameId";
 import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { useAddPlayerMutation } from "../../../types/graphqlTypes";
@@ -13,10 +14,11 @@ export const JoinGame: React.FunctionComponent<{
     ""
   );
   const [name, updateName] = useState<string>(defaultName);
+  const [joinError, setJoinError] = useState<Error | null>(null);
 
   const [createPlayer, result] = useAddPlayerMutation({
     variables: { gameId: gameId!, name },
-    onError: console.error,
+    onError: (error) => setJoinError(error),
   });
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export const JoinGame: React.FunctionComponent<{
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setJoinError(null);
     if (name.trim()) {
       createPlayer();
       setDefaultName(name);
@@ -35,6 +38,9 @@ export const JoinGame: React.FunctionComponent<{
 
   return (
     <form className="JoinGame" onSubmit={handleSubmit}>
+      {joinError && (
+        <ErrorMessage error={joinError} onRetry={() => setJoinError(null)} />
+      )}
       <label className="JoinGame-label">
         Enter yer name, sailor:
         <input

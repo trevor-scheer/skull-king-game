@@ -1,3 +1,4 @@
+import { ErrorMessage } from "../../../../components/ErrorMessage";
 import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../../hooks/useGameId";
 import { useCardsPlayedQuery } from "../../../../types/graphqlTypes";
@@ -8,8 +9,7 @@ export const PlayedCards: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
-  // TODO: error handling
-  const { data, loading } = useCardsPlayedQuery({
+  const { data, loading, error, refetch } = useCardsPlayedQuery({
     variables: { gameId: gameId!, playerToken: playerToken! },
     pollInterval: 2000,
   });
@@ -20,6 +20,14 @@ export const PlayedCards: React.FunctionComponent = function () {
     return (
       <div className="PlayedCards PlayedCards--loading">
         <div className="PlayedCards-loadingText">Waiting for plays...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="PlayedCards PlayedCards--error">
+        <ErrorMessage error={error} onRetry={() => refetch()} />
       </div>
     );
   }

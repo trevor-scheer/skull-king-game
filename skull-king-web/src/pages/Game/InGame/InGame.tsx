@@ -1,3 +1,4 @@
+import { ErrorMessage } from "../../../components/ErrorMessage";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { useGameStateQuery } from "../../../types/graphqlTypes";
@@ -20,13 +21,20 @@ export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
-  // TODO: error handling
-  const { data, loading } = useGameStateQuery({
+  const { data, loading, error, refetch } = useGameStateQuery({
     variables: { gameId: gameId!, playerToken: playerToken! },
     pollInterval: 2000,
   });
 
   if (loading) return <div className="InGame-loading">Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="InGame-error">
+        <ErrorMessage error={error} onRetry={() => refetch()} />
+      </div>
+    );
+  }
 
   const players = data?.state?.players ?? [];
   const me = data?.state?.me;

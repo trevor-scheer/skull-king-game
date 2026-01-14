@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ErrorMessage } from "../../../../components/ErrorMessage";
 import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../../hooks/useGameId";
 import {
@@ -15,20 +16,30 @@ import "./Hand.scss";
 
 export const Hand: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
-  const gameId = useGameId() ?? ""; // TODO: hacky fallback
+  const gameId = useGameId();
   const [justClicked, setJustClicked] = useState(false);
+  const [playError, setPlayError] = useState<Error | null>(null);
 
-  // TODO: error handling
-  const { data, loading } = useMyHandQuery({
-    variables: { gameId, playerToken: playerToken! },
+  const { data, loading, error, refetch } = useMyHandQuery({
+    variables: { gameId: gameId ?? "", playerToken: playerToken! },
     pollInterval: 2000,
+    skip: !gameId || !playerToken,
   });
 
   const [playSpecialCard] = usePlaySpecialCardMutation();
   const [playColoredCard] = usePlayColoredCardMutation();
 
-  if (loading) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
+  if (!gameId) return <div>No game ID</div>;
+  if (loading) return <div>Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="Hand Hand--error">
+        <ErrorMessage error={error} onRetry={() => refetch()} />
+      </div>
+    );
+  }
 
   const currentRound = data?.state?.currentRound;
   const { phase, playerTurn, trickColor } = currentRound ?? {};
@@ -62,9 +73,16 @@ export const Hand: React.FunctionComponent = function () {
     return noMatches || matchesTrickColor;
   }
 
-  function debounceClick(fn: any) {
+  function debounceClick(fn: () => Promise<unknown>) {
     setJustClicked(true);
-    fn().then(() => setJustClicked(false));
+    setPlayError(null);
+    fn()
+      .catch((err) => {
+        setPlayError(err);
+      })
+      .finally(() => {
+        setJustClicked(false);
+      });
   }
 
   const sortedHand = [...me?.hand!].sort((a, b) => {
@@ -73,6 +91,9 @@ export const Hand: React.FunctionComponent = function () {
 
   return (
     <div className={`Hand${myTurn ? " Hand--myTurn" : ""}`}>
+      {playError && (
+        <ErrorMessage error={playError} onRetry={() => setPlayError(null)} />
+      )}
       {phase === "play" && (
         <p className="Hand-label">
           {myTurn ? "Your Turn!" : "My Hand"} (Bid: {currentRound?.myBid})

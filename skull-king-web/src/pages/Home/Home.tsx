@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
+import { ErrorMessage } from "../../components/ErrorMessage";
 import { useGamesQuery, useNewGameMutation, DeckConfigInput } from "../../types/graphqlTypes";
 import "./Home.scss";
 
@@ -34,6 +35,7 @@ const OPTIONAL_CARDS: OptionalCard[] = [
 
 export function Home() {
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+  const [createError, setCreateError] = useState<Error | null>(null);
   const [deckConfig, setDeckConfig] = useState<DeckConfigInput>({
     includeMermaids: false,
     includeKraken: false,
@@ -41,9 +43,7 @@ export function Home() {
     includeLoot: false,
   });
 
-  const { data, loading, error } = useGamesQuery({ pollInterval: 2000 });
-
-  if (error) console.error(error);
+  const { data, loading, error, refetch } = useGamesQuery({ pollInterval: 2000 });
 
   const [createGame, { loading: creating }] = useNewGameMutation({
     refetchQueries: ["Games"],
@@ -62,6 +62,14 @@ export function Home() {
       <div className="Home Home--loading">
         <div className="Home-spinner" />
         <p>Loading the fleet...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="Home Home--error">
+        <ErrorMessage error={error} onRetry={() => refetch()} />
       </div>
     );
   }
@@ -121,13 +129,25 @@ export function Home() {
           </div>
         </div>
 
+        {createError && (
+          <ErrorMessage
+            error={createError}
+            onRetry={() => setCreateError(null)}
+          />
+        )}
+
         <button
           className="Home-createButton"
-          onClick={() =>
-            createGame({ variables: { deckConfig } }).then((result) => {
-              setRedirectTo(result.data?.newGame);
-            })
-          }
+          onClick={() => {
+            setCreateError(null);
+            createGame({ variables: { deckConfig } })
+              .then((result) => {
+                setRedirectTo(result.data?.newGame);
+              })
+              .catch((err) => {
+                setCreateError(err);
+              });
+          }}
           disabled={creating}
         >
           {creating ? "Launching Ship..." : "Start New Voyage"}

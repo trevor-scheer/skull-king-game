@@ -1,3 +1,4 @@
+import { ErrorMessage } from "../../../components/ErrorMessage";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { useLobbyQueryQuery } from "../../../types/graphqlTypes";
@@ -6,23 +7,30 @@ import { StartGame } from "../StartGame/StartGame";
 import "./Lobby.scss";
 
 export const Lobby: React.FunctionComponent = function () {
-  const gameId = useGameId() ?? ""; // TODO: hacky fallback
+  const gameId = useGameId();
   const [playerToken, setToken] = usePlayerToken();
-  const variables = { gameId, playerToken };
+  const variables = { gameId: gameId ?? "", playerToken };
 
-  const { data, loading, error } = useLobbyQueryQuery({
+  const { data, loading, error, refetch } = useLobbyQueryQuery({
     variables,
     pollInterval: 2000,
+    skip: !gameId,
   });
 
   function onJoin(playerToken: string | null) {
-    if (!playerToken) return; // TODO: throw error?
+    if (!playerToken || !gameId) return;
     setToken(playerToken, gameId);
   }
 
-  if (error) console.error(error);
-
   if (loading) return <div>Loading...</div>;
+
+  if (error) {
+    return (
+      <div className="Lobby Lobby--error">
+        <ErrorMessage error={error} onRetry={() => refetch()} />
+      </div>
+    );
+  }
 
   return (
     <div className="Lobby">
