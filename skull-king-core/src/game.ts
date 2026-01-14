@@ -489,7 +489,6 @@ export class Game {
       "Programming error: `currentRound` is unexpectedly `null`"
     );
     if (this.currentRound.roundNumber === 10) {
-      // TODO: implement endGame
       this.endGame();
       return;
     }

@@ -7,6 +7,7 @@ export class Deck {
   // A deck of cards to be shuffled, drawn from, etc.
   private cardsInPlay: Card[] = [];
   private shuffleSeed: number | null;
+  private noShuffle: boolean;
 
   constructor(options?: DeckOptions) {
     // Priority: customDeck > deckConfig > basicDeck
@@ -28,21 +29,42 @@ export class Deck {
     );
 
     this.shuffleSeed = options?.shuffleSeed ?? null;
+    this.noShuffle = options?.noShuffle ?? false;
     this.shuffle();
   }
 
   public shuffle() {
     const cloned = this.originalDeck.slice();
-    for (let i = cloned.length - 1; i > 0; i--) {
-      const j = Math.floor((this.shuffleSeed ?? Math.random()) * (i + 1));
-      [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+
+    if (this.noShuffle) {
+      // For testing: reverse so draw() returns cards in original order
+      // (draw pops from end, so reverse makes first card in deck = first drawn)
+      this.cardsInPlay = cloned.reverse();
+      return;
     }
-    // Honestly probably not necessary
+
+    // Use seeded PRNG if seed provided, otherwise use Math.random
+    const random = this.shuffleSeed !== null
+      ? this.createSeededRandom(this.shuffleSeed)
+      : Math.random;
+
+    // Fisher-Yates shuffle
     for (let i = cloned.length - 1; i > 0; i--) {
-      const j = Math.floor((this.shuffleSeed ?? Math.random()) * (i + 1));
+      const j = Math.floor(random() * (i + 1));
       [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
     }
     this.cardsInPlay = cloned;
+  }
+
+  // Simple seeded PRNG (mulberry32)
+  private createSeededRandom(seed: number): () => number {
+    let state = seed;
+    return () => {
+      state = (state + 0x6D2B79F5) | 0;
+      let t = Math.imul(state ^ (state >>> 15), 1 | state);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
   }
 
   public draw() {
@@ -69,4 +91,5 @@ interface DeckOptions {
   shuffleSeed?: number;
   customDeck?: Card[];
   deckConfig?: DeckConfiguration;
+  noShuffle?: boolean;
 }
