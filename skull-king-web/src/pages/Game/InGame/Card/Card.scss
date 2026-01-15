@@ -7,25 +7,31 @@
   width: calc(var(--card-width) * var(--card-scale));
   height: calc(var(--card-height) * var(--card-scale));
 
+  // 3D transform setup
+  perspective: 1000px;
+  transform-style: preserve-3d;
+
   // Card appearance
   border-radius: var(--radius-card);
   background: linear-gradient(
-    135deg,
+    145deg,
     $color-parchment-light 0%,
-    $color-parchment-medium 100%
+    $color-parchment-medium 60%,
+    darken($color-parchment-medium, 5%) 100%
   );
 
-  // Weathered border effect
-  border: 3px solid $color-wood-medium;
+  // Refined border with subtle inner highlight
+  border: 2px solid $color-wood-medium;
   box-shadow:
     var(--shadow-card),
-    inset 0 0 0 1px rgba($color-gold-dark, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0 0 1px rgba($color-gold-dark, 0.15);
 
-  // Smooth transitions
+  // Smooth, tactile transitions
   transition:
-    transform var(--transition-normal),
-    box-shadow var(--transition-normal),
-    filter var(--transition-normal);
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    filter 200ms cubic-bezier(0.4, 0, 0.2, 1);
 
   // Prevent text selection during gameplay
   user-select: none;
@@ -34,9 +40,21 @@
   position: relative;
   flex-shrink: 0;
 
+  // Add subtle texture
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--radius-card) - 2px);
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
   // Disabled/grayed out state
   &-disabled {
-    filter: grayscale(40%) brightness(0.75);
+    filter: grayscale(35%) brightness(0.8);
+    opacity: 0.85;
 
     .Card-content {
       cursor: not-allowed;
@@ -47,19 +65,27 @@
   &-playable {
     cursor: pointer;
 
+    // Subtle glow indicator
     &::after {
       content: '';
       position: absolute;
-      inset: -4px;
-      border-radius: calc(var(--radius-card) + 4px);
-      background: linear-gradient(
-        135deg,
-        rgba($color-gold-light, 0.3),
-        rgba($color-gold-medium, 0.1)
+      inset: -3px;
+      border-radius: calc(var(--radius-card) + 3px);
+      background: radial-gradient(
+        ellipse at center,
+        rgba($color-gold-light, 0.25) 0%,
+        rgba($color-gold-medium, 0.1) 50%,
+        transparent 70%
       );
       opacity: 0;
-      animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2.5s ease-in-out infinite;
       pointer-events: none;
+      z-index: -1;
+    }
+
+    // Hover shows the glow
+    &:hover::after {
+      opacity: 1;
     }
   }
 
@@ -76,6 +102,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
   }
 
   // Card image
@@ -91,18 +119,26 @@
     width: 100%;
     height: 100%;
     background:
-      // Decorative pattern
+      // Decorative diamond pattern
       repeating-linear-gradient(
         45deg,
         transparent,
-        transparent 10px,
-        rgba($color-gold-dark, 0.1) 10px,
-        rgba($color-gold-dark, 0.1) 20px
+        transparent 8px,
+        rgba($color-gold-dark, 0.08) 8px,
+        rgba($color-gold-dark, 0.08) 16px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 8px,
+        rgba($color-gold-dark, 0.05) 8px,
+        rgba($color-gold-dark, 0.05) 16px
       ),
       linear-gradient(
-        180deg,
-        $color-ocean-dark 0%,
-        $color-ocean-medium 50%,
+        170deg,
+        lighten($color-ocean-dark, 8%) 0%,
+        $color-ocean-dark 30%,
+        $color-ocean-medium 70%,
         $color-ocean-dark 100%
       );
     border-radius: calc(var(--radius-card) - 4px);
@@ -111,21 +147,25 @@
     justify-content: center;
     position: relative;
 
-    // Skull icon placeholder (CSS-only)
+    // Skull icon
     &::before {
       content: '☠';
-      font-size: calc(var(--card-width) * var(--card-scale) * 0.4);
+      font-size: calc(var(--card-width) * var(--card-scale) * 0.38);
       color: $color-gold-medium;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba($color-gold-dark, 0.3);
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
     }
 
-    // Gold border accent
+    // Elegant gold border frame
     &::after {
       content: '';
       position: absolute;
-      inset: 8px;
-      border: 2px solid rgba($color-gold-dark, 0.4);
-      border-radius: calc(var(--radius-card) - 8px);
+      inset: 10px;
+      border: 1px solid rgba($color-gold-dark, 0.35);
+      border-radius: calc(var(--radius-card) - 10px);
+      box-shadow: inset 0 0 0 1px rgba($color-gold-dark, 0.15);
       pointer-events: none;
     }
   }
@@ -133,24 +173,32 @@
   // Tigress special buttons
   &-tigress-btn {
     position: absolute;
-    background: rgba($color-gold-medium, 0.2);
+    background: rgba($color-gold-medium, 0.15);
     border: 2px solid transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;
+    backdrop-filter: blur(2px);
     transition:
-      background-color var(--transition-fast),
-      border-color var(--transition-fast),
-      transform var(--transition-fast);
+      background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover:not(:disabled) {
-      background: rgba($color-gold-medium, 0.5);
+      background: rgba($color-gold-medium, 0.4);
       border-color: $color-gold-light;
-      transform: scale(1.05);
+      transform: scale(1.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     &:disabled {
       cursor: not-allowed;
-      opacity: 0.5;
+      opacity: 0.4;
     }
 
     &--escape {
@@ -181,12 +229,22 @@
 
 // Animation for dealt cards
 .Card--dealing {
-  animation: card-deal 0.5s ease-out forwards;
+  animation: card-deal 550ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   opacity: 0;
 }
 
 // Winning card highlight
 .Card--winner {
-  animation: card-win 1s ease-in-out infinite;
+  animation: card-win 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   z-index: 100 !important;
+
+  // Add a subtle golden ring
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: calc(var(--radius-card) + 4px);
+    border: 2px solid rgba($color-gold-light, 0.6);
+    pointer-events: none;
+  }
 }

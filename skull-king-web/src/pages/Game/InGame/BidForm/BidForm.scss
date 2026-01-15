@@ -3,14 +3,18 @@
 
 .BidForm {
   @include flex-column-center;
-  gap: var(--space-md);
-  animation: fade-in-up 0.3s ease-out;
+  gap: var(--space-lg);
+  animation: fade-in-up 350ms cubic-bezier(0, 0, 0.2, 1) forwards;
+  padding: var(--space-md);
 
   &-title {
     font-family: $font-display;
     font-size: $font-size-2xl;
+    font-weight: 600;
     @include gold-text;
     margin: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
 
   &-subtitle {
@@ -19,6 +23,7 @@
     color: $color-text-dark;
     font-style: italic;
     margin: 0;
+    opacity: 0.85;
   }
 
   &-buttons {
@@ -26,68 +31,121 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--space-sm);
-    max-width: 400px;
+    max-width: 420px;
+    padding: var(--space-sm);
   }
 
   &-button {
+    // Reset and base styles
     @include button-base;
-    min-width: 48px;
-    height: 48px;
+
+    // Coin dimensions
+    min-width: 52px;
+    height: 52px;
     padding: var(--space-sm);
+
+    // Typography
     font-family: $font-display;
     font-size: $font-size-xl;
+    font-weight: 600;
+    letter-spacing: 0;
 
-    // Gold coin style
-    background: linear-gradient(
-      145deg,
-      $color-gold-light 0%,
-      $color-gold-medium 50%,
-      $color-gold-dark 100%
-    );
+    // Gold coin appearance with metallic feel
+    background:
+      radial-gradient(
+        ellipse at 30% 20%,
+        rgba(255, 255, 255, 0.3) 0%,
+        transparent 50%
+      ),
+      linear-gradient(
+        160deg,
+        $color-gold-light 0%,
+        $color-gold-medium 35%,
+        $color-gold-dark 80%,
+        darken($color-gold-dark, 8%) 100%
+      );
     color: $color-text-dark;
-    border: 3px solid $color-gold-dark;
+
+    // Coin edge effect
+    border: 2px solid $color-gold-dark;
     border-radius: 50%;
+
+    // Depth and shine
     box-shadow:
-      0 4px 8px rgba(0, 0, 0, 0.3),
-      inset 0 2px 0 rgba(255, 255, 255, 0.3);
+      0 3px 6px rgba(0, 0, 0, 0.25),
+      0 6px 12px rgba(0, 0, 0, 0.15),
+      inset 0 2px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.15);
 
+    // Text depth
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.3),
+      0 -1px 0 rgba(0, 0, 0, 0.1);
+
+    // Smooth spring transitions
     transition:
-      transform var(--transition-fast),
-      box-shadow var(--transition-fast),
-      background var(--transition-fast);
+      transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      background 150ms cubic-bezier(0.4, 0, 0.2, 1);
 
+    // Hover - lift and glow
     &:hover:not(:disabled) {
-      transform: translateY(-3px) scale(1.1);
+      transform: translateY(-4px) scale(1.08);
       box-shadow:
-        0 6px 12px rgba(0, 0, 0, 0.4),
-        var(--shadow-glow-gold),
-        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+        0 6px 12px rgba(0, 0, 0, 0.25),
+        0 12px 24px rgba(0, 0, 0, 0.15),
+        0 0 24px rgba($color-gold-light, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     }
 
+    // Active - satisfying press
     &:active:not(:disabled) {
-      transform: translateY(0) scale(0.95);
+      transform: translateY(1px) scale(0.96);
       box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.3),
-        inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(0, 0, 0, 0.15);
+      transition-duration: 80ms;
     }
 
+    // Disabled state
     &:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
       transform: none;
+      filter: grayscale(30%);
     }
 
+    // Selected state - glowing highlight
     &--selected {
-      background: linear-gradient(
-        145deg,
-        $color-gold-shine 0%,
-        $color-gold-light 50%,
-        $color-gold-medium 100%
-      );
+      background:
+        radial-gradient(
+          ellipse at 30% 20%,
+          rgba(255, 255, 255, 0.4) 0%,
+          transparent 50%
+        ),
+        linear-gradient(
+          160deg,
+          $color-gold-shine 0%,
+          $color-gold-light 35%,
+          $color-gold-medium 80%,
+          $color-gold-dark 100%
+        );
       box-shadow:
-        0 0 20px rgba($color-gold-light, 0.6),
-        inset 0 2px 0 rgba(255, 255, 255, 0.4);
-      animation: turn-pulse 1s ease-in-out infinite;
+        0 0 0 3px rgba($color-gold-light, 0.5),
+        0 0 20px rgba($color-gold-light, 0.5),
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.5);
+      animation: turn-pulse 1.5s ease-out infinite;
+
+      &:hover:not(:disabled) {
+        box-shadow:
+          0 0 0 3px rgba($color-gold-light, 0.6),
+          0 0 30px rgba($color-gold-light, 0.6),
+          0 6px 12px rgba(0, 0, 0, 0.2),
+          inset 0 2px 0 rgba(255, 255, 255, 0.5);
+      }
     }
   }
 
@@ -96,11 +154,14 @@
     font-size: $font-size-base;
     color: $color-text-dark;
     margin-top: var(--space-sm);
+    animation: fade-in 200ms ease-out;
 
     strong {
       font-family: $font-display;
       font-size: $font-size-xl;
+      font-weight: 600;
       @include gold-text;
+      margin-left: var(--space-xs);
     }
   }
 
@@ -113,7 +174,9 @@
   &-loadingText {
     font-family: $font-display;
     font-size: $font-size-lg;
+    font-weight: 500;
     @include gold-text;
     animation: pulse 2s ease-in-out infinite;
+    letter-spacing: 1px;
   }
 }

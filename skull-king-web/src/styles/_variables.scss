@@ -63,13 +63,20 @@ $color-text-muted: #8b7355;
   --color-danger: #{$color-danger};
   --color-success: #{$color-success};
 
-  // Shadows
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.6);
-  --shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.7);
-  --shadow-glow-gold: 0 0 20px rgba(212, 168, 75, 0.5);
+  // Shadows - layered for realistic depth
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.2), 0 16px 32px rgba(0, 0, 0, 0.15);
+
+  // Card shadows - tactile and lifted
+  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.15);
+  --shadow-card-hover: 0 8px 16px rgba(0, 0, 0, 0.25), 0 16px 32px rgba(0, 0, 0, 0.2), 0 24px 48px rgba(0, 0, 0, 0.1);
+  --shadow-card-active: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  // Glow effects
+  --shadow-glow-gold: 0 0 20px rgba(212, 168, 75, 0.5), 0 0 40px rgba(212, 168, 75, 0.25);
+  --shadow-glow-gold-intense: 0 0 15px rgba(212, 168, 75, 0.7), 0 0 30px rgba(212, 168, 75, 0.5), 0 0 60px rgba(212, 168, 75, 0.3);
+  --shadow-inset-subtle: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 
   // Border Radius
   --radius-sm: 4px;
@@ -93,11 +100,19 @@ $color-text-muted: #8b7355;
   --card-width-lg: 150px;
   --card-height-lg: 210px;
 
-  // Transitions
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
-  --transition-slow: 400ms ease;
-  --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  // Transitions - refined easing for tactile feel
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Spring animations for playful interactions
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-spring: 600ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-snap: 300ms cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+  // Smooth deceleration for entrances
+  --transition-enter: 400ms cubic-bezier(0, 0, 0.2, 1);
+  --transition-exit: 200ms cubic-bezier(0.4, 0, 1, 1);
 
   // Z-index layers
   --z-base: 0;
@@ -111,9 +126,14 @@ $color-text-muted: #8b7355;
 // -----------------------------
 // TYPOGRAPHY
 // -----------------------------
-$font-display: 'Pirata One', cursive;
-$font-body: 'Crimson Text', Georgia, serif;
-$font-ui: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+// Display: Cinzel - elegant, classic feel with maritime gravitas
+// Accent: IM Fell English SC - old-world charm for special moments
+// Body: Spectral - refined serif for readability
+// UI: Inter - clean, modern interface text
+$font-display: 'Cinzel', 'Times New Roman', serif;
+$font-display-accent: 'IM Fell English SC', 'Cinzel', serif;
+$font-body: 'Spectral', Georgia, serif;
+$font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
 $font-size-xs: 0.75rem;
 $font-size-sm: 0.875rem;

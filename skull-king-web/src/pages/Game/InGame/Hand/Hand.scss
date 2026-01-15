@@ -10,9 +10,12 @@
   &-label {
     font-family: $font-display;
     font-size: $font-size-lg;
+    font-weight: 500;
     @include gold-text;
     margin-bottom: var(--space-sm);
     text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
   }
 
   &-playerHand {
@@ -20,52 +23,88 @@
     min-height: calc(var(--card-height) + var(--space-xl));
     padding: var(--space-lg) var(--space-xl);
 
-    // Fan layout for cards
+    // Fan layout for cards with perspective
     display: flex;
     flex-direction: row;
     align-items: flex-end;
     justify-content: center;
+    perspective: 1500px;
 
-    // Card overlap
+    // Card overlap - tighter for more cards feel
     & .Card:not(:first-child) {
-      margin-left: calc(var(--card-width) * -0.55);
+      margin-left: calc(var(--card-width) * -0.52);
     }
 
     // Hover effects for playable cards
     & .Card:not(.Card-disabled) {
       cursor: pointer;
+      transform-origin: center bottom;
 
       &:hover {
-        // Lift card up and increase shadow
-        transform: translateY(-20px) scale(1.05);
+        // Lift card up with 3D tilt effect
+        transform: translateY(-24px) scale(1.06) rotateX(-3deg);
         box-shadow: var(--shadow-card-hover);
         z-index: 50 !important;
 
-        // Expand adjacent cards slightly on hover
+        // Make room for the lifted card
         & + .Card {
-          margin-left: calc(var(--card-width) * -0.45);
+          margin-left: calc(var(--card-width) * -0.4);
+          transition: margin-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
         }
       }
 
       &:active {
-        transform: translateY(-15px) scale(1.02);
+        transform: translateY(-16px) scale(1.02) rotateX(-1deg);
+        box-shadow: var(--shadow-card-active);
+        transition-duration: 100ms;
       }
     }
 
-    // Dealing animation - stagger cards
+    // Adjacent card spacing transitions
+    & .Card {
+      transition:
+        margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    // Dealing animation - stagger cards with refined timing
     & .Card--dealing {
       @for $i from 1 through 13 {
         &:nth-child(#{$i}) {
-          animation-delay: #{$i * 0.08}s;
+          animation-delay: #{($i - 1) * 0.07}s;
         }
       }
     }
   }
 
-  // Turn indicator
+  // Turn indicator - more visible pulse
   &--myTurn {
     .Hand-label {
-      animation: turn-pulse 2s ease-in-out infinite;
+      animation: turn-pulse 1.8s ease-out infinite;
+      color: $color-gold-light;
+      text-shadow:
+        0 1px 0 $color-gold-dark,
+        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba($color-gold-light, 0.4);
+    }
+
+    // Subtle glow under the hand
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 60%;
+      background: radial-gradient(
+        ellipse at bottom center,
+        rgba($color-gold-medium, 0.15) 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+      z-index: -1;
     }
   }
 }

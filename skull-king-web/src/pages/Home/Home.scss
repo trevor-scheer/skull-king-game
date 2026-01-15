@@ -14,18 +14,20 @@
     p {
       font-family: $font-display;
       font-size: $font-size-xl;
+      font-weight: 500;
       @include gold-text;
       animation: pulse 2s ease-in-out infinite;
+      letter-spacing: 1px;
     }
   }
 
   &-spinner {
-    width: 80px;
-    height: 80px;
-    border: 5px solid rgba($color-gold-dark, 0.3);
+    width: 64px;
+    height: 64px;
+    border: 3px solid rgba($color-gold-dark, 0.2);
     border-top-color: $color-gold-medium;
     border-radius: 50%;
-    animation: rotate 1s linear infinite;
+    animation: rotate 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     margin-bottom: var(--space-lg);
   }
 
@@ -43,31 +45,38 @@
   // Header
   &-header {
     text-align: center;
-    animation: fade-in-down 0.6s ease-out;
+    animation: fade-in-down 500ms cubic-bezier(0, 0, 0.2, 1) forwards;
   }
 
   &-title {
     font-family: $font-display;
-    font-size: clamp(3rem, 10vw, 5rem);
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 700;
     @include gold-text;
     margin: 0;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
 
-    // Skull decorations
+    // Refined skull decorations
     &::before {
       content: '☠ ';
+      opacity: 0.9;
     }
     &::after {
       content: ' ☠';
+      opacity: 0.9;
     }
   }
 
   &-tagline {
     font-family: $font-body;
     font-size: $font-size-xl;
+    font-weight: 400;
     color: $color-text-light;
     margin: var(--space-md) 0 0;
     font-style: italic;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
   }
 
   // Content
@@ -75,8 +84,8 @@
     @include flex-column-center;
     gap: var(--space-xl);
     width: 100%;
-    max-width: 500px;
-    animation: fade-in-up 0.6s ease-out 0.2s backwards;
+    max-width: 480px;
+    animation: fade-in-up 500ms cubic-bezier(0, 0, 0.2, 1) 150ms backwards;
   }
 
   // Games list section
@@ -89,9 +98,12 @@
   &-sectionTitle {
     font-family: $font-display;
     font-size: $font-size-xl;
+    font-weight: 600;
     @include gold-text;
     margin: 0 0 var(--space-md);
     text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
   }
 
   &-gamesList {
@@ -108,12 +120,17 @@
     text-decoration: none;
     border-radius: var(--radius-md);
     transition:
-      background-color var(--transition-fast),
-      transform var(--transition-fast);
+      background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
     &:hover {
-      background: rgba($color-gold-medium, 0.1);
-      transform: translateX(5px);
+      background: rgba($color-gold-medium, 0.12);
+      transform: translateX(4px);
+    }
+
+    &:active {
+      transform: translateX(2px);
+      transition-duration: 80ms;
     }
   }
 
@@ -125,16 +142,17 @@
     flex: 1;
     font-family: $font-body;
     font-size: $font-size-base;
+    font-weight: 500;
     color: $color-text-dark;
   }
 
   &-gameArrow {
     font-size: $font-size-lg;
     color: $color-gold-medium;
-    transition: transform var(--transition-fast);
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
     .Home-gameLink:hover & {
-      transform: translateX(5px);
+      transform: translateX(4px);
     }
   }
 
@@ -151,7 +169,8 @@
     color: $color-text-dark;
     text-align: center;
     margin: 0 0 var(--space-md);
-    opacity: 0.8;
+    opacity: 0.75;
+    line-height: 1.5;
   }
 
   &-cardOptions {
@@ -167,17 +186,28 @@
     padding: var(--space-sm) var(--space-md);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background-color var(--transition-fast);
+    transition:
+      background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
       background: rgba($color-gold-medium, 0.1);
     }
 
+    &:active {
+      transform: scale(0.99);
+    }
+
     input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       accent-color: $color-gold-medium;
       cursor: pointer;
+      transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      &:checked {
+        transform: scale(1.1);
+      }
     }
   }
 
@@ -190,23 +220,30 @@
   &-cardName {
     font-family: $font-display;
     font-size: $font-size-base;
+    font-weight: 500;
     color: $color-text-dark;
+    letter-spacing: 0.5px;
   }
 
   &-cardDescription {
     font-family: $font-body;
     font-size: $font-size-sm;
     color: $color-text-dark;
-    opacity: 0.7;
+    opacity: 0.65;
+    line-height: 1.4;
   }
 
   // Create button
   &-createButton {
     @include button-primary;
-    padding: var(--space-lg) var(--space-xxl);
-    font-size: $font-size-xl;
+    padding: var(--space-md) var(--space-xxl);
+    font-family: $font-display;
+    font-size: $font-size-lg;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 
-    // Shimmer effect
+    // Enhanced shimmer effect
     position: relative;
     overflow: hidden;
 
@@ -215,20 +252,34 @@
       position: absolute;
       top: 0;
       left: -100%;
-      width: 50%;
+      width: 60%;
       height: 100%;
       background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
+        100deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.35) 50%,
+        transparent 80%
       );
-      animation: shimmer 3s ease-in-out infinite;
+      animation: shimmer 2.5s ease-in-out infinite;
+    }
+
+    // Hover enhancements
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow:
+        var(--shadow-glow-gold),
+        0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(1px);
+      transition-duration: 80ms;
     }
 
     &:disabled {
-      opacity: 0.6;
+      opacity: 0.55;
       cursor: not-allowed;
+      filter: grayscale(20%);
 
       &::after {
         display: none;

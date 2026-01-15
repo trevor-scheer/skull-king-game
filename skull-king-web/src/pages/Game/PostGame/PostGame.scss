@@ -5,21 +5,24 @@
   @include flex-column-center;
   gap: var(--space-xl);
   padding: var(--space-xl);
-  animation: fade-in-up 0.5s ease-out;
+  animation: fade-in-up 450ms cubic-bezier(0, 0, 0.2, 1) forwards;
 
   &-header {
     text-align: center;
-    animation: scale-in 0.6s ease-out 0.2s backwards;
+    animation: scale-in 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 150ms backwards;
   }
 
   &-title {
     font-family: $font-display;
-    font-size: $font-size-4xl;
+    font-size: clamp(2.5rem, 8vw, $font-size-4xl);
+    font-weight: 700;
     @include gold-text;
     margin: 0;
+    letter-spacing: 3px;
+    text-transform: uppercase;
 
-    // Celebration effect
-    animation: float 3s ease-in-out infinite;
+    // Celebration effect - subtle float
+    animation: title-float 4s ease-in-out infinite;
 
     &::before {
       content: '🏴‍☠️ ';
@@ -32,24 +35,54 @@
   &-subtitle {
     font-family: $font-body;
     font-size: $font-size-xl;
+    font-weight: 400;
     color: $color-text-light;
     margin: var(--space-sm) 0 0;
     font-style: italic;
+    opacity: 0.9;
+    animation: fade-in 400ms ease-out 300ms backwards;
   }
 
   &-footer {
     margin-top: var(--space-lg);
-    animation: fade-in-up 0.5s ease-out 0.4s backwards;
+    animation: fade-in-up 400ms cubic-bezier(0, 0, 0.2, 1) 350ms backwards;
   }
 
   &-button {
     @include button-secondary;
     padding: var(--space-md) var(--space-xl);
+    font-family: $font-display;
     font-size: $font-size-lg;
+    font-weight: 600;
     text-decoration: none;
+    letter-spacing: 1px;
+    transition:
+      transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 150ms ease;
 
     &::before {
       content: '⚓ ';
+      opacity: 0.9;
     }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      transition-duration: 80ms;
+    }
+  }
+}
+
+// Subtle floating animation for title
+@keyframes title-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
   }
 }
