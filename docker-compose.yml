@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Development server with hot reload
+  dev-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./skull-king-core/src:/app/skull-king-core/src
+      - ./skull-king-server/src:/app/skull-king-server/src
+      - ./skull-king-core/dist:/app/skull-king-core/dist
+      - ./skull-king-server/dist:/app/skull-king-server/dist
+    ports:
+      - "4000:4000"
+    command: yarn dev
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+    profiles:
+      - dev
+
+  # Development web (Vite dev server)
+  dev-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./skull-king-web/src:/app/skull-king-web/src
+      - ./skull-king-web/public:/app/skull-king-web/public
+      - ./skull-king-web/index.html:/app/skull-king-web/index.html
+    ports:
+      - "5173:5173"
+    command: yarn dev:web
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - dev-server
+    profiles:
+      - dev
+
+  # Production-like local testing
+  production:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/graphql?query={__typename}', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    profiles:
+      - prod

@@ -2846,6 +2846,10 @@ __metadata:
   dependencies:
     "@apollo/server": "npm:^4.11.3"
     "@skull-king/core": "workspace:*"
+    "@types/cors": "npm:^2.8.17"
+    "@types/express": "npm:^4.17.21"
+    cors: "npm:^2.8.5"
+    express: "npm:^4.19.2"
     graphql: "npm:^16.10.0"
   languageName: unknown
   linkType: soft
@@ -2947,6 +2951,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cors@npm:^2.8.17":
+  version: 2.8.19
+  resolution: "@types/cors@npm:2.8.19"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/b5dd407040db7d8aa1bd36e79e5f3f32292f6b075abc287529e9f48df1a25fda3e3799ba30b4656667ffb931d3b75690c1d6ca71e39f7337ea6dfda8581916d0
+  languageName: node
+  linkType: hard
+
 "@types/estree@npm:1.0.8":
   version: 1.0.8
   resolution: "@types/estree@npm:1.0.8"
@@ -2966,7 +2979,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:^4.17.13":
+"@types/express@npm:^4.17.13, @types/express@npm:^4.17.21":
   version: 4.17.25
   resolution: "@types/express@npm:4.17.25"
   dependencies:
@@ -4635,7 +4648,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:^4.21.1":
+"express@npm:^4.19.2, express@npm:^4.21.1":
   version: 4.22.1
   resolution: "express@npm:4.22.1"
   dependencies:

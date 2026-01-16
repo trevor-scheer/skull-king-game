@@ -1,0 +1,62 @@
+# Dependencies (will be installed fresh in container)
+node_modules/
+**/node_modules/
+
+# Build artifacts (will be rebuilt in container)
+**/dist/
+*.tsbuildinfo
+
+# Git
+.git/
+.github/
+.gitignore
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Yarn cache (except required files)
+.yarn/cache/
+.yarn/install-state.gz
+.pnp.*
+
+# Testing
+**/__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+jest.config.js
+
+# Documentation
+*.md
+!README.md
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Web dev artifacts
+skull-king-web/.vite/
+
+# OS files
+Thumbs.db
+
+# Docker files (don't need these in the container)
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.prod.yml
+
+# Plan files
+.claude/
