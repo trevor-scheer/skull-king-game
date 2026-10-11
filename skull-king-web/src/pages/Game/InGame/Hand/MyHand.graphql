@@ -12,6 +12,9 @@ query MyHand($gameId: String!, $playerToken: String!) {
         ... on ColoredCard {
           id
           color
+          choice
+          wild
+          expansion
           number
         }
       }
@@ -21,6 +24,7 @@ query MyHand($gameId: String!, $playerToken: String!) {
       phase
       playerTurn
       trickColor
+      myForcedCardId
       myBid
     }
   }

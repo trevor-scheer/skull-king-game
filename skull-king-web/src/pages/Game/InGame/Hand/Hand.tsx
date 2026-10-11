@@ -4,6 +4,7 @@ import { useGameId } from "../../../../hooks/useGameId";
 import {
   Card as CardType,
   ColoredCard,
+  Color,
   SpecialCard,
   useMyHandQuery,
   usePlayColoredCardMutation,
@@ -28,25 +29,37 @@ export const Hand: React.FunctionComponent = function () {
   const [playSpecialCard] = usePlaySpecialCardMutation();
   const [playColoredCard] = usePlayColoredCardMutation();
 
-  if (error && !data) return <p role="alert">Couldn’t load your hand. <button onClick={() => void refetch()}>Retry</button></p>;
+  if (error && !data)
+    return (
+      <p role="alert">
+        Couldn’t load your hand.{" "}
+        <button onClick={() => void refetch()}>Retry</button>
+      </p>
+    );
   if (loading && !data) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
 
   const currentRound = data?.state?.currentRound;
   const { phase, playerTurn, trickColor } = currentRound ?? {};
   const me = data?.state?.me;
-  if (!me) return <p role="status">Your player seat is unavailable in this game.</p>;
+  if (!me)
+    return <p role="status">Your player seat is unavailable in this game.</p>;
   const myTurn = phase === "play" && playerTurn === me?.name;
 
   function canPlayCard(card: CardType) {
+    if (currentRound?.myForcedCardId)
+      return currentRound.myForcedCardId === card.id;
     if (isSpecialCard(card)) return true;
+    if (card.wild && trickColor !== "BLACK") return true;
     if (trickColor === null) return true;
 
     const noMatches = me?.hand.every((card) => {
       if (card.__typename === "SpecialCard") {
         return true;
       } else if (card.__typename === "ColoredCard") {
-        return card.color !== trickColor;
+        return (
+          card.color !== trickColor && !(card.wild && trickColor !== "BLACK")
+        );
       }
       return false;
     });
@@ -62,7 +75,11 @@ export const Hand: React.FunctionComponent = function () {
       await fn();
       void refetch?.();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Couldn’t play that card. Try again.");
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "Couldn’t play that card. Try again.",
+      );
     } finally {
       setJustClicked(false);
     }
@@ -79,6 +96,12 @@ export const Hand: React.FunctionComponent = function () {
           {myTurn ? "Your Turn!" : "My Hand"} (Bid: {currentRound?.myBid})
         </p>
       )}
+      {currentRound?.myForcedCardId && (
+        <p role="status">
+          Mary Thorne selected your next card. You must play the highlighted
+          card.
+        </p>
+      )}
       {actionError && <p role="alert">{actionError}</p>}
       <ul className="Hand-playerHand">
         {sortedHand.map((card, index) => {
@@ -91,6 +114,44 @@ export const Hand: React.FunctionComponent = function () {
             index,
           };
           if (isColoredCard(card)) {
+            const choices = card.choice
+              ? [0, 14]
+              : card.wild && !trickColor
+                ? [Color.Yellow, Color.Green, Color.Purple]
+                : [];
+            if (choices.length)
+              return (
+                <Card key={card.id} {...commonProps}>
+                  <div className="Card-expansion Card-declaration">
+                    <strong>
+                      {card.choice ? `${card.color} 0 / 14` : "Wild Monkey 15"}
+                    </strong>
+                    <span>Play as</span>
+                    {choices.map((choice) => (
+                      <button
+                        key={choice}
+                        disabled={commonProps.disabled}
+                        onClick={() =>
+                          void debounceClick(() =>
+                            playColoredCard({
+                              variables: {
+                                gameId,
+                                playerToken,
+                                cardId: card.id,
+                                ...(typeof choice === "number"
+                                  ? { numberChoice: choice }
+                                  : { colorChoice: choice }),
+                              },
+                            }),
+                          )
+                        }
+                      >
+                        {choice}
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+              );
             return (
               <Card
                 key={card.id}
@@ -103,7 +164,7 @@ export const Hand: React.FunctionComponent = function () {
                         playerToken,
                         cardId: card.id,
                       },
-                    })
+                    }),
                   );
                 }}
               />
@@ -124,7 +185,7 @@ export const Hand: React.FunctionComponent = function () {
                             cardId: card.id,
                             selection: "escape",
                           },
-                        })
+                        }),
                       );
                     }}
                     aria-label="Play as Escape"
@@ -141,7 +202,7 @@ export const Hand: React.FunctionComponent = function () {
                             cardId: card.id,
                             selection: "pirate",
                           },
-                        })
+                        }),
                       );
                     }}
                     aria-label="Play as Pirate"
@@ -161,7 +222,7 @@ export const Hand: React.FunctionComponent = function () {
                   debounceClick(() =>
                     playSpecialCard({
                       variables: { gameId, playerToken, cardId: card.id },
-                    })
+                    }),
                   );
                 }}
               />
@@ -182,6 +243,12 @@ function getSortOrder(card: SpecialCard | ColoredCard) {
     PURPLE: 40,
     BLACK: 60,
     pirate: 80,
+    maryThorne: 81,
+    firstMate: 87,
+    lastVolley: 93,
+    walkThePlank: 94,
+    stingray: 97,
+    davyJones: 98,
     mermaid: 75,
     tigress: 85,
     skullKing: 90,

@@ -2,6 +2,8 @@ mutation PlayColoredCard(
   $gameId: String!
   $playerToken: String!
   $cardId: String!
+  $numberChoice: Int
+  $colorChoice: Color
 ) {
-  playColoredCard(gameId: $gameId, playerToken: $playerToken, cardId: $cardId)
+  playColoredCard(gameId: $gameId, playerToken: $playerToken, cardId: $cardId, numberChoice: $numberChoice, colorChoice: $colorChoice)
 }

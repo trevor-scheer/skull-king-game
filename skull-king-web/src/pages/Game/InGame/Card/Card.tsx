@@ -1,6 +1,7 @@
 import { Card as CardType } from "../../../../types/graphqlTypes";
 import { PIRATE_NAMES } from "../../../../utils/pirateNames";
 import "./Card.scss";
+import { expansionCardDescription } from "../../../../utils/expansionCards";
 
 export const Card: React.FunctionComponent<{
   disabled: boolean;
@@ -10,25 +11,32 @@ export const Card: React.FunctionComponent<{
   index: number;
   children?: React.ReactNode;
 }> = function ({ disabled, onClick, card, grayOut, index, children }) {
-  const altText = (() => {
-    switch (card.__typename) {
-      case "ColoredCard":
-        return `${card.color.toLocaleUpperCase()} ${card.number}`;
-      case "SpecialCard": {
-        if (card.selection) {
-          return `Tigress: ${card.selection}`;
+  const expansion = expansionCardDescription(
+    card.id,
+    card.__typename === "ColoredCard" ? card.color : undefined,
+    card.__typename === "ColoredCard" ? card.number : undefined,
+  );
+  const altText =
+    expansion?.name ??
+    (() => {
+      switch (card.__typename) {
+        case "ColoredCard":
+          return `${card.color.toLocaleUpperCase()} ${card.number}`;
+        case "SpecialCard": {
+          if (card.selection) {
+            return `Tigress: ${card.selection}`;
+          }
+          if (card.type === "pirate") return PIRATE_NAMES[card.id] ?? "Pirate";
+          return card.type === "whiteWhale"
+            ? "White Whale"
+            : card.type === "loot"
+              ? "Loot"
+              : card.type;
         }
-        if (card.type === "pirate") return PIRATE_NAMES[card.id] ?? "Pirate";
-        return card.type === "whiteWhale"
-          ? "White Whale"
-          : card.type === "loot"
-            ? "Loot"
-            : card.type;
+        default:
+          return "";
       }
-      default:
-        return "";
-    }
-  })();
+    })();
 
   return (
     <li
@@ -42,7 +50,15 @@ export const Card: React.FunctionComponent<{
           onClick={() => onClick?.()}
           aria-label={altText}
         >
-          {card.__typename === "SpecialCard" && card.type === "loot" ? (
+          {expansion ? (
+            <span
+              className={`Card-expansion Card-expansion--${card.__typename === "ColoredCard" ? card.color.toLowerCase() : "special"}`}
+            >
+              <strong>{expansion.name}</strong>
+              <span aria-hidden="true">⚓</span>
+              <small>{expansion.rule}</small>
+            </span>
+          ) : card.__typename === "SpecialCard" && card.type === "loot" ? (
             <span className="Card-loot">
               <span className="Card-lootTitle">Loot</span>
               <span className="Card-lootCoin" aria-hidden="true">

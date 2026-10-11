@@ -1,0 +1,30 @@
+query PlankChoiceState($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    me {
+      id
+    }
+    currentRound {
+      id
+      phase
+      plankChoice {
+        id
+        playerId
+        cardIds
+      }
+    }
+  }
+}
+mutation ChoosePlankTarget(
+  $gameId: String!
+  $playerToken: String!
+  $expectedChoiceId: String!
+  $cardId: String!
+) {
+  choosePlankTarget(
+    gameId: $gameId
+    playerToken: $playerToken
+    expectedChoiceId: $expectedChoiceId
+    cardId: $cardId
+  )
+}

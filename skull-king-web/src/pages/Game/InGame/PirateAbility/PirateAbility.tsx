@@ -10,12 +10,18 @@ import {
   useResolvePirateAbilityMutation,
 } from "../../../../types/graphqlTypes";
 import "./PirateAbility.scss";
+import { expansionCardDescription } from "../../../../utils/expansionCards";
 
 type State = NonNullable<PirateAbilityStateQuery["state"]>;
 type Ability = NonNullable<NonNullable<State["currentRound"]>["pirateAbility"]>;
 type AbilityCard = Ability["privateCards"][number];
 
 function cardName(card: AbilityCard) {
+  const expansion = expansionCardDescription(
+    card.id,
+    card.__typename === "ColoredCard" ? card.color : undefined,
+  );
+  if (expansion) return expansion.name;
   if (card.__typename === "ColoredCard") return `${card.color} ${card.number}`;
   if (card.type === "pirate") return PIRATE_NAMES[card.id] ?? "Pirate";
   const names: Record<string, string> = {
@@ -128,6 +134,29 @@ function AbilityChoice({
       {error && <p role="alert">{error}</p>}
       <fieldset disabled={submitting}>
         <legend>Choose your pirate ability</legend>
+        {ability.kind === "mary" && (
+          <>
+            <p>
+              Choose a player. One random, unseen card from their hand must be
+              played in the next trick, regardless of the lead suit.
+            </p>
+            <div className="PirateAbility-actions">
+              {state.players.map((player) => (
+                <button
+                  key={player.id}
+                  onClick={() =>
+                    void choose({
+                      action: PirateAbilityAction.ForceCard,
+                      playerId: player.id,
+                    })
+                  }
+                >
+                  {player.name}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         {ability.kind === "rosie" && (
           <>
             <p>Choose who leads the next trick, including yourself.</p>
@@ -276,6 +305,7 @@ function AbilityChoice({
           </>
         )}
         {ability.stage === "choose" &&
+          ability.canDecline &&
           !["rascal", "harry"].includes(ability.kind) && (
             <button
               className="PirateAbility-decline"

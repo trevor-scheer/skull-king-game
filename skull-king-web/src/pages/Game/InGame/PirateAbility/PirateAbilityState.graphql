@@ -35,6 +35,7 @@ query PirateAbilityState($gameId: String!, $playerToken: String!) {
         name
         kind
         playerId
+        canDecline
         stage
         privateCards {
           __typename

@@ -11,6 +11,7 @@ import { Scorecard } from "./Scorecard/Scorecard";
 import { TrickResult } from "./TrickResult/TrickResult";
 import { PirateAbility } from "./PirateAbility/PirateAbility";
 import "./InGame.scss";
+import { PlankChoice } from "./PlankChoice/PlankChoice";
 
 export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
@@ -56,6 +57,7 @@ export const InGame: React.FunctionComponent = function () {
         )}
       </GameTable>
       {currentRound?.pirateAbility && <PirateAbility />}
+      <PlankChoice />
 
       {me && <p className="InGame-myStats">{me.bid == null ? "Your bid is hidden" : `Your bid: ${me.bid}`} · Won {me.tricksWon}</p>}
 
