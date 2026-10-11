@@ -1,3 +1,5 @@
+import { types } from "node:util";
+import { serialize, deserialize } from "node:v8";
 import { Deck } from "./deck";
 import { Card, Color, DeckConfiguration, isColoredCard, isSpecialCard } from "./cards";
 import { Player } from "./player";
@@ -63,6 +65,22 @@ export class Game {
     this.mode = options?.mode ?? "standard";
     this.phase = "setup";
     this.currentRound = null;
+  }
+
+  /** Private server checkpoint. Never send this payload to a client. */
+  public checkpoint(): Buffer {
+    return serialize({ version: 1, game: { ...this, endGameListeners: [] } });
+  }
+
+  public static restoreCheckpoint(payload: Uint8Array): Game {
+    const saved = deserialize(payload);
+    assert(saved?.version === 1 && types.isMap(saved.game?.playerTokens), "Unsupported game checkpoint");
+    const game = Object.setPrototypeOf(saved.game, Game.prototype) as Game;
+    Object.setPrototypeOf(game.deck, Deck.prototype);
+    if (game.options.deck) Object.setPrototypeOf(game.options.deck, Deck.prototype);
+    if (game.scorecard) Object.setPrototypeOf(game.scorecard, Scorecard.prototype);
+    game.endGameListeners = [];
+    return game;
   }
 
   public onGameEnd(listener: () => void) {

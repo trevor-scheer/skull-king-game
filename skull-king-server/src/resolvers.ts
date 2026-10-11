@@ -1,7 +1,8 @@
 import type { ApolloServerOptions } from "@apollo/server";
 import { Game, Card, isSpecialCard, DeckConfiguration, ScoringMode } from "@skull-king/core";
 import { randomUUID } from "crypto";
-import { Context } from ".";
+import type { Context } from "./context";
+import { requireHost, requirePlayer } from "./permissions";
 
 const resolvers: ApolloServerOptions<Context>["resolvers"] = {
   Query: {
@@ -21,15 +22,13 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
     newGame(_, { deckConfig, scoringMode, pirateAbilities }: { deckConfig?: DeckConfiguration; scoringMode?: ScoringMode; pirateAbilities?: boolean }, context) {
       const id = randomUUID();
       const game = new Game(id, { deckConfig, scoringMode, pirateAbilities });
-      game.onGameEnd(() => {
-        setTimeout(() => context.games.delete(id), 1000 * 60 * 10);
-      });
       context.games.set(id, game);
       return id;
     },
-    startGame(_, { gameId }, { games }) {
+    startGame(_, { gameId, playerToken }, { games }) {
       const game = games.get(gameId);
       assertGame(game, gameId);
+      requireHost(game, playerToken);
       game.start();
       return true;
     },
@@ -57,9 +56,10 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       game.playCard({ playerToken, cardId, selection });
       return true;
     },
-    advanceTrick(_, { gameId, expectedHandId }, { games }) {
+    advanceTrick(_, { gameId, playerToken, expectedHandId }, { games }) {
       const game = games.get(gameId);
       assertGame(game, gameId);
+      requirePlayer(game, playerToken);
       return game.advanceFromTrickResult(expectedHandId);
     },
     usePirateAbility(_, { gameId, playerToken, expectedAbilityId, input }, { games }) {

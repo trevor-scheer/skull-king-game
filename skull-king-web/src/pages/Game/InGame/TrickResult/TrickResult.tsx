@@ -34,7 +34,7 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
   useEffect(() => {
     setAdvanceFailed(false);
     setAdvancing(false);
-    if (paused || phase !== "trick_result" || !handId || !gameId) {
+    if (paused || phase !== "trick_result" || !handId || !gameId || !playerToken) {
       return;
     }
 
@@ -46,7 +46,7 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
       setAdvancing(true);
       setAdvanceFailed(false);
       try {
-        await advanceTrick({ variables: { gameId, expectedHandId: handId } });
+        await advanceTrick({ variables: { gameId, playerToken: playerToken!, expectedHandId: handId } });
         // Both a successful advance and an already-advanced result need fresh state.
         if (active) await refetch();
       } catch {
@@ -65,7 +65,7 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
       clearTimeout(timer);
       retryAdvanceRef.current = null;
     };
-  }, [paused, phase, handId, gameId, advanceTrick, refetch]);
+  }, [paused, phase, handId, gameId, playerToken, advanceTrick, refetch]);
 
   if (error && !lastCompletedHand) {
     return (

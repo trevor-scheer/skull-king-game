@@ -1,3 +1,3 @@
-mutation StartGame($gameId: String!) {
-  startGame(gameId: $gameId)
+mutation StartGame($gameId: String!, $playerToken: String!) {
+  startGame(gameId: $gameId, playerToken: $playerToken)
 }

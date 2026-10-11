@@ -94,11 +94,12 @@ it.each([
         { token, cardId },
       );
     }
+    let hostToken: string;
     async function advance() {
       const id = (await state()).currentRound.lastCompletedHand!.id;
       const result = await execute<{ advanceTrick: boolean }>(
         `mutation Advance($id: String!) {
-        advanceTrick(gameId: "wagers", expectedHandId: $id)
+        advanceTrick(gameId: "wagers", playerToken: "${hostToken}", expectedHandId: $id)
       }`,
         { id },
       );
@@ -120,7 +121,8 @@ it.each([
         );
       }
       const [alice, bob] = tokens;
-      await execute(`mutation { startGame(gameId: "wagers") }`);
+      hostToken = alice;
+      await execute(`mutation { startGame(gameId: "wagers", playerToken: "${alice}") }`);
       await submitBid(alice, 0);
       await submitBid(bob, 1);
       await play(bob, "escape-2", true);

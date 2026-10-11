@@ -1,12 +1,8 @@
 import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 
-// const httpLink = new HttpLink({
-//   uri: "https://skull-king-graphql.herokuapp.com/"
-// });
-
-const devLink = new HttpLink({
-  uri: "http://localhost:4000/"
-});
+declare const __API_URL__: string | undefined;
+export const API_URL = typeof __API_URL__ === "string" && __API_URL__ ? __API_URL__ : "/graphql";
+const devLink = new HttpLink({ uri: API_URL, credentials: "include" });
 
 export const client = new ApolloClient({
   link: devLink,

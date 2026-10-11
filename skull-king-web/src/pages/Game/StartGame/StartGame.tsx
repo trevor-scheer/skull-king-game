@@ -1,3 +1,5 @@
+import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
+import { useState } from "react";
 import { useGameId } from "../../../hooks/useGameId";
 import {
   usePlayersQuery,
@@ -7,13 +9,15 @@ import "./StartGame.scss";
 
 export const StartGame: React.FunctionComponent = function () {
   const gameId = useGameId();
+  const [playerToken] = usePlayerToken();
+  const [error, setError] = useState<string | null>(null);
 
   const { loading, data } = usePlayersQuery({
     variables: { gameId: gameId! },
     pollInterval: 2000,
   });
   const [startGame, { loading: starting }] = useStartGameMutation({
-    variables: { gameId: gameId! },
+    variables: { gameId: gameId!, playerToken: playerToken! },
   });
 
   const playerCount = data?.state?.players?.length ?? 0;
@@ -26,9 +30,10 @@ export const StartGame: React.FunctionComponent = function () {
           ? `Need at least 2 players to set sail (${playerCount}/2)`
           : `${playerCount} crew members ready!`}
       </p>
+      {error && <p role="alert">{error}</p>}
       <button
         className="StartGame-button"
-        onClick={() => startGame()}
+        onClick={() => { setError(null); void startGame().catch(error => setError(error.message)); }}
         disabled={disabled}
       >
         {starting ? "Setting Sail..." : "Set Sail!"}

@@ -23,7 +23,7 @@ const typeDefs = `#graphql
 
   type Mutation {
     newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode, pirateAbilities: Boolean): String!
-    startGame(gameId: String!): Boolean!
+    startGame(gameId: String!, playerToken: String!): Boolean!
     addPlayer(gameId: String!, name: String!): String!
     submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
     playColoredCard(
@@ -37,13 +37,8 @@ const typeDefs = `#graphql
       cardId: String!
       selection: String
     ): Boolean!
-    advanceTrick(gameId: String!, expectedHandId: String!): Boolean!
+    advanceTrick(gameId: String!, playerToken: String!, expectedHandId: String!): Boolean!
     usePirateAbility(gameId: String!, playerToken: String!, expectedAbilityId: String!, input: PirateAbilityInput!): Boolean!
-  }
-
-  type Subscription {
-    hello: String
-    state(gameId: String!, playerToken: String): GameState
   }
 
   type GameState {

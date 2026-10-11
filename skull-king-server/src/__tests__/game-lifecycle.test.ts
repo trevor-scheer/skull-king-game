@@ -44,6 +44,7 @@ describe("game lifecycle through GraphQL", () => {
   let server: ApolloServer<Context>;
   let context: Context;
   let game: Game;
+  let hostToken: string;
 
   beforeEach(() => {
     game = new Game("test-game", { deck: new Deck({ shuffleSeed: 0.3 }) });
@@ -80,14 +81,15 @@ describe("game lifecycle through GraphQL", () => {
       );
       tokens.set(name, result.addPlayer);
     }
-    await execute(`mutation { startGame(gameId: "test-game") }`);
+    hostToken = tokens.values().next().value!;
+    await execute(`mutation { startGame(gameId: "test-game", playerToken: "${hostToken}") }`);
     return tokens;
   }
 
   async function advance(expectedHandId: string) {
     return (await execute<{ advanceTrick: boolean }>(
       `mutation Advance($expectedHandId: String!) {
-        advanceTrick(gameId: "test-game", expectedHandId: $expectedHandId)
+        advanceTrick(gameId: "test-game", playerToken: "${hostToken}", expectedHandId: $expectedHandId)
       }`,
       { expectedHandId }
     )).advanceTrick;
@@ -161,7 +163,7 @@ describe("game lifecycle through GraphQL", () => {
       await play(token, (await state(token)).me!.hand[0]);
     }
     const response = await server.executeOperation(
-      { query: `mutation { advanceTrick(gameId: "test-game") }` },
+      { query: `mutation { advanceTrick(gameId: "test-game", playerToken: "${hostToken}") }` },
       { contextValue: context }
     );
     if (response.body.kind !== "single") throw new Error("Expected a single response");

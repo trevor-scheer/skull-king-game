@@ -126,7 +126,7 @@ it.each([
         await execute<{ advanceTrick: boolean }>(
           `
       mutation Advance($handId: String!) {
-        advanceTrick(gameId: "optional-match", expectedHandId: $handId)
+        advanceTrick(gameId: "optional-match", playerToken: "${tokens.values().next().value}", expectedHandId: $handId)
       }`,
           { handId },
         )
@@ -144,7 +144,7 @@ it.each([
         );
         tokens.set(name, joined.addPlayer);
       }
-      await execute(`mutation { startGame(gameId: "optional-match") }`);
+      await execute(`mutation { startGame(gameId: "optional-match", playerToken: "${tokens.values().next().value}") }`);
       for (let roundNumber = 1; roundNumber <= 10; roundNumber++) {
         const start = await state();
         expect(start.scoringMode).toBe(scoringMode);

@@ -92,6 +92,7 @@ export type MutationAddPlayerArgs = {
 export type MutationAdvanceTrickArgs = {
   expectedHandId: Scalars['String']['input'];
   gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 };
 
 
@@ -119,6 +120,7 @@ export type MutationPlaySpecialCardArgs = {
 
 export type MutationStartGameArgs = {
   gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 };
 
 
@@ -234,18 +236,6 @@ export type SpecialCard = {
   type: Scalars['String']['output'];
 };
 
-export type Subscription = {
-  __typename?: 'Subscription';
-  hello?: Maybe<Scalars['String']['output']>;
-  state?: Maybe<GameState>;
-};
-
-
-export type SubscriptionStateArgs = {
-  gameId: Scalars['String']['input'];
-  playerToken?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type GamePhaseQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
 }>;
@@ -355,6 +345,7 @@ export type ScorecardQuery = { __typename?: 'Query', state?: { __typename?: 'Gam
 
 export type AdvanceTrickMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
   expectedHandId: Scalars['String']['input'];
 }>;
 
@@ -394,6 +385,7 @@ export type PlayersQuery = { __typename?: 'Query', state?: { __typename?: 'GameS
 
 export type StartGameMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 }>;
 
 
@@ -1077,8 +1069,12 @@ export type ScorecardLazyQueryHookResult = ReturnType<typeof useScorecardLazyQue
 export type ScorecardSuspenseQueryHookResult = ReturnType<typeof useScorecardSuspenseQuery>;
 export type ScorecardQueryResult = Apollo.QueryResult<ScorecardQuery, ScorecardQueryVariables>;
 export const AdvanceTrickDocument = gql`
-    mutation AdvanceTrick($gameId: String!, $expectedHandId: String!) {
-  advanceTrick(gameId: $gameId, expectedHandId: $expectedHandId)
+    mutation AdvanceTrick($gameId: String!, $playerToken: String!, $expectedHandId: String!) {
+  advanceTrick(
+    gameId: $gameId
+    playerToken: $playerToken
+    expectedHandId: $expectedHandId
+  )
 }
     `;
 export type AdvanceTrickMutationFn = Apollo.MutationFunction<AdvanceTrickMutation, AdvanceTrickMutationVariables>;
@@ -1097,6 +1093,7 @@ export type AdvanceTrickMutationFn = Apollo.MutationFunction<AdvanceTrickMutatio
  * const [advanceTrickMutation, { data, loading, error }] = useAdvanceTrickMutation({
  *   variables: {
  *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
  *      expectedHandId: // value for 'expectedHandId'
  *   },
  * });
@@ -1342,8 +1339,8 @@ export type PlayersLazyQueryHookResult = ReturnType<typeof usePlayersLazyQuery>;
 export type PlayersSuspenseQueryHookResult = ReturnType<typeof usePlayersSuspenseQuery>;
 export type PlayersQueryResult = Apollo.QueryResult<PlayersQuery, PlayersQueryVariables>;
 export const StartGameDocument = gql`
-    mutation StartGame($gameId: String!) {
-  startGame(gameId: $gameId)
+    mutation StartGame($gameId: String!, $playerToken: String!) {
+  startGame(gameId: $gameId, playerToken: $playerToken)
 }
     `;
 export type StartGameMutationFn = Apollo.MutationFunction<StartGameMutation, StartGameMutationVariables>;
@@ -1362,6 +1359,7 @@ export type StartGameMutationFn = Apollo.MutationFunction<StartGameMutation, Sta
  * const [startGameMutation, { data, loading, error }] = useStartGameMutation({
  *   variables: {
  *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
  *   },
  * });
  */
