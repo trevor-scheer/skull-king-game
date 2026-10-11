@@ -11,61 +11,136 @@ import { Scorecard } from "./Scorecard/Scorecard";
 import { TrickResult } from "./TrickResult/TrickResult";
 import { PirateAbility } from "./PirateAbility/PirateAbility";
 import "./InGame.scss";
+import { RulesReference } from "./TableHelp/RulesReference";
+import { TableFeedback } from "./TableHelp/TableFeedback";
+import "./TableHelp/TableHelp.scss";
 import { PlankChoice } from "./PlankChoice/PlankChoice";
 
-export const InGame: React.FunctionComponent = function () {
-  const [playerToken] = usePlayerToken();
-  const gameId = useGameId();
+export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
+  function ({ spectator = false }) {
+    const [playerToken] = usePlayerToken();
+    const gameId = useGameId();
 
-  // TODO: error handling
-  const { data, loading } = useGameStateQuery({
-    variables: { gameId: gameId!, playerToken: playerToken! },
-    pollInterval: 10000,
-  });
+    // TODO: error handling
+    const { data, loading, error, refetch } = useGameStateQuery({
+      variables: {
+        gameId: gameId!,
+        playerToken: spectator ? "" : (playerToken ?? ""),
+      },
+      pollInterval: 10000,
+    });
 
-  if (loading) return <div className="InGame-loading">Loading...</div>;
+    if (error && !data)
+      return (
+        <p role="alert">
+          Couldn’t load the table.{" "}
+          <button onClick={() => void refetch().catch(() => undefined)}>
+            Retry
+          </button>
+        </p>
+      );
+    if (loading && !data)
+      return <div className="InGame-loading">Loading...</div>;
 
-  const players = data?.state?.players ?? [];
-  const me = data?.state?.me;
-  const currentRound = data?.state?.currentRound;
+    const players = data?.state?.players ?? [];
+    const me = data?.state?.me;
+    const currentRound = data?.state?.currentRound;
 
-  const { phase, myBid, leader, playerTurn } = currentRound ?? {};
-  return (
-    <div className="InGame">
-      <GameTable
-        players={players}
-        currentPlayerId={me?.id ?? ""}
-        playerTurn={playerTurn ?? ""}
-      >
-        {phase === "load" && <CannonLoad />}
-        {/* Center content based on game phase */}
-        {phase === "play" && <PlayedCards />}
-        {phase === "trick_result" && <TrickResult paused={Boolean(currentRound?.pirateAbility)} />}
-        {phase === "bid" && (
-          <div className="InGame-bidPhase">
-            <p className="InGame-leaderInfo">
-              {leader === me?.name
-                ? "You lead this round"
-                : `${leader} leads this round`}
+    const { phase, myBid, leader, playerTurn } = currentRound ?? {};
+    return (
+      <div className="InGame">
+        <header className="TableStatus">
+          <h1>{spectator ? "Watching the table" : "Your table"}</h1>
+          <p>
+            Round {currentRound?.roundNumber} · {currentRound?.cardsPerPlayer}{" "}
+            cards each · Trick{" "}
+            {(currentRound?.hands.length ?? 0) +
+              (phase === "trick_result" ? 0 : 1)}
+            {currentRound?.isTieBreaker ? " · Tie-breaker" : ""}
+          </p>
+          <p role="status">
+            {phase === "bid"
+              ? "Players are choosing secret bids."
+              : phase === "load"
+                ? "Players are choosing secret cannon loads."
+                : currentRound?.plankChoice
+                  ? `${currentRound.plankChoice.playerId} is choosing a Pirate to remove.`
+                  : currentRound?.pirateAbility
+                    ? `${currentRound.pirateAbility.playerId} is choosing ${currentRound.pirateAbility.name}’s power.`
+                    : playerTurn
+                      ? `${playerTurn === me?.id && !spectator ? "Your" : `${playerTurn}’s`} turn.`
+                      : "Trick complete."}
+          </p>
+          {phase === "play" && (
+            <p className="TableStatus-suit">
+              {currentRound?.trickColor
+                ? `Lead suit: ${currentRound.trickColor.toLowerCase()}. Follow it if you can, or play a special card.`
+                : "No lead suit is set."}
             </p>
-            {myBid !== null && myBid !== undefined ? (
-              <AwaitingBids bid={myBid} />
-            ) : (
-              <BidForm />
-            )}
-          </div>
+          )}
+          {spectator && (
+            <p>
+              You can see public plays, revealed bids, and scores. Players’
+              hands and private choices stay hidden.
+            </p>
+          )}
+        </header>
+        <div className="TableHelp-row">
+          {data?.state && <RulesReference settings={data.state} />}
+          {!spectator && (
+            <TableFeedback
+              yourTurn={playerTurn === me?.id}
+              trickId={currentRound?.lastCompletedHand?.id}
+            />
+          )}
+        </div>
+        <GameTable
+          players={players}
+          currentPlayerId={me?.id ?? ""}
+          playerTurn={playerTurn ?? ""}
+        >
+          {phase === "load" &&
+            (spectator ? <p>Waiting for cannon loads.</p> : <CannonLoad />)}
+          {/* Center content based on game phase */}
+          {phase === "play" && <PlayedCards />}
+          {phase === "trick_result" && (
+            <TrickResult
+              readOnly={spectator}
+              paused={Boolean(currentRound?.pirateAbility)}
+            />
+          )}
+          {phase === "bid" && (
+            <div className="InGame-bidPhase">
+              <p className="InGame-leaderInfo">
+                {leader === me?.name
+                  ? "You lead this round"
+                  : `${leader} leads this round`}
+              </p>
+              {spectator ? (
+                <p>Waiting for bids to be revealed.</p>
+              ) : myBid !== null && myBid !== undefined ? (
+                <AwaitingBids bid={myBid} />
+              ) : (
+                <BidForm />
+              )}
+            </div>
+          )}
+        </GameTable>
+        {!spectator && currentRound?.pirateAbility && <PirateAbility />}
+        {!spectator && <PlankChoice />}
+
+        {me && (
+          <p className="InGame-myStats">
+            {me.bid == null ? "Your bid is hidden" : `Your bid: ${me.bid}`} ·
+            Won {me.tricksWon}
+          </p>
         )}
-      </GameTable>
-      {currentRound?.pirateAbility && <PirateAbility />}
-      <PlankChoice />
 
-      {me && <p className="InGame-myStats">{me.bid == null ? "Your bid is hidden" : `Your bid: ${me.bid}`} · Won {me.tricksWon}</p>}
+        {/* Player's hand at the bottom */}
+        {!spectator && <Hand />}
 
-      {/* Player's hand at the bottom */}
-      <Hand />
-
-      {/* Scorecard */}
-      <Scorecard />
-    </div>
-  );
-};
+        {/* Scorecard */}
+        <Scorecard />
+      </div>
+    );
+  };

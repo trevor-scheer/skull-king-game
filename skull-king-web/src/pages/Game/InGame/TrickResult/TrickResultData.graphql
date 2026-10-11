@@ -17,6 +17,9 @@ query TrickResultData($gameId: String!, $playerToken: String!) {
       }
       lastCompletedHand {
         id
+        trickColor
+        trickDiscarded
+        removedCardIds
         cardsPlayed {
           id
           playerId

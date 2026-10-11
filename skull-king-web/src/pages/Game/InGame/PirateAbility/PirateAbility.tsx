@@ -122,7 +122,7 @@ function AbilityChoice({
   }
 
   const bid = state.currentRound?.myBid ?? 0;
-  const roundNumber = state.currentRound?.roundNumber ?? 0;
+  const cardsPerPlayer = state.currentRound?.cardsPerPlayer ?? 0;
   const hand = state.me?.hand ?? [];
   return (
     <section
@@ -206,7 +206,7 @@ function AbilityChoice({
               {[-1, 0, 1].map((amount) => (
                 <button
                   key={amount}
-                  disabled={bid + amount < 0 || bid + amount > roundNumber}
+                  disabled={bid + amount < 0 || bid + amount > cardsPerPlayer}
                   onClick={() =>
                     void choose({
                       action: PirateAbilityAction.AdjustBid,

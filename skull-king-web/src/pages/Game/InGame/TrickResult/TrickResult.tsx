@@ -7,10 +7,14 @@ import {
 } from "../../../../types/graphqlTypes";
 import { Card } from "../Card/Card";
 import "./TrickResult.scss";
+import { explainTrick } from "../../../../utils/trickExplanation";
 
 const TRANSITION_DELAY_MS = 2500;
 
-export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = function ({ paused = false }) {
+export const TrickResult: React.FunctionComponent<{
+  paused?: boolean;
+  readOnly?: boolean;
+}> = function ({ paused = false, readOnly = false }) {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
   const retryAdvanceRef = useRef<(() => void) | null>(null);
@@ -18,9 +22,9 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
   const [advancing, setAdvancing] = useState(false);
 
   const { data, loading, error, refetch } = useTrickResultDataQuery({
-    variables: { gameId: gameId!, playerToken: playerToken! },
+    variables: { gameId: gameId!, playerToken: playerToken ?? "" },
     pollInterval: 10000,
-    skip: !gameId || !playerToken,
+    skip: !gameId,
   });
 
   const [advanceTrick] = useAdvanceTrickMutation();
@@ -34,7 +38,14 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
   useEffect(() => {
     setAdvanceFailed(false);
     setAdvancing(false);
-    if (paused || phase !== "trick_result" || !handId || !gameId || !playerToken) {
+    if (
+      readOnly ||
+      paused ||
+      phase !== "trick_result" ||
+      !handId ||
+      !gameId ||
+      !playerToken
+    ) {
       return;
     }
 
@@ -46,7 +57,13 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
       setAdvancing(true);
       setAdvanceFailed(false);
       try {
-        await advanceTrick({ variables: { gameId, playerToken: playerToken!, expectedHandId: handId } });
+        await advanceTrick({
+          variables: {
+            gameId,
+            playerToken: playerToken!,
+            expectedHandId: handId,
+          },
+        });
         // Both a successful advance and an already-advanced result need fresh state.
         if (active) await refetch();
       } catch {
@@ -65,7 +82,16 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
       clearTimeout(timer);
       retryAdvanceRef.current = null;
     };
-  }, [paused, phase, handId, gameId, playerToken, advanceTrick, refetch]);
+  }, [
+    readOnly,
+    paused,
+    phase,
+    handId,
+    gameId,
+    playerToken,
+    advanceTrick,
+    refetch,
+  ]);
 
   if (error && !lastCompletedHand) {
     return (
@@ -82,7 +108,7 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
     );
   }
 
-  if (loading || !lastCompletedHand) {
+  if (!lastCompletedHand) {
     return (
       <div className="TrickResult TrickResult--loading">
         <div className="TrickResult-loadingText">Revealing winner...</div>
@@ -100,22 +126,31 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
           </span>
         )}
       </div>
+      <p className="TrickResult-explanation">
+        {explainTrick(lastCompletedHand)}
+      </p>
       <ol className="TrickResult-cards">
         {cardsPlayed.map((playedCard, index: number) => {
           const { playerId, card } = playedCard;
           const isWinner = winningCard?.id === `${playerId}-${card.id}`;
           return (
             <li
-              key={playerId}
+              key={`${playerId}-${card.id}`}
               className={`TrickResult-cardWrapper${isWinner ? " TrickResult-cardWrapper--winner" : ""}`}
             >
               <Card
+                as="div"
                 card={card}
                 disabled={true}
                 grayOut={false}
                 index={index}
               />
-              <span className="TrickResult-playerLabel">{playerId}</span>
+              <span className="TrickResult-playerLabel">
+                {playerId}
+                {lastCompletedHand.removedCardIds?.includes(card.id)
+                  ? " · Removed"
+                  : ""}
+              </span>
             </li>
           );
         })}
@@ -133,7 +168,13 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
         </div>
       ) : (
         <div className="TrickResult-countdown" role="status">
-          {paused ? "Waiting for the pirate ability..." : advancing ? "Continuing the game..." : "Next trick starting soon..."}
+          {readOnly
+            ? "Watching the next trick..."
+            : paused
+              ? "Waiting for the pirate ability..."
+              : advancing
+                ? "Continuing the game..."
+                : "Next trick starting soon..."}
         </div>
       )}
     </div>

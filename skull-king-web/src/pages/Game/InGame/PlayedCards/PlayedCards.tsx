@@ -10,13 +10,13 @@ export const PlayedCards: React.FunctionComponent = function () {
 
   // TODO: error handling
   const { data, loading } = useCardsPlayedQuery({
-    variables: { gameId: gameId!, playerToken: playerToken! },
+    variables: { gameId: gameId!, playerToken: playerToken ?? "" },
     pollInterval: 10000,
   });
 
   const { phase, cardsPlayed } = data?.state?.currentRound ?? {};
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="PlayedCards PlayedCards--loading">
         <div className="PlayedCards-loadingText">Waiting for plays...</div>
@@ -45,8 +45,9 @@ export const PlayedCards: React.FunctionComponent = function () {
       {phase === "play" && (
         <ol className="PlayedCards-cards">
           {cardsPlayed.map(({ playerId, card }, index) => (
-            <li key={playerId} className="PlayedCards-cardWrapper">
+            <li key={`${playerId}-${card.id}`} className="PlayedCards-cardWrapper">
               <Card
+                as="div"
                 card={card}
                 disabled={true}
                 grayOut={false}

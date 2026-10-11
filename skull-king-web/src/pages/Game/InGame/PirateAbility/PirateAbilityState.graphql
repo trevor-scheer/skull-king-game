@@ -25,6 +25,7 @@ query PirateAbilityState($gameId: String!, $playerToken: String!) {
     currentRound {
       id
       phase
+      cardsPerPlayer
       roundNumber
       myBid
       leader

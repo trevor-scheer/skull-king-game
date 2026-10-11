@@ -1,6 +1,10 @@
 query GameState($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    scoringMode
+    pirateAbilities
+    cannonball
+    deckConfig { includeMermaids includeKraken includeWhiteWhale includeLoot includeExpansion includeFirstMate includeStingray includeDavyJones includeWalkThePlank includeLastVolley }
     legalCardIds
     players {
       id
@@ -21,7 +25,13 @@ query GameState($gameId: String!, $playerToken: String!) {
     currentRound {
       id
       phase
-      pirateAbility { id }
+      pirateAbility { id name playerId }
+      plankChoice { id playerId }
+      cardsPerPlayer
+      isTieBreaker
+      trickColor
+      hands { id }
+      lastCompletedHand { id }
       leader
       playerTurn
       myBid

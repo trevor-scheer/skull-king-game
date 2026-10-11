@@ -46,26 +46,15 @@ export const Hand: React.FunctionComponent = function () {
     return <p role="status">Your player seat is unavailable in this game.</p>;
   const myTurn = phase === "play" && playerTurn === me?.name;
 
-  function canPlayCard(card: CardType) {
-    if (currentRound?.myForcedCardId)
-      return currentRound.myForcedCardId === card.id;
-    if (isSpecialCard(card)) return true;
-    if (card.wild && trickColor !== "BLACK") return true;
-    if (trickColor === null) return true;
-
-    const noMatches = me?.hand.every((card) => {
-      if (card.__typename === "SpecialCard") {
-        return true;
-      } else if (card.__typename === "ColoredCard") {
-        return (
-          card.color !== trickColor && !(card.wild && trickColor !== "BLACK")
-        );
-      }
-      return false;
-    });
-    const matchesTrickColor = card.color === trickColor;
-    return noMatches || matchesTrickColor;
-  }
+  const legalCardIds = new Set(data?.state?.legalCardIds ?? []);
+  const canPlayCard = (card: CardType) => legalCardIds.has(card.id);
+  const disabledReason = !myTurn
+    ? "Wait for your turn."
+    : currentRound?.myForcedCardId
+      ? "Mary selected a different card for this trick."
+      : trickColor
+        ? `Follow ${trickColor.toLowerCase()} while you hold that suit, or play a special card.`
+        : "This card is unavailable while the table updates.";
 
   async function debounceClick(fn: () => Promise<unknown>) {
     if (justClicked) return;
@@ -102,6 +91,20 @@ export const Hand: React.FunctionComponent = function () {
           card.
         </p>
       )}
+      {phase === "play" && (
+        <p className="Hand-guidance">
+          {myTurn
+            ? currentRound?.myForcedCardId
+              ? "Mary’s selected card must be played, even off suit."
+              : trickColor
+                ? `Follow ${trickColor.toLowerCase()} if you have it. Special cards are always allowed.`
+                : "No lead suit yet. Choose a card to play."
+            : playerTurn
+              ? `Waiting for ${playerTurn}.`
+              : "Resolving the trick’s choices."}{" "}
+          Use Tab to move between playable cards and Enter to play.
+        </p>
+      )}
       {actionError && <p role="alert">{actionError}</p>}
       <ul className="Hand-playerHand">
         {sortedHand.map((card, index) => {
@@ -112,6 +115,8 @@ export const Hand: React.FunctionComponent = function () {
               (!myTurn || !canPlayCard(card) || justClicked),
             card,
             index,
+            disabledReason:
+              !canPlayCard(card) || !myTurn ? disabledReason : undefined,
           };
           if (isColoredCard(card)) {
             const choices = card.choice

@@ -69,12 +69,12 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
   const currentPlayerIndex = players.findIndex((p) => p.id === currentPlayerId);
 
   // Reorder opponents to maintain consistent relative positions
-  const reorderedOpponents = [
+  const reorderedOpponents = currentPlayerIndex < 0 ? players : [
     ...players.slice(currentPlayerIndex + 1),
     ...players.slice(0, currentPlayerIndex),
   ].filter((p) => p.id !== currentPlayerId);
 
-  const positions = getPlayerPositions(players.length);
+  const positions = getPlayerPositions(currentPlayerIndex < 0 ? players.length + 1 : players.length);
 
   return (
     <div className="GameTable">

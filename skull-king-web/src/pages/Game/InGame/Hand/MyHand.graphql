@@ -1,6 +1,7 @@
 query MyHand($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    legalCardIds
     me {
       id
       name

@@ -1,5 +1,5 @@
 import { client } from "../client";
-import { GameStateDocument, GameStateQuery } from "../types/graphqlTypes";
+import { GameStateDocument, GameStateQuery, ScoringMode } from "../types/graphqlTypes";
 
 test("caches a completed trick from the game-state polling query", () => {
   client.cache.restore({});
@@ -8,6 +8,8 @@ test("caches a completed trick from the game-state polling query", () => {
     state: {
       __typename: "GameState",
       id: variables.gameId,
+      scoringMode: ScoringMode.Classic, pirateAbilities: false, cannonball: false,
+      deckConfig: {__typename:"DeckConfig", includeMermaids:true, includeKraken:false,includeWhiteWhale:false,includeLoot:false,includeExpansion:false,includeFirstMate:false,includeStingray:false,includeDavyJones:false,includeWalkThePlank:false,includeLastVolley:false},
       legalCardIds: [],
       players: [
         { __typename: "Player", id: "Anne", name: "Anne", handCount: 0, isAutomated: false, bid: 0, tricksWon: 0 },
@@ -18,6 +20,7 @@ test("caches a completed trick from the game-state polling query", () => {
         __typename: "Round",
         id: 1,
         roundNumber: 1,
+        cardsPerPlayer: 1, isTieBreaker:false, trickColor:null, hands:[], lastCompletedHand:null, plankChoice:null,
         phase: "trick_result",
         pirateAbility: null,
         leader: "Mary",

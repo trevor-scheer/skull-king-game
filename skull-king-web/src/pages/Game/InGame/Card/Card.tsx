@@ -5,12 +5,23 @@ import { expansionCardDescription } from "../../../../utils/expansionCards";
 
 export const Card: React.FunctionComponent<{
   disabled: boolean;
+  disabledReason?: string;
+  as?: "li" | "div";
   onClick?: Function;
   card: CardType;
   grayOut: boolean;
   index: number;
   children?: React.ReactNode;
-}> = function ({ disabled, onClick, card, grayOut, index, children }) {
+}> = function ({
+  disabled,
+  disabledReason,
+  as: Tag = "li",
+  onClick,
+  card,
+  grayOut,
+  index,
+  children,
+}) {
   const expansion = expansionCardDescription(
     card.id,
     card.__typename === "ColoredCard" ? card.color : undefined,
@@ -31,7 +42,13 @@ export const Card: React.FunctionComponent<{
             ? "White Whale"
             : card.type === "loot"
               ? "Loot"
-              : card.type;
+              : ({
+                  skullKing: "Skull King",
+                  escape: "Escape",
+                  mermaid: "Mermaid",
+                  kraken: "Kraken",
+                  tigress: "Tigress",
+                }[card.type] ?? card.type);
         }
         default:
           return "";
@@ -39,16 +56,19 @@ export const Card: React.FunctionComponent<{
     })();
 
   return (
-    <li
+    <Tag
       className={`Card${grayOut ? " Card-disabled" : ""}`}
       style={{ zIndex: index }}
+      title={disabledReason ? `${altText}: ${disabledReason}` : altText}
     >
       {children ?? (
         <button
           className="Card-content"
           disabled={disabled}
           onClick={() => onClick?.()}
-          aria-label={altText}
+          aria-label={
+            disabledReason ? `${altText}. ${disabledReason}` : altText
+          }
         >
           {expansion ? (
             <span
@@ -83,6 +103,7 @@ export const Card: React.FunctionComponent<{
           )}
         </button>
       )}
-    </li>
+      <span className="Card-name">{altText}</span>
+    </Tag>
   );
 };
