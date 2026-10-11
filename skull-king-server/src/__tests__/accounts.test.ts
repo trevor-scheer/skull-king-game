@@ -78,3 +78,17 @@ it('records once across repeated checkpoints/restarts, excludes practice, and er
   expect(accounts.session(session.token)).toBeNull(); expect(accounts.history(alice)).toEqual([]);
   expect(accounts.leaderboard().map(row => row.username)).toEqual(['bob']);
 });
+
+it('releases an invalidated seat binding when its display name is reused', async () => {
+  const { account: alice } = await accounts.signup('alice', password);
+  const { account: bob } = await accounts.signup('bob', password);
+  const original = new Game('reused'); const oldToken = original.addPlayer('Captain');
+  accounts.bindSeat(alice, 'reused', original, oldToken);
+  // A lobby departure invalidates the token while allowing the name to be reused.
+  const current = new Game('reused'); const newToken = current.addPlayer('Captain');
+  expect(current.getStateForPlayer(oldToken).me).toBeFalsy();
+  expect(() => accounts.bindSeat(bob, 'reused', current, newToken)).not.toThrow();
+  expect(accounts.resumeSeat(bob, 'reused', current)).toBe(newToken);
+  expect(() => accounts.resumeSeat(alice, 'reused', current)).toThrow('No linked seat');
+  expect(accounts.linkedGames(alice, new Map([['reused', current]]))).toEqual([]);
+});
