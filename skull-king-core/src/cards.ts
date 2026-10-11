@@ -85,7 +85,7 @@ export function buildDeck(config: DeckConfiguration = {}): Card[] {
     { id: `skullKing`, type: "skullKing" },
   ];
 
-  if (config.includeMermaids) {
+  if (config.includeMermaids ?? true) {
     deck.push(...mermaids.slice());
   }
   if (config.includeKraken) {
@@ -111,5 +111,4 @@ export const cardsMap: Map<string, Card> = new Map(
     }, {} as { [key: string]: Card })
   )
 );
-
 

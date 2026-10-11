@@ -439,7 +439,7 @@ export class Game {
       options: this.options,
       pirateAbilities: this.options.pirateAbilities ?? false,
       deckConfig: {
-        includeMermaids: this.options.deckConfig?.includeMermaids ?? false,
+        includeMermaids: this.options.deckConfig?.includeMermaids ?? true,
         includeKraken: this.options.deckConfig?.includeKraken ?? false,
         includeWhiteWhale: this.options.deckConfig?.includeWhiteWhale ?? false,
         includeLoot: this.options.deckConfig?.includeLoot ?? false,

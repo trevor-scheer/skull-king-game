@@ -77,6 +77,8 @@ describe("deck", () => {
         PIRATE,
         TIGRESS,
         SKULLKING,
+        MERMAID,
+        MERMAID,
       ]
     `);
   });
@@ -94,7 +96,7 @@ describe("deck", () => {
         BLACK 7,
         YELLOW 2,
         ESCAPE,
-        GREEN 14,
+        MERMAID,
         PURPLE 2,
         PURPLE 6,
         PURPLE 7,
@@ -111,7 +113,7 @@ describe("deck", () => {
         PIRATE,
         PIRATE,
         SKULLKING,
-        YELLOW 12,
+        PURPLE 1,
         YELLOW 5,
         PURPLE 4,
         YELLOW 13,
@@ -151,7 +153,9 @@ describe("deck", () => {
         TIGRESS,
         GREEN 13,
         YELLOW 11,
-        PURPLE 1,
+        GREEN 14,
+        MERMAID,
+        YELLOW 12,
       ]
     `);
   });
@@ -179,7 +183,7 @@ describe("deck", () => {
         ESCAPE,
         YELLOW 2,
         SKULLKING,
-        GREEN 9,
+        GREEN 8,
         YELLOW 7,
         GREEN 10,
         GREEN 12,
@@ -225,20 +229,59 @@ describe("deck", () => {
         PIRATE,
         GREEN 6,
         TIGRESS,
+        MERMAID,
         GREEN 7,
-        GREEN 8,
+        MERMAID,
+        GREEN 9,
       ]
     `);
   });
   it("draws cards in order", () => {
     const deck = new Deck({ shuffleSeed: 0.3 });
-    expect(deck.draw()).toMatchInlineSnapshot(`GREEN 8`);
+    expect(deck.draw()).toMatchInlineSnapshot(`GREEN 9`);
+    expect(deck.draw()).toMatchInlineSnapshot(`MERMAID`);
     expect(deck.draw()).toMatchInlineSnapshot(`GREEN 7`);
-    expect(deck.draw()).toMatchInlineSnapshot(`TIGRESS`);
   });
 });
 
 describe("deck configuration", () => {
+  it.each([undefined, {}])(
+    "uses the current 70-card deck for default config %j",
+    (config) => {
+      const deck = buildDeck(config);
+      expect(deck).toHaveLength(70);
+      expect(
+        deck.filter((card) => "type" in card && card.type === "mermaid"),
+      ).toHaveLength(2);
+      expect(
+        deck.some(
+          (card) =>
+            "type" in card &&
+            ["kraken", "whiteWhale", "loot"].includes(card.type),
+        ),
+      ).toBe(false);
+    },
+  );
+
+  it("keeps Mermaids by default when only another option is configured", () => {
+    const deck = buildDeck({ includeLoot: true });
+    expect(deck).toHaveLength(72);
+    expect(
+      deck.filter((card) => "type" in card && card.type === "mermaid"),
+    ).toHaveLength(2);
+    expect(
+      deck.filter((card) => "type" in card && card.type === "loot"),
+    ).toHaveLength(2);
+  });
+
+  it("supports the explicit 68-card variant without Mermaids", () => {
+    const deck = buildDeck({ includeMermaids: false });
+    expect(deck).toHaveLength(68);
+    expect(deck.some((card) => "type" in card && card.type === "mermaid")).toBe(
+      false,
+    );
+  });
+
   it("includes mermaids when configured", () => {
     const deck = buildDeck({ includeMermaids: true });
     const mermaids = deck.filter((c) => "type" in c && c.type === "mermaid");
@@ -253,7 +296,9 @@ describe("deck configuration", () => {
 
   it("includes white whale when configured", () => {
     const deck = buildDeck({ includeWhiteWhale: true });
-    const whiteWhale = deck.filter((c) => "type" in c && c.type === "whiteWhale");
+    const whiteWhale = deck.filter(
+      (c) => "type" in c && c.type === "whiteWhale",
+    );
     expect(whiteWhale).toHaveLength(1);
   });
 

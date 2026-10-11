@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { basicDeck } from "../cards";
+import { buildDeck } from "../cards";
 import { Deck } from "../deck";
 import { Game } from "../game";
 
@@ -133,7 +133,8 @@ describe("Game", () => {
     let trevorToken: string;
     beforeEach(() => {
       game = new Game(randomUUID(), {
-        deck: new Deck({ shuffleSeed: 0.3 }),
+        // These scripted hands use the original deck without Mermaids.
+        deck: new Deck({ deckConfig: { includeMermaids: false }, shuffleSeed: 0.3 }),
       });
       sethToken = game.addPlayer("Seth");
       trevorToken = game.addPlayer("Trevor");
@@ -454,7 +455,8 @@ function gameInThirdRound() {
 
 function gameAfterTenthRound() {
   const game = new Game(randomUUID(), {
-    deck: new Deck({ customDeck: basicDeck, shuffleSeed: 0 }),
+    // Keep the scripted ten-round card order independent of the default deck.
+    deck: new Deck({ customDeck: buildDeck({ includeMermaids: false }), shuffleSeed: 0 }),
   });
   const sethToken = game.addPlayer("Seth");
   const trevorToken = game.addPlayer("Trevor");
