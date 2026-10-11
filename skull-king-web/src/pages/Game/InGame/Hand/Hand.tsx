@@ -33,6 +33,7 @@ export const Hand: React.FunctionComponent = function () {
   const currentRound = data?.state?.currentRound;
   const { phase, playerTurn, trickColor } = currentRound ?? {};
   const me = data?.state?.me;
+  if (!me) return <p role="status">Your player seat is unavailable in this game.</p>;
   const myTurn = phase === "play" && playerTurn === me?.name;
 
   // useEffect(() => {
