@@ -1,6 +1,5 @@
-import { Card, isColoredCard } from "./cards";
 import { Round } from "./game";
-import { findSpecial } from "./utils/findSpecial";
+import { scoreRoundBonuses } from "./bonusPoints";
 
 type ScoredRound = Map<string, ScoreBlock>;
 
@@ -19,7 +18,8 @@ export class Scorecard {
   constructor(private playerNames: Set<string>) {}
 
   public scoreRound(
-    round: Pick<Round, "tricksWon" | "bids" | "roundNumber">
+    round: Pick<Round, "tricksWon" | "bids" | "roundNumber"> &
+      Partial<Pick<Round, "hands">>,
   ) {
     const scoredRound: ScoredRound = new Map();
     const { tricksWon, bids, roundNumber } = round;
@@ -33,6 +33,7 @@ export class Scorecard {
       const playerTricks = tricksWon.get(playerName) ?? [];
       const numTricksWon = playerTricks.length;
 
+      const bonuses = scoreRoundBonuses(round, playerName);
       let scoreBlock: ScoreBlock;
       // 0 bid case
       if (tricksBid === 0) {
@@ -43,13 +44,14 @@ export class Scorecard {
           tricksBid,
           tricksWon: numTricksWon,
           bidPoints,
-          bonusPoints: 0,
-          totalPoints: this.getPlayerScore(playerName) + bidPoints,
+          bonusPoints: bonuses.lootBonus,
+          totalPoints:
+            this.getPlayerScore(playerName) + bidPoints + bonuses.lootBonus,
         };
         // correct bid case
       } else if (tricksBid === playerTricks.length) {
         const bidPoints = numTricksWon * 20;
-        const bonusPoints = this.scoreBonusPoints(playerTricks);
+        const bonusPoints = bonuses.captureBonus + bonuses.lootBonus;
         // score hands
         scoreBlock = {
           playerName,
@@ -85,30 +87,6 @@ export class Scorecard {
     if (!playerScore)
       throw new Error("Programming error, can't find player score");
     return playerScore.totalPoints;
-  }
-
-  private scoreBonusPoints(tricks: Card[][]) {
-    const roundScore = tricks.reduce((sum, hand) => {
-      // sum pirates captured
-      if (findSpecial("skullKing", hand).length === 1) {
-        const pirateCount = findSpecial("pirate", hand).length;
-        const pirateTigressCount = findSpecial(
-          "tigress",
-          hand,
-          "pirate"
-        ).length;
-        sum += 30 * (pirateCount + pirateTigressCount);
-      }
-      // number 14 bonuses
-      for (const card of hand) {
-        if (isColoredCard(card) && card.number === 14) {
-          if (card.color === "BLACK") sum += 20;
-          if (card.color !== "BLACK") sum += 10;
-        }
-      }
-      return sum;
-    }, 0);
-    return roundScore;
   }
 
   public getScoreCard() {
