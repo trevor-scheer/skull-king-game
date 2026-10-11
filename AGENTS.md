@@ -14,10 +14,10 @@ migration is unnecessary for those revisions. Compare newer commits before
 assuming the repositories still match. The standalone repository is retired;
 its history remains available and new development belongs here.
 
-The gameplay review used `f4d3309`; the repository cleanup is based on `main`
-at `d43b155` and updates dependencies and documentation without merging the
-visual-polish branch. Inspect your branch before applying the findings. At the
-October 11, 2026 review, the locally available refs also contained
+The October 11, 2026 reliability pass builds on the repository cleanup at
+`260f1b7`. It fixes match transitions, action validation, and the played-card
+cache without merging the visual-polish branch. At the initial review, the
+locally available refs also contained
 separate work on shuffle fixes (`02d2e36`), test infrastructure (`f500b0c`), error
 handling (`25ed6b6`), type safety (`eeced0c`), subscriptions (`e02f048`), and Docker
 deployment (`704dba1`). These are sibling changes, not one integrated release.
@@ -45,7 +45,11 @@ transport or resolvers. The client uses HTTP polling, mostly every two seconds.
 
 Game phases are `setup`, `play`, and `postgame`. A round progresses through
 `bid`, `play`, and `trick_result`. Clients request `advanceTrick` after displaying
-the result. Tokens identify players within games; other players' hands are
+the result, supplying the completed hand's ID as `expectedHandId`. Duplicate or
+stale requests return `false` without advancing. `currentRound` is null in the
+lobby and postgame; `playerTurn` is null outside the round's play phase. Deploy
+the schema and generated client together; older clients need a reload.
+Tokens identify players within games; other players' hands are
 removed from public state. Do not expose tokens, hands, or unrevealed bids in
 public queries, logs, or future subscription broadcasts.
 
@@ -85,7 +89,7 @@ Use these checks according to the change:
 
 | Command | Coverage |
 | --- | --- |
-| `yarn test --runInBand` | Jest core tests and snapshots |
+| `yarn test --runInBand` | Core regressions, GraphQL match lifecycle, Apollo cache, and snapshots |
 | `yarn build` | Core and server TypeScript projects |
 | `yarn build:web` | Web TypeScript checks and Vite production bundle |
 | `yarn codegen` | Regenerates web GraphQL types/hooks; requires the server at `localhost:4000` |
@@ -93,15 +97,17 @@ Use these checks according to the change:
 Edit the schema and `.graphql` operations, then regenerate
 `skull-king-web/src/types/graphqlTypes.ts`; do not hand-edit generated types.
 The web `lint` script is not a usable validation gate until ESLint and its
-configuration are supplied. No CI workflow or web/server test suite exists at
-this revision. Do not run `yarn clean` casually: it deletes ignored build and
+configuration are supplied. No CI workflow or automated browser suite exists
+at this revision. Do not run `yarn clean` casually: it deletes ignored build and
 dependency files.
 
-On October 11, 2026, the cleanup passed an immutable Yarn 4.6.0 install in a
-fresh worktree, 43 Jest tests and 20 snapshots (one test remained TODO), both
-builds, and a basic HTTP GraphQL query under Node 24.15.0 with Apollo 5.2.0.
-The web build emitted Sass deprecation warnings. These checks do not establish
-that a full multiplayer session works.
+On October 11, 2026, the reliability pass passed 69 Jest tests and 20 snapshots
+(one test remained TODO) and both builds under Node 24.15.0 with Apollo 5.2.0.
+API tests complete ten-round games with two and six players, exercise stale
+advancement requests, and check private/public state. A browser smoke check
+verified a completed trick, a simulated advancement failure, and Retry into
+round two with a new hand and scores. This is not a full multi-browser match
+test. The web build still emits existing Sass deprecation warnings.
 
 ## Rules and change discipline
 
@@ -134,20 +140,18 @@ nullability, authorization, or full-game progression.
 
 ## Known gaps and recommended order
 
-These findings describe `f4d3309`, not fixes completed by this guide:
+The reliability pass fixed lobby/result/postgame nullability, duplicate trick
+advancement, negative/fractional bids, late joins, blank names, card ownership
+by exact ID, and invalid Tigress choices. Played-card snapshots are embedded in
+Apollo's cache so summary queries do not require missing card fields.
 
-1. **Complete a game reliably.** `Game.playerTurn()` returns `undefined` after
-   the last card of a trick, while `Round.playerTurn` is non-null in GraphQL.
-   Querying it during `trick_result` produces an error and null game state.
-   `endGame()` also sets `currentRound` to null despite the schema's non-null
-   contract. Test lobby, result, next-round, and postgame queries through the
-   actual schema, then exercise a complete match with multiple clients.
-2. **Validate every game action.** `submitBid` accepts negative counts;
-   `addPlayer` permits joining after a game starts; `startGame` and
-   `advanceTrick` take no player/host credential. `playCard` matches special
-   cards by type rather than exact ID, and Tigress selection is a free string
-   at the API boundary. Validate inputs and phase/actor permissions in the
-   authoritative path. Make trick advancement safe against duplicate requests.
+1. **Exercise real multiplayer sessions.** API coverage now spans full games;
+   add a complete browser scenario with multiple clients, disconnects, and
+   simultaneous transitions. Keep the API and cache regressions intact.
+2. **Define actor permissions.** `startGame` and `advanceTrick` still take no
+   player/host credential. Decide who can start a room and own transitions,
+   then enforce that policy in the authoritative path. An expected hand ID
+   prevents stale advancement; it is not an authorization credential.
 3. **Make enabled cards complete.** `Scorecard.scoreBonusPoints` handles only
    14s and Skull King/Pirate bonuses. It lacks Mermaid capture and Loot alliance
    scoring and infers capture bonuses from card presence rather than the

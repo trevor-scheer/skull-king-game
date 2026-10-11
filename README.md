@@ -43,4 +43,6 @@ corepack yarn build:web
 
 After changing the schema or client GraphQL operations, run `corepack yarn codegen` with the server running.
 
-See [AGENTS.md](AGENTS.md) for architecture, rules references, known bugs, and recommended priorities. The core tests and builds do not yet cover a complete multiplayer match. Game sessions are held in memory and disappear on server restart.
+See [AGENTS.md](AGENTS.md) for architecture, rules references, known bugs, and recommended priorities. Tests cover complete ten-round games through GraphQL with two and six players, invalid actions, and client cache regressions. Full multiplayer browser automation remains a follow-up. Game sessions are held in memory and disappear on server restart.
+
+The API represents lobby/postgame rounds and inactive turns as nullable. Trick advancement requires the completed hand's `expectedHandId`, making duplicate and delayed requests safe. Release the server and regenerated web client together; existing browser tabs need a reload.

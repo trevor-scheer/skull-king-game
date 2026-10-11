@@ -2,6 +2,12 @@
 
 A comprehensive list of improvements organized by category, from critical fixes to polish items.
 
+> Historical brainstorming list from January 2026. Several claims below are
+> stale or incorrect, including Mermaid behavior and opponent-hand exposure.
+> Use [AGENTS.md](AGENTS.md) for the current implementation, validated fixes,
+> and remaining priorities. The October reliability pass adds full-game API
+> tests, action validation, safe trick advancement, and a client-cache regression.
+
 ---
 
 ## Critical Issues
