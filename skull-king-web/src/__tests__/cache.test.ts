@@ -37,3 +37,14 @@ test("caches a completed trick from the game-state polling query", () => {
     client.cache.readQuery<GameStateQuery>({ query: GameStateDocument, variables })
   ).toEqual(data);
 });
+
+test("room and historical card snapshots cannot overwrite another room", () => {
+  const { gql } = require('@apollo/client');
+  const query = gql`query Room($id:String!) { state(gameId:$id) { id players { id name } currentRound { id phase cardsPlayed { id card { ... on SpecialCard { id type selection } } } } } }`;
+  const room = (id:string, name:string, phase:string, selection:string) => ({state:{__typename:'GameState',id,players:[{__typename:'Player',id:'same-player',name}],currentRound:{__typename:'Round',id:1,phase,cardsPlayed:[{__typename:'PlayedCard',id:'same-card',card:{__typename:'SpecialCard',id:'tigress',type:'tigress',selection}}]}}});
+  client.cache.restore({});
+  const first = room('one','Anne','play','escape');
+  client.cache.writeQuery({query,variables:{id:'one'},data:first});
+  client.cache.writeQuery({query,variables:{id:'two'},data:room('two','Mary','bid','pirate')});
+  expect(client.cache.readQuery({query,variables:{id:'one'}})).toEqual(first);
+});
