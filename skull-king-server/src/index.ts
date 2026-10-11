@@ -1,6 +1,6 @@
-import {  ApolloServer } from "@apollo/server";
-import {  startStandaloneServer } from "@apollo/server/standalone";
-import {  Game } from "@skull-king/core";
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
+import { Game } from "@skull-king/core";
 import resolvers from "./resolvers";
 import typeDefs from "./typeDefs";
 
@@ -33,8 +33,8 @@ export interface Context {
       return { games };
     },
     listen: {
-      port: Number(process.env.PORT ?? 4000)
-    }
+      port: Number(process.env.PORT ?? 4000),
+    },
   });
 
   console.log(`
