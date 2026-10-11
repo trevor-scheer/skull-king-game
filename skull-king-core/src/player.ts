@@ -5,4 +5,5 @@ export interface Player {
   name: string;
   hand: Card[];
   isAutomated?: boolean;
+  isBot?: boolean;
 }

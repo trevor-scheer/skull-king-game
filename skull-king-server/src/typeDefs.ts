@@ -37,6 +37,11 @@ const typeDefs = `#graphql
     newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode, pirateAbilities: Boolean, roundSchedule: [Int!], tieBreakers: Boolean, cannonball: Boolean): String!
     rematchGame(gameId: String!, playerToken: String!): String!
     startGame(gameId: String!, playerToken: String!): Boolean!
+    addBot(gameId: String!, playerToken: String!): String!
+    removeBot(gameId: String!, playerToken: String!, playerId: String!): Boolean!
+    setAutoplay(gameId: String!, playerToken: String!, enabled: Boolean!): Boolean!
+    enableAwayAutoplay(gameId: String!, playerToken: String!, playerId: String!, expectedLastSeenAt: Float!): Boolean!
+    leaveGame(gameId: String!, playerToken: String!): Boolean!
     addPlayer(gameId: String!, name: String!): String!
     submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
     loadCannon(gameId: String!, playerToken: String!, load: CannonLoad!, expectedRoundNumber: Int!): Boolean!
@@ -60,6 +65,7 @@ const typeDefs = `#graphql
 
   type GameState {
     id: String!
+    practice: Boolean!
     nextGameId: String
     phase: String!
     me: Player
@@ -96,6 +102,9 @@ const typeDefs = `#graphql
     hand: [Card!]!
     handCount: Int!
     isAutomated: Boolean!
+    isBot: Boolean!
+    isAutoplay: Boolean!
+    lastSeenAt: Float
     bid: Int
     tricksWon: Int!
   }

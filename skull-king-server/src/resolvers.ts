@@ -15,6 +15,7 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
     },
     state(_, { gameId, playerToken }, { games }: Context) {
       const game = games.get(gameId);
+      if (game && typeof playerToken === "string") game.recordPresence(playerToken);
       return game?.getStateForPlayer(playerToken);
     },
   },
@@ -41,6 +42,26 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       requireHost(game, playerToken);
       game.start();
       return true;
+    },
+    addBot(_, { gameId, playerToken }, { games }) {
+      const game = games.get(gameId); assertGame(game, gameId);
+      return game.addBot(playerToken);
+    },
+    removeBot(_, { gameId, playerToken, playerId }, { games }) {
+      const game = games.get(gameId); assertGame(game, gameId);
+      return game.removeBot(playerToken, playerId);
+    },
+    setAutoplay(_, { gameId, playerToken, enabled }, { games }) {
+      const game = games.get(gameId); assertGame(game, gameId);
+      return game.setAutoplay(playerToken, enabled);
+    },
+    enableAwayAutoplay(_, { gameId, playerToken, playerId, expectedLastSeenAt }, { games }) {
+      const game = games.get(gameId); assertGame(game, gameId);
+      return game.enableAwayAutoplay(playerToken, playerId, expectedLastSeenAt);
+    },
+    leaveGame(_, { gameId, playerToken }, { games }) {
+      const game = games.get(gameId); assertGame(game, gameId);
+      return game.leaveGame(playerToken);
     },
     addPlayer(_, { gameId, name }, { games }) {
       const game = games.get(gameId);

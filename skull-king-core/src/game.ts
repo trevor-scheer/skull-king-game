@@ -1,3 +1,4 @@
+import { chooseBotAction, BotView } from "./botPolicy";
 import { types } from "node:util";
 import { serialize, deserialize } from "node:v8";
 import { Deck } from "./deck";
@@ -63,6 +64,9 @@ export class Game {
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
   private currentRound: Round | null;
+  private autoplayPlayers = new Set<string>();
+  private lastSeen = new Map<string, number>();
+  private practice = false;
   private nextGameId: string | null = null;
   private endGameListeners: (() => void)[] = [];
 
@@ -96,6 +100,9 @@ export class Game {
     if (game.options.deck) Object.setPrototypeOf(game.options.deck, Deck.prototype);
     if (game.scorecard) Object.setPrototypeOf(game.scorecard, Scorecard.prototype);
     game.endGameListeners = [];
+    game.autoplayPlayers ??= new Set();
+    game.lastSeen ??= new Map();
+    game.practice ??= false;
     return game;
   }
 
@@ -106,6 +113,9 @@ export class Game {
     next.players = this.players.filter(player => !player.isAutomated).map(player => ({ ...player, hand: [] }));
     next.playerNames = new Set(this.playerNames);
     next.playerTokens = new Map(this.playerTokens);
+    next.autoplayPlayers = new Set(next.players.filter(player => player.isBot).map(player => player.id));
+    next.practice = next.autoplayPlayers.size > 0;
+    next.resetPresence();
     this.nextGameId = id;
     return next;
   }
@@ -126,8 +136,118 @@ export class Game {
       this.players.push({ name, id: name, hand: [] });
       const token = randomUUID();
       this.playerTokens.set(token, name);
+      this.lastSeen.set(name, Date.now());
       return token;
     }
+  }
+
+  private humanForToken(token: string) {
+    const id = this.playerTokens.get(token);
+    const player = this.players.find(player => player.id === id && !player.isBot && !player.isAutomated);
+    assert(player, "A human seat is required");
+    return player;
+  }
+
+  private hostForToken(token: string) {
+    const player = this.humanForToken(token);
+    assert(player.id === this.players.find(player => !player.isBot && !player.isAutomated)?.id, "Only the host can do that");
+    return player;
+  }
+
+  public recordPresence(token: string, now = Date.now()) {
+    const id = this.playerTokens.get(token);
+    if (!this.players.some(player => player.id === id && !player.isBot && !player.isAutomated)) return false;
+    this.lastSeen.set(id!, now);
+    return true;
+  }
+
+  public resetPresence(now = Date.now()) {
+    for (const player of this.players) if (!player.isBot && !player.isAutomated) this.lastSeen.set(player.id, now);
+  }
+
+  public addBot(hostToken: string) {
+    this.hostForToken(hostToken);
+    assert(this.phase === "setup", "Add practice players in the lobby");
+    let number = 1;
+    while (this.playerNames.has(`Practice pirate ${number}`)) number++;
+    const name = `Practice pirate ${number}`;
+    this.addPlayer(name);
+    this.players.find(player => player.id === name)!.isBot = true;
+    this.lastSeen.delete(name);
+    this.autoplayPlayers.add(name);
+    this.practice = true;
+    return name;
+  }
+
+  public removeBot(hostToken: string, playerId: string) {
+    this.hostForToken(hostToken);
+    assert(this.phase === "setup", "Remove practice players in the lobby");
+    assert(this.players.some(player => player.id === playerId && player.isBot), "Choose a practice player");
+    this.removeSeat(playerId);
+    return true;
+  }
+
+  private removeSeat(id: string) {
+    this.players = this.players.filter(player => player.id !== id);
+    this.playerNames.delete(id); this.autoplayPlayers.delete(id); this.lastSeen.delete(id);
+    for (const [token, playerId] of this.playerTokens) if (playerId === id) this.playerTokens.delete(token);
+  }
+
+  public setAutoplay(token: string, enabled: boolean) {
+    assert(typeof enabled === "boolean", "Choose whether autoplay is enabled");
+    const player = this.humanForToken(token);
+    assert(this.phase === "play", "Autoplay is available during a match");
+    if (enabled) { this.autoplayPlayers.add(player.id); this.practice = true; }
+    else { this.autoplayPlayers.delete(player.id); this.recordPresence(token); }
+    return true;
+  }
+
+  public enableAwayAutoplay(hostToken: string, playerId: string, expectedLastSeenAt: number, now = Date.now()) {
+    this.hostForToken(hostToken);
+    assert(this.phase === "play", "Autoplay is available during a match");
+    assert(this.players.some(player => player.id === playerId && !player.isBot && !player.isAutomated), "Choose a human player");
+    const lastSeen = this.lastSeen.get(playerId);
+    if (lastSeen !== expectedLastSeenAt || this.autoplayPlayers.has(playerId)) return false;
+    assert(lastSeen != null && now - lastSeen >= 90_000, "Wait until this player has been absent for 90 seconds");
+    this.autoplayPlayers.add(playerId); this.practice = true;
+    return true;
+  }
+
+  public leaveGame(token: string) {
+    const player = this.humanForToken(token);
+    if (this.phase === "setup") this.removeSeat(player.id);
+    else if (this.phase === "play") this.setAutoplay(token, true);
+    return true;
+  }
+
+  /** Executes one decision from an explicitly filtered view. Tokens stay inside Game. */
+  public stepAutoplay() {
+    const round = this.currentRound;
+    if (this.phase !== "play" || !round) return false;
+    let actor = round.plankChoice?.playerId ?? round.pirateAbility?.playerId ?? this.playerTurn();
+    if (round.phase === "bid") actor = this.players.find(player => this.autoplayPlayers.has(player.id) && !round.bids.has(player.id))?.id ?? null;
+    if (round.phase === "load") actor = this.players.find(player => this.autoplayPlayers.has(player.id) && !round.cannonLoads?.has(player.id))?.id ?? null;
+    if (!actor || !this.autoplayPlayers.has(actor)) return false;
+    const token = [...this.playerTokens].find(([, id]) => id === actor)?.[0];
+    assert(token, "Autoplay seat has no credential");
+    const state = this.getStateForPlayer(token);
+    const visible = state.currentRound!;
+    const view: BotView = {
+      playerId: actor, hand: state.me!.hand.map(card => ({ ...card })), legalCardIds: state.legalCardIds,
+      phase: visible.phase, bid: visible.myBid, tricksWon: state.me!.tricksWon,
+      cardsPerPlayer: visible.cardsPerPlayer, trickColor: visible.trickColor, forcedCardId: visible.myForcedCardId,
+      players: state.players.map(player => ({ id: player.id, handCount: player.handCount })),
+      ability: visible.pirateAbility ? { id: visible.pirateAbility.id, kind: visible.pirateAbility.kind, stage: visible.pirateAbility.stage, canDecline: visible.pirateAbility.canDecline } : null,
+      plankChoice: visible.plankChoice ? { id: visible.plankChoice.id, cardIds: [...visible.plankChoice.cardIds] } : null,
+    };
+    const action = chooseBotAction(view);
+    if (!action) return false;
+    if (action.kind === "bid") this.submitBid({ playerToken: token, count: action.count });
+    else if (action.kind === "load") this.loadCannon({ playerToken: token, load: "grapeshot", expectedRoundNumber: round.roundNumber });
+    else if (action.kind === "play") this.playCard({ playerToken: token, ...action });
+    else if (action.kind === "ability") this.usePirateAbility(token, action.id, action.input);
+    else this.choosePlankTarget(token, action.id, action.cardId);
+    return true;
   }
 
   public start() {
@@ -143,6 +263,7 @@ export class Game {
       this.players.push(createGraybeard(this.players));
     }
     cardsForRound(this.options.roundSchedule!, 1, this.deck.size, this.players.length);
+    this.resetPresence();
     this.scorecard = new Scorecard(this.playerNames, this.options.scoringMode ?? "classic");
     this.phase = "play";
     this.nextRound();
@@ -576,12 +697,16 @@ export class Game {
       hand: showHand ? player.hand : [],
       handCount: player.hand.length,
       isAutomated: player.isAutomated ?? false,
+      isBot: player.isBot ?? false,
+      isAutoplay: this.autoplayPlayers.has(player.id),
+      lastSeenAt: player.isBot || player.isAutomated ? null : this.lastSeen.get(player.id) ?? null,
       bid: this.currentRound && this.currentRound.phase !== "bid" ? this.currentRound.bids.get(player.id) ?? null : null,
       tricksWon: this.currentRound?.tricksWon.get(player.id)?.length ?? 0,
     });
     const gameState = {
       id: this.id,
       nextGameId: this.nextGameId ?? null,
+      practice: this.practice,
       phase: this.phase,
       currentRound: currentRoundData,
       scorecard: this.scorecard?.getScoreCard(),

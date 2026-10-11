@@ -26,7 +26,7 @@ test('a server restart preserves private seats, remaining deck, legal play and s
         const card = hand.find(c => isSpecialCard(c) || !round.trickColor || suited.length === 0 || (!isSpecialCard(c) && c.color === round.trickColor))!;
         game.playCard({playerToken:token,cardId:card.id,selection:isSpecialCard(card) && card.type === 'tigress' ? 'escape' : undefined});
       }
-      const comparable = (value: unknown) => JSON.parse(JSON.stringify(value, (_key, item) => types.isMap(item) ? [...item.entries()] : types.isSet(item) ? [...item.values()] : item));
+      const comparable = (value: unknown) => JSON.parse(JSON.stringify(value, (key, item) => key === "lastSeenAt" ? undefined : types.isMap(item) ? [...item.entries()] : types.isSet(item) ? [...item.values()] : item));
       const expected = comparable(tokens.map(token => game.getStateForPlayer(token)));
       rooms.save('persistent');
       rooms = new Rooms(dir);

@@ -9,6 +9,7 @@ export class Rooms {
   readonly updates = new EventEmitter();
   readonly saved = new EventEmitter();
   private touched = new Map<string, number>();
+  private botActions = new Map<string, number>();
   private results = new Map<string, { handId: string; due: number }>();
   constructor(readonly directory: string, private now = Date.now) {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -16,7 +17,9 @@ export class Rooms {
     for (const file of readdirSync(directory).filter(f => f.endsWith('.room'))) {
       const id = file.slice(0, -5);
       try {
-        this.games.set(id, Game.restoreCheckpoint(readFileSync(join(directory, file))));
+        const game = Game.restoreCheckpoint(readFileSync(join(directory, file)));
+        game.resetPresence(this.now());
+        this.games.set(id, game);
         this.touched.set(id, statSync(join(directory, file)).mtimeMs);
       } catch {
         // Keep the original checkpoint for recovery instead of silently overwriting it.
@@ -41,6 +44,10 @@ export class Rooms {
 
   tick() {
     for (const [id, game] of this.games) {
+      if (this.now() - (this.botActions.get(id) ?? 0) >= 750 && game.stepAutoplay()) {
+        this.botActions.set(id, this.now());
+        this.save(id);
+      }
       const state = game.getStateForPlayer();
       const round = state.currentRound;
       if (round?.phase === 'trick_result' && !round.pirateAbility && round.lastCompletedHand) {
@@ -57,6 +64,7 @@ export class Rooms {
         this.games.delete(id);
         this.touched.delete(id);
         this.results.delete(id);
+        this.botActions.delete(id);
         try { unlinkSync(join(this.directory, `${id}.room`)); } catch { /* Already removed. */ }
         this.updates.emit(id);
         this.saved.emit("expired", id);
