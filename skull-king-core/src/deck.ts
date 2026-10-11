@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { Card, basicDeck, buildDeck, DeckConfiguration } from "./cards";
 
 export class Deck {
@@ -7,6 +8,8 @@ export class Deck {
   // A deck of cards to be shuffled, drawn from, etc.
   private cardsInPlay: Card[] = [];
   private shuffleSeed: number | null;
+  private randomState: number;
+  private noShuffle: boolean;
 
   constructor(options?: DeckOptions) {
     // Priority: customDeck > deckConfig > basicDeck
@@ -28,21 +31,34 @@ export class Deck {
     );
 
     this.shuffleSeed = options?.shuffleSeed ?? null;
+    if (this.shuffleSeed !== null && !Number.isFinite(this.shuffleSeed)) throw new Error("Shuffle seed must be finite");
+    this.randomState = 2166136261;
+    for (const character of String(this.shuffleSeed)) {
+      this.randomState = Math.imul(this.randomState ^ character.charCodeAt(0), 16777619) >>> 0;
+    }
+    this.noShuffle = options?.noShuffle ?? false;
     this.shuffle();
   }
 
   public shuffle() {
     const cloned = this.originalDeck.slice();
-    for (let i = cloned.length - 1; i > 0; i--) {
-      const j = Math.floor((this.shuffleSeed ?? Math.random()) * (i + 1));
-      [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+    if (this.noShuffle) {
+      this.cardsInPlay = cloned.reverse();
+      return;
     }
-    // Honestly probably not necessary
     for (let i = cloned.length - 1; i > 0; i--) {
-      const j = Math.floor((this.shuffleSeed ?? Math.random()) * (i + 1));
+      const j = this.shuffleSeed === null ? randomInt(i + 1) : Math.floor(this.seededRandom() * (i + 1));
       [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
     }
     this.cardsInPlay = cloned;
+  }
+
+  private seededRandom() {
+    // A serializable Mulberry32 state continues across rounds and checkpoints.
+    this.randomState = (this.randomState + 0x6d2b79f5) >>> 0;
+    let value = Math.imul(this.randomState ^ (this.randomState >>> 15), this.randomState | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
   }
 
   public draw() {
@@ -86,7 +102,8 @@ export class Deck {
   }
 }
 
-interface DeckOptions {
+export interface DeckOptions {
+  noShuffle?: boolean;
   shuffleSeed?: number;
   customDeck?: Card[];
   deckConfig?: DeckConfiguration;

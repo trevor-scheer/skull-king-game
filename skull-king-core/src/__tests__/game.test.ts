@@ -1,7 +1,7 @@
 // Scripted fixtures retain the direct two-player deal; Graybeard has separate coverage.
 import { randomUUID } from "crypto";
 import { buildDeck } from "../cards";
-import { Deck } from "../deck";
+import { LegacyDeal as Deck } from "../../testUtils/legacyDeal";
 import { Game } from "../game";
 
 describe("Game", () => {

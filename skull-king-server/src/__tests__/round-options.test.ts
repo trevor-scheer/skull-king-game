@@ -89,12 +89,12 @@ describe("round options through GraphQL", () => {
 
   it("reveals loads together, rejects stale choices, and scores mixed Cannonball/Grapeshot bids", async () => {
     const deck = new Deck({
-      customDeck: [1, 2, 3].map((number) => ({
+      customDeck: [3, 2, 1].map((number) => ({
         id: `yellow-${number}`,
         color: "YELLOW",
         number,
       })),
-      shuffleSeed: 0.99,
+      noShuffle: true,
     });
     const game = new Game("rounds", {
       deck,
@@ -170,8 +170,8 @@ describe("round options through GraphQL", () => {
     const handId = (await state()).currentRound!.lastCompletedHand.id;
     await execute(
       context,
-      `mutation Advance($id:String!){advanceTrick(gameId:"rounds",expectedHandId:$id)}`,
-      { id: handId },
+      `mutation Advance($id:String!,$token:String!){advanceTrick(gameId:"rounds",playerToken:$token,expectedHandId:$id)}`,
+      { id: handId, token: alice },
     );
     const final = await state();
     expect(final.currentRound).toBeNull();

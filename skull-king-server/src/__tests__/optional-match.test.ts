@@ -2,6 +2,7 @@
 import { ApolloServer } from "@apollo/server";
 import {
   Card,
+  buildDeck,
   isColoredCard,
   isSpecialCard,
 } from "../../../skull-king-core/src/cards";
@@ -86,10 +87,10 @@ it.each([
       includeWhiteWhale: true,
       includeLoot: true,
     };
-    // This seed leaves the ordered deck intact: optional cards and pirates are
+    // This fixture deals the deck in reverse order: optional cards and pirates are
     // dealt first, so even the two-player match exercises every enabled card.
     const game = new Game("optional-match", { twoPlayerMode: "duel",
-      deck: new Deck({ deckConfig, shuffleSeed: 0.99 }),
+      deck: new Deck({ customDeck: buildDeck(deckConfig).reverse(), noShuffle: true }),
       deckConfig,
       scoringMode,
       pirateAbilities: true,

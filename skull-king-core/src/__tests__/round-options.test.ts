@@ -152,7 +152,7 @@ describe("pirate powers with custom hand sizes", () => {
         })),
       ];
       const game = new Game("powers", {
-        deck: new Deck({ customDeck: dealt.reverse(), shuffleSeed: 0.99 }),
+        deck: new Deck({ customDeck: dealt, noShuffle: true }),
         roundSchedule: [5],
         pirateAbilities: true,
       });
@@ -189,12 +189,12 @@ describe("pirate powers with custom hand sizes", () => {
 describe("tied games", () => {
   it("repeats the final hand size until one player leads and announces the end once", () => {
     const deck = new Deck({
-      customDeck: [1, 2, 3].map((number) => ({
+      customDeck: [3, 2, 1].map((number) => ({
         id: `yellow-${number}`,
         color: "YELLOW",
         number,
       })),
-      shuffleSeed: 0.99,
+      noShuffle: true,
     });
     const game = new Game("tie", { deck, roundSchedule: [1] });
     const onEnd = jest.fn();
