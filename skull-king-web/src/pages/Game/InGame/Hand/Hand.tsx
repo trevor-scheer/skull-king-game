@@ -18,16 +18,18 @@ export const Hand: React.FunctionComponent = function () {
   const gameId = useGameId() ?? ""; // TODO: hacky fallback
   const [justClicked, setJustClicked] = useState(false);
 
-  // TODO: error handling
-  const { data, loading } = useMyHandQuery({
+  const [actionError, setActionError] = useState<string | null>(null);
+  const { data, loading, error, refetch } = useMyHandQuery({
     variables: { gameId, playerToken: playerToken! },
     pollInterval: 2000,
+    skip: !gameId || !playerToken,
   });
 
   const [playSpecialCard] = usePlaySpecialCardMutation();
   const [playColoredCard] = usePlayColoredCardMutation();
 
-  if (loading) return <div>Loading...</div>;
+  if (error && !data) return <p role="alert">Couldn’t load your hand. <button onClick={() => void refetch()}>Retry</button></p>;
+  if (loading && !data) return <div>Loading...</div>;
   if (!playerToken) return <div>No player token</div>;
 
   const currentRound = data?.state?.currentRound;
@@ -35,17 +37,6 @@ export const Hand: React.FunctionComponent = function () {
   const me = data?.state?.me;
   if (!me) return <p role="status">Your player seat is unavailable in this game.</p>;
   const myTurn = phase === "play" && playerTurn === me?.name;
-
-  // useEffect(() => {
-  //   if (myTurn) {
-  //     const audio = new Audio("/audio/smb3_coin.wav");
-  //     try {
-  //       audio.play();
-  //     } catch (e) {
-  //       console.error(e);
-  //     }
-  //   }
-  // }, [myTurn]);
 
   function canPlayCard(card: CardType) {
     if (isSpecialCard(card)) return true;
@@ -63,9 +54,18 @@ export const Hand: React.FunctionComponent = function () {
     return noMatches || matchesTrickColor;
   }
 
-  function debounceClick(fn: any) {
+  async function debounceClick(fn: () => Promise<unknown>) {
+    if (justClicked) return;
     setJustClicked(true);
-    fn().then(() => setJustClicked(false));
+    setActionError(null);
+    try {
+      await fn();
+      void refetch?.();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Couldn’t play that card. Try again.");
+    } finally {
+      setJustClicked(false);
+    }
   }
 
   const sortedHand = [...me?.hand!].sort((a, b) => {
@@ -79,10 +79,10 @@ export const Hand: React.FunctionComponent = function () {
           {myTurn ? "Your Turn!" : "My Hand"} (Bid: {currentRound?.myBid})
         </p>
       )}
+      {actionError && <p role="alert">{actionError}</p>}
       <ul className="Hand-playerHand">
         {sortedHand.map((card, index) => {
           const commonProps = {
-            key: card.id,
             disabled: !myTurn || !canPlayCard(card) || justClicked,
             grayOut:
               phase === "play" &&
@@ -93,6 +93,7 @@ export const Hand: React.FunctionComponent = function () {
           if (isColoredCard(card)) {
             return (
               <Card
+                key={card.id}
                 {...commonProps}
                 onClick={() => {
                   debounceClick(() =>
@@ -109,7 +110,7 @@ export const Hand: React.FunctionComponent = function () {
             );
           } else if (isSpecialCard(card)) {
             return card.type === "tigress" ? (
-              <Card {...commonProps}>
+              <Card key={card.id} {...commonProps}>
                 <div className="Card-content">
                   <button
                     className="Card-tigress-btn Card-tigress-btn--escape"
@@ -154,6 +155,7 @@ export const Hand: React.FunctionComponent = function () {
               </Card>
             ) : (
               <Card
+                key={card.id}
                 {...commonProps}
                 onClick={() => {
                   debounceClick(() =>

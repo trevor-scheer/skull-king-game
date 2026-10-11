@@ -11,6 +11,8 @@ export const BidForm: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId() ?? ""; // TODO: hacky fallback
 
+  const [pending, setPending] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [selectedBid, setSelectedBid] = useState<number | null>(null);
 
@@ -21,14 +23,21 @@ export const BidForm: React.FunctionComponent = function () {
     pollInterval: 2000,
   });
 
-  function handleSubmit(event: React.MouseEvent<HTMLButtonElement>) {
+  async function handleSubmit(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     const count = parseInt(event.currentTarget.id);
     setSelectedBid(count);
-    setSubmitted(true);
-    submitBid({
-      variables: { gameId, playerToken: playerToken!, count },
-    });
+    if (pending || submitted) return;
+    setPending(true);
+    setActionError(null);
+    try {
+      await submitBid({ variables: { gameId, playerToken: playerToken!, count } });
+      setSubmitted(true);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Couldn’t place your bid. Try again.");
+    } finally {
+      setPending(false);
+    }
   }
 
   if (loading) {
@@ -57,12 +66,13 @@ export const BidForm: React.FunctionComponent = function () {
             id={String(count)}
             key={count}
             onClick={handleSubmit}
-            disabled={submitted}
+            disabled={submitted || pending}
           >
             {count}
           </button>
         ))}
       </div>
+      {actionError && <p role="alert">{actionError}</p>}
       {submitted && selectedBid !== null && (
         <p className="BidForm-confirmation">
           Bid placed: <strong>{selectedBid}</strong>
