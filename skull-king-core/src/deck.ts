@@ -72,6 +72,12 @@ export class Deck {
     return this.cardMap.get(id);
   }
 
+  public retainCards(keep: (card: Card) => boolean) {
+    this.originalDeck = this.originalDeck.filter(keep);
+    this.cardsInPlay = this.cardsInPlay.filter(keep);
+    this.cardMap = new Map(this.originalDeck.map((card) => [card.id, card]));
+  }
+
   public __debugDeck() {
     return {
       originalDeck: this.originalDeck,

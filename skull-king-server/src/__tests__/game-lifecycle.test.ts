@@ -1,3 +1,4 @@
+// Scripted fixtures retain the direct two-player deal; Graybeard has separate coverage.
 import { ApolloServer } from "@apollo/server";
 import { Card, isColoredCard, isSpecialCard } from "../../../skull-king-core/src/cards";
 import { Deck } from "../../../skull-king-core/src/deck";
@@ -47,7 +48,7 @@ describe("game lifecycle through GraphQL", () => {
   let hostToken: string;
 
   beforeEach(() => {
-    game = new Game("test-game", { deck: new Deck({ shuffleSeed: 0.3 }) });
+    game = new Game("test-game", { twoPlayerMode: "duel", deck: new Deck({ shuffleSeed: 0.3 }) });
     context = { games: new Map([["test-game", game]]) };
     server = new ApolloServer<Context>({ typeDefs, resolvers });
   });

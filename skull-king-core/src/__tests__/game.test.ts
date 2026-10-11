@@ -1,3 +1,4 @@
+// Scripted fixtures retain the direct two-player deal; Graybeard has separate coverage.
 import { randomUUID } from "crypto";
 import { buildDeck } from "../cards";
 import { Deck } from "../deck";
@@ -6,7 +7,7 @@ import { Game } from "../game";
 describe("Game", () => {
   let game: Game;
   beforeEach(() => {
-    game = new Game(randomUUID());
+    game = new Game(randomUUID(), { twoPlayerMode: "duel" });
   });
 
   describe("setup", () => {
@@ -132,7 +133,7 @@ describe("Game", () => {
     let sethToken: string;
     let trevorToken: string;
     beforeEach(() => {
-      game = new Game(randomUUID(), {
+      game = new Game(randomUUID(), { twoPlayerMode: "duel",
         // These scripted hands use the original deck without Mermaids.
         deck: new Deck({ deckConfig: { includeMermaids: false }, shuffleSeed: 0.3 }),
       });
@@ -154,7 +155,7 @@ describe("Game", () => {
     });
 
     it("playing a special card does not set the trick color", () => {
-      game = new Game(randomUUID(), {
+      game = new Game(randomUUID(), { twoPlayerMode: "duel",
         deck: new Deck({
           customDeck: [
             { id: "1", type: "pirate" },
@@ -194,7 +195,7 @@ describe("Game", () => {
     );
 
     it("allows any special card to be played when the trick color is set", () => {
-      game = new Game(randomUUID(), {
+      game = new Game(randomUUID(), { twoPlayerMode: "duel",
         deck: new Deck({
           customDeck: [
             { id: "1", color: "GREEN", number: 8 },
@@ -269,7 +270,7 @@ describe("Game", () => {
 
     describe("errors", () => {
       it("disallows playing a card during the bid", () => {
-        game = new Game(randomUUID());
+        game = new Game(randomUUID(), { twoPlayerMode: "duel" });
         const sethToken = game.addPlayer("Seth");
         const trevorToken = game.addPlayer("Trevor");
         game.start();
@@ -323,7 +324,7 @@ describe("Game", () => {
       });
 
       it("disallows playing a tigress without a selection", () => {
-        const game = new Game(randomUUID(), {
+        const game = new Game(randomUUID(), { twoPlayerMode: "duel",
           deck: new Deck({
             customDeck: [
               { id: "1", type: "tigress" },
@@ -393,7 +394,7 @@ describe("Game", () => {
  * trevor: green 1, purple 2
  */
 function gameInSecondRound() {
-  const game = new Game(randomUUID(), {
+  const game = new Game(randomUUID(), { twoPlayerMode: "duel",
     deck: new Deck({
       customDeck: [
         { id: "1", type: "pirate" },
@@ -454,7 +455,7 @@ function gameInThirdRound() {
 }
 
 function gameAfterTenthRound() {
-  const game = new Game(randomUUID(), {
+  const game = new Game(randomUUID(), { twoPlayerMode: "duel",
     // Keep the scripted ten-round card order independent of the default deck.
     deck: new Deck({ customDeck: buildDeck({ includeMermaids: false }), shuffleSeed: 0 }),
   });

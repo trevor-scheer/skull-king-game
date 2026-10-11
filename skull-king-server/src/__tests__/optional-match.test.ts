@@ -1,3 +1,4 @@
+// Scripted fixtures retain the direct two-player deal; Graybeard has separate coverage.
 import { ApolloServer } from "@apollo/server";
 import {
   Card,
@@ -87,7 +88,7 @@ it.each([
     };
     // This seed leaves the ordered deck intact: optional cards and pirates are
     // dealt first, so even the two-player match exercises every enabled card.
-    const game = new Game("optional-match", {
+    const game = new Game("optional-match", { twoPlayerMode: "duel",
       deck: new Deck({ deckConfig, shuffleSeed: 0.99 }),
       deckConfig,
       scoringMode,

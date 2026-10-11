@@ -1,3 +1,4 @@
+// Scripted fixtures retain the direct two-player deal; Graybeard has separate coverage.
 import { Card } from "../src/cards";
 import { Deck } from "../src/deck";
 import { Game } from "../src/game";
@@ -12,7 +13,7 @@ export function pirateGame(pirateId: string, enabled = true, finalTrick = false,
   const deck = new Deck({ customDeck: order });
   jest.spyOn(deck, "shuffle").mockImplementation(() => {});
   deck.__debugDeck().cardsInPlay.splice(0, order.length, ...order.slice().reverse());
-  const game = new Game("pirates", { deck, pirateAbilities: enabled });
+  const game = new Game("pirates", { twoPlayerMode: "duel", deck, pirateAbilities: enabled });
   const alice = game.addPlayer("Alice");
   const bob = game.addPlayer("Bob");
   game.start();

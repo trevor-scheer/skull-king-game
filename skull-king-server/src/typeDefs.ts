@@ -57,6 +57,7 @@ const typeDefs = `#graphql
     tieBreakers: Boolean!
     cannonball: Boolean!
     maxPlayers: Int!
+    legalCardIds: [String!]!
   }
 
   enum ScoringMode {
@@ -76,6 +77,10 @@ const typeDefs = `#graphql
     id: String!
     name: String!
     hand: [Card!]!
+    handCount: Int!
+    isAutomated: Boolean!
+    bid: Int
+    tricksWon: Int!
   }
 
   union Card = SpecialCard | ColoredCard

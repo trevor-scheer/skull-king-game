@@ -44,7 +44,7 @@ it.each([
       cardsInPlay.length,
       ...originalDeck.slice().reverse(),
     );
-    const game = new Game("wagers", {
+    const game = new Game("wagers", { twoPlayerMode: "duel",
       deck,
       pirateAbilities: true,
       scoringMode,

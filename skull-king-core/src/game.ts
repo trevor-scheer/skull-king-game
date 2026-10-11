@@ -3,6 +3,7 @@ import { serialize, deserialize } from "node:v8";
 import { Deck } from "./deck";
 import { Card, Color, DeckConfiguration, isColoredCard, isSpecialCard } from "./cards";
 import { Player } from "./player";
+import { allowedWithGraybeard, createGraybeard, graybeardCard, graybeardTurnOrder } from "./graybeard";
 import { assert } from "./utils/assert";
 import { Scorecard } from "./scorecard";
 import { ScoringMode, CannonLoad } from "./scoring";
@@ -20,6 +21,7 @@ export interface Round {
   bids: Map<string, number>;
   cardsPlayed: PlayedCard[];
   dealer: number;
+  roundLeader?: number;
   leader: number;
   trickColor: Color | null;
   tricksWon: Map<string, Card[][]>;
@@ -116,6 +118,10 @@ export class Game {
       throw Error("At least 2 players required to start the game");
     }
     assert(this.players.length <= this.maxPlayers(), "Too many players for this deck");
+    if (this.players.length === 2 && this.options.twoPlayerMode !== "duel") {
+      this.deck.retainCards(allowedWithGraybeard);
+      this.players.push(createGraybeard(this.players));
+    }
     cardsForRound(this.options.roundSchedule!, 1, this.deck.size, this.players.length);
     this.scorecard = new Scorecard(this.playerNames, this.options.scoringMode ?? "classic");
     this.phase = "play";
@@ -153,8 +159,9 @@ export class Game {
 
     this.currentRound.bids.set(playerId, count);
 
-    if (this.currentRound.bids.size === this.players.length) {
-      this.currentRound.phase = this.options.cannonball ? "load" : "play";
+    if (this.currentRound.bids.size === this.playerNames.size) {
+      if (this.options.cannonball) this.currentRound.phase = "load";
+      else this.beginRoundPlay();
     }
   }
 
@@ -167,7 +174,7 @@ export class Game {
     assert(load === "grapeshot" || load === "cannonball", "Unknown cannon load");
     this.currentRound.cannonLoads ??= new Map();
     this.currentRound.cannonLoads.set(playerId, load);
-    if (this.currentRound.cannonLoads.size === this.playerNames.size) this.currentRound.phase = "play";
+    if (this.currentRound.cannonLoads.size === this.playerNames.size) this.beginRoundPlay();
     return true;
   }
 
@@ -230,6 +237,25 @@ export class Game {
     });
 
     this.maybeEndHand();
+    this.playGraybeardIfNext();
+  }
+
+  private beginRoundPlay() {
+    assert(this.currentRound, "No active round");
+    this.currentRound.phase = "play";
+    this.playGraybeardIfNext();
+  }
+
+  private playGraybeardIfNext() {
+    if (this.currentRound?.phase !== "play") return;
+    const player = this.players.find((candidate) => candidate.name === this.playerTurn());
+    if (!player?.isAutomated) return;
+    const topCard = player.hand.shift();
+    assert(topCard, "Graybeard has no card to reveal");
+    const card = graybeardCard(topCard);
+    this.maybeSetTrickColor(card);
+    this.currentRound.cardsPlayed.push({ id: `${player.id}-${card.id}`, playerId: player.id, card });
+    this.maybeEndHand();
   }
 
   private maybeSetTrickColor(card: Card) {
@@ -289,7 +315,8 @@ export class Game {
     // Transition to trick_result phase so players can see who won
     this.currentRound.phase = "trick_result";
     if (this.options.pirateAbilities) {
-      this.currentRound.pirateAbility = createPirateAbility(this.currentRound);
+      const winnerIsAutomated = this.players.some((player) => player.isAutomated && player.id === trickWinner.playerId);
+      this.currentRound.pirateAbility = winnerIsAutomated ? null : createPirateAbility(this.currentRound);
     }
   }
 
@@ -333,7 +360,7 @@ export class Game {
       this.nextRound();
     } else {
       // Continue to next trick
-      this.currentRound.phase = "play";
+      this.beginRoundPlay();
     }
     return true;
   }
@@ -391,8 +418,8 @@ export class Game {
 
     const newRoundNumber = (this.currentRound?.roundNumber ?? 0) + 1;
     // -1 is for round number offset (dealer starts at 0, round starts at 1)
-    const newDealer = (newRoundNumber - 1) % this.players.length;
-    const newLeader = (newDealer + 1) % this.players.length;
+    const newDealer = (newRoundNumber - 1) % this.playerNames.size;
+    const newLeader = (newDealer + 1) % this.playerNames.size;
 
     this.currentRound = {
       roundNumber: newRoundNumber,
@@ -403,6 +430,7 @@ export class Game {
       cardsPlayed: [],
       dealer: newDealer,
       leader: newLeader,
+      ...(this.players.some((player) => player.isAutomated) ? { roundLeader: newLeader } : {}),
       trickColor: null,
       tricksWon: new Map(),
       hands: [],
@@ -441,7 +469,9 @@ export class Game {
       this.currentRound,
       "Programming error: `currentRound` is unexpectedly `null`"
     );
-    const { leader } = this.currentRound;
+    const { leader, roundLeader } = this.currentRound;
+    const ghostOrder = graybeardTurnOrder(players, leader, roundLeader ?? leader);
+    if (ghostOrder) return ghostOrder;
 
     playerOrder.push(leader);
     while (playerOrder.length < players.length) {
@@ -482,6 +512,14 @@ export class Game {
       pirateAbility: pirateAbilityForPlayer(this.currentRound, playerToken ? this.playerTokens.get(playerToken) : undefined, this.deck),
     } : null;
 
+    const publicPlayer = (player: Player, showHand = false) => ({
+      ...player,
+      hand: showHand ? player.hand : [],
+      handCount: player.hand.length,
+      isAutomated: player.isAutomated ?? false,
+      bid: this.currentRound && this.currentRound.phase !== "bid" ? this.currentRound.bids.get(player.id) ?? null : null,
+      tricksWon: this.currentRound?.tricksWon.get(player.id)?.length ?? 0,
+    });
     const gameState = {
       id: this.id,
       phase: this.phase,
@@ -493,23 +531,24 @@ export class Game {
         includeMermaids: this.options.deckConfig?.includeMermaids ?? true,
         includeKraken: this.options.deckConfig?.includeKraken ?? false,
         includeWhiteWhale: this.options.deckConfig?.includeWhiteWhale ?? false,
-        includeLoot: this.options.deckConfig?.includeLoot ?? false,
+        includeLoot: this.players.some((player) => player.isAutomated) ? false : this.options.deckConfig?.includeLoot ?? false,
       },
       scoringMode: this.options.scoringMode ?? "classic",
       roundSchedule: [...this.options.roundSchedule!],
       tieBreakers: this.options.tieBreakers ?? true,
       cannonball: this.options.cannonball ?? false,
       maxPlayers: this.maxPlayers(),
-      players: this.players.map((player) => ({
-        ...player,
-        hand: [],
-      })),
-      me: undefined as Player | undefined,
+      players: this.players.map((player) => publicPlayer(player)),
+      me: undefined as ReturnType<typeof publicPlayer> | undefined,
+      legalCardIds: [] as string[],
     };
     if (playerToken) {
       const playerName = this.playerTokens.get(playerToken);
       const me = this.players.find((player) => player.name === playerName);
-      gameState.me = me;
+      gameState.me = me ? publicPlayer(me, true) : undefined;
+      if (me && this.currentRound?.phase === "play" && this.isPlayersTurn(me.id)) {
+        gameState.legalCardIds = me.hand.filter((_card, index) => this.canPlayCard([...me.hand], index)).map((card) => card.id);
+      }
       if (me && currentRoundData && this.currentRound) {
         currentRoundData.myBid = this.currentRound.bids.get(me.name);
         currentRoundData.myCannonLoad = this.currentRound.cannonLoads?.get(me.name) ?? null;
@@ -536,6 +575,7 @@ export interface GameOptions {
   roundSchedule?: number[];
   tieBreakers?: boolean;
   cannonball?: boolean;
+  twoPlayerMode?: "graybeard" | "duel";
   scoringMode?: ScoringMode;
   mode?: "standard";
   deck?: Deck;

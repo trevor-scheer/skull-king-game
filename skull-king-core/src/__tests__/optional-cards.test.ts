@@ -1,3 +1,4 @@
+// Scripted fixtures retain the direct two-player deal; Graybeard has separate coverage.
 import { Card, Color, SpecialCardTypes } from "../cards";
 import { Deck } from "../deck";
 import { Game, Hand } from "../game";
@@ -15,7 +16,7 @@ const number = (color: Color, value: number): Card => ({
 });
 
 function trickGame(cards: Card[], extras: Card[][] = []) {
-  const game = new Game("optional", {
+  const game = new Game("optional", { twoPlayerMode: "duel",
     deck: new Deck({ customDeck: [...cards, ...extras.flat()] }),
   });
   const tokens = cards.map((_, index) => game.addPlayer(`P${index}`));
