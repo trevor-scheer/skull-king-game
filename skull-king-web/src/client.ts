@@ -16,7 +16,10 @@ export const client = new ApolloClient({
         // Played cards are trick snapshots; summary queries omit their card details.
         keyFields: false,
       },
+      SpecialCard: { keyFields: false },
+      ColoredCard: { keyFields: false },
       Player: {
+        keyFields: false,
         fields: {
           hand: {
             merge(_existing, incoming) {
@@ -26,6 +29,7 @@ export const client = new ApolloClient({
         },
       },
       Round: {
+        keyFields: false,
         fields: {
           cardsPlayed: {
             merge(_existing, incoming) {

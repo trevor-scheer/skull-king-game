@@ -3,8 +3,6 @@ import {
   FunctionComponent,
   ReactNode,
   useContext,
-  useEffect,
-  useState,
 } from "react";
 import { useGameId } from "./useGameId";
 import { useLocalStorage } from "./useLocalStorage";
@@ -23,13 +21,7 @@ export const PlayerTokenProvider: FunctionComponent<{
     {} as Record<string, string>
   );
 
-  const token = gameId ? skullKingTokens[gameId] : null;
-  const [playerToken, setToken] = useState<null | string>(token);
-  
-  useEffect(() => {
-    if (playerToken) return;
-    setToken(token);
-  }, [playerToken, setToken, token, gameId, skullKingTokens]);
+  const playerToken = gameId ? skullKingTokens[gameId] ?? null : null;
 
   const setPlayerToken = (token: string, gameId: string | null) => {
     if (!gameId) return; // TODO: throw error?
