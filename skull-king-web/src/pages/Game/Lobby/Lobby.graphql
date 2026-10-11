@@ -22,6 +22,7 @@ query LobbyQuery($gameId: String!, $playerToken: String) {
     }
     players {
       id
+      isBot
       name
     }
   }

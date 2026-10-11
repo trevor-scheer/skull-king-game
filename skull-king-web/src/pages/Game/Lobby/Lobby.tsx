@@ -1,3 +1,4 @@
+import { LobbyBots } from "../Practice/PracticeControls";
 import { useState } from "react";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
@@ -32,6 +33,7 @@ export const Lobby: React.FunctionComponent = function () {
         <label>Invite link<input aria-label="Invite link" value={window.location.href} readOnly onFocus={event => event.target.select()} /></label>
         <button onClick={() => { void navigator.clipboard?.writeText(window.location.href).then(() => setCopied(true)).catch(() => setCopied(false)); }}>{copied ? "Copied!" : "Copy invite link"}</button>
       </section>
+      <LobbyBots />
       <p className="Lobby-header">Players in lobby</p>
       <ol className="Lobby-playerList">
         {data?.state?.players.map((player) => (
@@ -70,7 +72,7 @@ export const Lobby: React.FunctionComponent = function () {
           <p>Up to {data.state.maxPlayers} players. With two humans, Graybeard joins automatically; Loot, Wild 15, Walk the Plank, and 0/14 cards are removed.</p>
         </section>
       )}
-      {!data?.state?.me ? <JoinGame onJoin={onJoin} /> : data.state.me.id === data.state.players[0]?.id ? <StartGame /> : <p>Waiting for {data.state.players[0]?.name} to set sail.</p>}
+      {!data?.state?.me ? <JoinGame onJoin={onJoin} /> : data.state.me.id === data.state.players.find(player => !player.isBot)?.id ? <StartGame /> : <p>Waiting for {data.state.players.find(player => !player.isBot)?.name} to set sail.</p>}
     </div>
   );
 };

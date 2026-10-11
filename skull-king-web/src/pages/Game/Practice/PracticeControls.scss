@@ -1,0 +1,4 @@
+.PracticeControls { margin: 1rem auto; max-width: 760px; padding: 1rem; border: 1px solid #8885; border-radius: 8px; line-height: 1.5; }
+.PracticeControls h3 { margin-top: 0; }
+.PracticeControls button { font: inherit; padding: .6rem .8rem; min-height: 44px; margin: .3rem; cursor: pointer; }
+.PracticeControls button:disabled { opacity: .6; cursor: wait; }

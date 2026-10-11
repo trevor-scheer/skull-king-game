@@ -81,6 +81,7 @@ export type GameState = {
   phase: Scalars['String']['output'];
   pirateAbilities: Scalars['Boolean']['output'];
   players: Array<Player>;
+  practice: Scalars['Boolean']['output'];
   roundSchedule: Array<Scalars['Int']['output']>;
   scorecard?: Maybe<Array<Array<ScoreBlock>>>;
   scoringMode: ScoringMode;
@@ -99,17 +100,28 @@ export type Hand = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addBot: Scalars['String']['output'];
   addPlayer: Scalars['String']['output'];
   advanceTrick: Scalars['Boolean']['output'];
   choosePlankTarget: Scalars['Boolean']['output'];
+  enableAwayAutoplay: Scalars['Boolean']['output'];
+  leaveGame: Scalars['Boolean']['output'];
   loadCannon: Scalars['Boolean']['output'];
   newGame: Scalars['String']['output'];
   playColoredCard: Scalars['Boolean']['output'];
   playSpecialCard: Scalars['Boolean']['output'];
   rematchGame: Scalars['String']['output'];
+  removeBot: Scalars['Boolean']['output'];
+  setAutoplay: Scalars['Boolean']['output'];
   startGame: Scalars['Boolean']['output'];
   submitBid: Scalars['Boolean']['output'];
   usePirateAbility: Scalars['Boolean']['output'];
+};
+
+
+export type MutationAddBotArgs = {
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
 };
 
 
@@ -129,6 +141,20 @@ export type MutationAdvanceTrickArgs = {
 export type MutationChoosePlankTargetArgs = {
   cardId: Scalars['String']['input'];
   expectedChoiceId: Scalars['String']['input'];
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+};
+
+
+export type MutationEnableAwayAutoplayArgs = {
+  expectedLastSeenAt: Scalars['Float']['input'];
+  gameId: Scalars['String']['input'];
+  playerId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+};
+
+
+export type MutationLeaveGameArgs = {
   gameId: Scalars['String']['input'];
   playerToken: Scalars['String']['input'];
 };
@@ -170,6 +196,20 @@ export type MutationPlaySpecialCardArgs = {
 
 
 export type MutationRematchGameArgs = {
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+};
+
+
+export type MutationRemoveBotArgs = {
+  gameId: Scalars['String']['input'];
+  playerId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+};
+
+
+export type MutationSetAutoplayArgs = {
+  enabled: Scalars['Boolean']['input'];
   gameId: Scalars['String']['input'];
   playerToken: Scalars['String']['input'];
 };
@@ -247,6 +287,9 @@ export type Player = {
   handCount: Scalars['Int']['output'];
   id: Scalars['String']['output'];
   isAutomated: Scalars['Boolean']['output'];
+  isAutoplay: Scalars['Boolean']['output'];
+  isBot: Scalars['Boolean']['output'];
+  lastSeenAt?: Maybe<Scalars['Float']['output']>;
   name: Scalars['String']['output'];
   tricksWon: Scalars['Int']['output'];
 };
@@ -501,7 +544,7 @@ export type LobbyQueryQueryVariables = Exact<{
 }>;
 
 
-export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, roundSchedule: Array<number>, tieBreakers: boolean, cannonball: boolean, maxPlayers: number, scoringMode: ScoringMode, pirateAbilities: boolean, me?: { __typename?: 'Player', id: string } | null, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeExpansion: boolean, includeFirstMate: boolean, includeStingray: boolean, includeDavyJones: boolean, includeWalkThePlank: boolean, includeLastVolley: boolean, includeLoot: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
+export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, roundSchedule: Array<number>, tieBreakers: boolean, cannonball: boolean, maxPlayers: number, scoringMode: ScoringMode, pirateAbilities: boolean, me?: { __typename?: 'Player', id: string } | null, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeExpansion: boolean, includeFirstMate: boolean, includeStingray: boolean, includeDavyJones: boolean, includeWalkThePlank: boolean, includeLastVolley: boolean, includeLoot: boolean }, players: Array<{ __typename?: 'Player', id: string, isBot: boolean, name: string }> } | null };
 
 export type FinalResultQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -518,6 +561,58 @@ export type RematchMutationVariables = Exact<{
 
 
 export type RematchMutation = { __typename?: 'Mutation', rematchGame: string };
+
+export type PracticeStateQueryVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type PracticeStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', phase: string, practice: boolean, maxPlayers: number, me?: { __typename?: 'Player', id: string, isAutoplay: boolean } | null, players: Array<{ __typename?: 'Player', id: string, name: string, isBot: boolean, isAutomated: boolean, isAutoplay: boolean, lastSeenAt?: number | null }> } | null };
+
+export type AddPracticeBotMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+}>;
+
+
+export type AddPracticeBotMutation = { __typename?: 'Mutation', addBot: string };
+
+export type RemovePracticeBotMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  playerId: Scalars['String']['input'];
+}>;
+
+
+export type RemovePracticeBotMutation = { __typename?: 'Mutation', removeBot: boolean };
+
+export type SetSeatAutoplayMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  enabled: Scalars['Boolean']['input'];
+}>;
+
+
+export type SetSeatAutoplayMutation = { __typename?: 'Mutation', setAutoplay: boolean };
+
+export type HelpAbsentPlayerMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  playerId: Scalars['String']['input'];
+  expectedLastSeenAt: Scalars['Float']['input'];
+}>;
+
+
+export type HelpAbsentPlayerMutation = { __typename?: 'Mutation', enableAwayAutoplay: boolean };
+
+export type LeaveSeatMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+}>;
+
+
+export type LeaveSeatMutation = { __typename?: 'Mutation', leaveGame: boolean };
 
 export type RecoverSeatQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -1623,6 +1718,7 @@ export const LobbyQueryDocument = gql`
     }
     players {
       id
+      isBot
       name
     }
   }
@@ -1749,6 +1845,233 @@ export function useRematchMutation(baseOptions?: Apollo.MutationHookOptions<Rema
 export type RematchMutationHookResult = ReturnType<typeof useRematchMutation>;
 export type RematchMutationResult = Apollo.MutationResult<RematchMutation>;
 export type RematchMutationOptions = Apollo.BaseMutationOptions<RematchMutation, RematchMutationVariables>;
+export const PracticeStateDocument = gql`
+    query PracticeState($gameId: String!, $playerToken: String) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    phase
+    practice
+    maxPlayers
+    me {
+      id
+      isAutoplay
+    }
+    players {
+      id
+      name
+      isBot
+      isAutomated
+      isAutoplay
+      lastSeenAt
+    }
+  }
+}
+    `;
+
+/**
+ * __usePracticeStateQuery__
+ *
+ * To run a query within a React component, call `usePracticeStateQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePracticeStateQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePracticeStateQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function usePracticeStateQuery(baseOptions: Apollo.QueryHookOptions<PracticeStateQuery, PracticeStateQueryVariables> & ({ variables: PracticeStateQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PracticeStateQuery, PracticeStateQueryVariables>(PracticeStateDocument, options);
+      }
+export function usePracticeStateLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PracticeStateQuery, PracticeStateQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PracticeStateQuery, PracticeStateQueryVariables>(PracticeStateDocument, options);
+        }
+// @ts-ignore
+export function usePracticeStateSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<PracticeStateQuery, PracticeStateQueryVariables>): Apollo.UseSuspenseQueryResult<PracticeStateQuery, PracticeStateQueryVariables>;
+export function usePracticeStateSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PracticeStateQuery, PracticeStateQueryVariables>): Apollo.UseSuspenseQueryResult<PracticeStateQuery | undefined, PracticeStateQueryVariables>;
+export function usePracticeStateSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PracticeStateQuery, PracticeStateQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PracticeStateQuery, PracticeStateQueryVariables>(PracticeStateDocument, options);
+        }
+export type PracticeStateQueryHookResult = ReturnType<typeof usePracticeStateQuery>;
+export type PracticeStateLazyQueryHookResult = ReturnType<typeof usePracticeStateLazyQuery>;
+export type PracticeStateSuspenseQueryHookResult = ReturnType<typeof usePracticeStateSuspenseQuery>;
+export type PracticeStateQueryResult = Apollo.QueryResult<PracticeStateQuery, PracticeStateQueryVariables>;
+export const AddPracticeBotDocument = gql`
+    mutation AddPracticeBot($gameId: String!, $playerToken: String!) {
+  addBot(gameId: $gameId, playerToken: $playerToken)
+}
+    `;
+export type AddPracticeBotMutationFn = Apollo.MutationFunction<AddPracticeBotMutation, AddPracticeBotMutationVariables>;
+
+/**
+ * __useAddPracticeBotMutation__
+ *
+ * To run a mutation, you first call `useAddPracticeBotMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddPracticeBotMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addPracticeBotMutation, { data, loading, error }] = useAddPracticeBotMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function useAddPracticeBotMutation(baseOptions?: Apollo.MutationHookOptions<AddPracticeBotMutation, AddPracticeBotMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddPracticeBotMutation, AddPracticeBotMutationVariables>(AddPracticeBotDocument, options);
+      }
+export type AddPracticeBotMutationHookResult = ReturnType<typeof useAddPracticeBotMutation>;
+export type AddPracticeBotMutationResult = Apollo.MutationResult<AddPracticeBotMutation>;
+export type AddPracticeBotMutationOptions = Apollo.BaseMutationOptions<AddPracticeBotMutation, AddPracticeBotMutationVariables>;
+export const RemovePracticeBotDocument = gql`
+    mutation RemovePracticeBot($gameId: String!, $playerToken: String!, $playerId: String!) {
+  removeBot(gameId: $gameId, playerToken: $playerToken, playerId: $playerId)
+}
+    `;
+export type RemovePracticeBotMutationFn = Apollo.MutationFunction<RemovePracticeBotMutation, RemovePracticeBotMutationVariables>;
+
+/**
+ * __useRemovePracticeBotMutation__
+ *
+ * To run a mutation, you first call `useRemovePracticeBotMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemovePracticeBotMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removePracticeBotMutation, { data, loading, error }] = useRemovePracticeBotMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *      playerId: // value for 'playerId'
+ *   },
+ * });
+ */
+export function useRemovePracticeBotMutation(baseOptions?: Apollo.MutationHookOptions<RemovePracticeBotMutation, RemovePracticeBotMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemovePracticeBotMutation, RemovePracticeBotMutationVariables>(RemovePracticeBotDocument, options);
+      }
+export type RemovePracticeBotMutationHookResult = ReturnType<typeof useRemovePracticeBotMutation>;
+export type RemovePracticeBotMutationResult = Apollo.MutationResult<RemovePracticeBotMutation>;
+export type RemovePracticeBotMutationOptions = Apollo.BaseMutationOptions<RemovePracticeBotMutation, RemovePracticeBotMutationVariables>;
+export const SetSeatAutoplayDocument = gql`
+    mutation SetSeatAutoplay($gameId: String!, $playerToken: String!, $enabled: Boolean!) {
+  setAutoplay(gameId: $gameId, playerToken: $playerToken, enabled: $enabled)
+}
+    `;
+export type SetSeatAutoplayMutationFn = Apollo.MutationFunction<SetSeatAutoplayMutation, SetSeatAutoplayMutationVariables>;
+
+/**
+ * __useSetSeatAutoplayMutation__
+ *
+ * To run a mutation, you first call `useSetSeatAutoplayMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetSeatAutoplayMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setSeatAutoplayMutation, { data, loading, error }] = useSetSeatAutoplayMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *      enabled: // value for 'enabled'
+ *   },
+ * });
+ */
+export function useSetSeatAutoplayMutation(baseOptions?: Apollo.MutationHookOptions<SetSeatAutoplayMutation, SetSeatAutoplayMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetSeatAutoplayMutation, SetSeatAutoplayMutationVariables>(SetSeatAutoplayDocument, options);
+      }
+export type SetSeatAutoplayMutationHookResult = ReturnType<typeof useSetSeatAutoplayMutation>;
+export type SetSeatAutoplayMutationResult = Apollo.MutationResult<SetSeatAutoplayMutation>;
+export type SetSeatAutoplayMutationOptions = Apollo.BaseMutationOptions<SetSeatAutoplayMutation, SetSeatAutoplayMutationVariables>;
+export const HelpAbsentPlayerDocument = gql`
+    mutation HelpAbsentPlayer($gameId: String!, $playerToken: String!, $playerId: String!, $expectedLastSeenAt: Float!) {
+  enableAwayAutoplay(
+    gameId: $gameId
+    playerToken: $playerToken
+    playerId: $playerId
+    expectedLastSeenAt: $expectedLastSeenAt
+  )
+}
+    `;
+export type HelpAbsentPlayerMutationFn = Apollo.MutationFunction<HelpAbsentPlayerMutation, HelpAbsentPlayerMutationVariables>;
+
+/**
+ * __useHelpAbsentPlayerMutation__
+ *
+ * To run a mutation, you first call `useHelpAbsentPlayerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useHelpAbsentPlayerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [helpAbsentPlayerMutation, { data, loading, error }] = useHelpAbsentPlayerMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *      playerId: // value for 'playerId'
+ *      expectedLastSeenAt: // value for 'expectedLastSeenAt'
+ *   },
+ * });
+ */
+export function useHelpAbsentPlayerMutation(baseOptions?: Apollo.MutationHookOptions<HelpAbsentPlayerMutation, HelpAbsentPlayerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<HelpAbsentPlayerMutation, HelpAbsentPlayerMutationVariables>(HelpAbsentPlayerDocument, options);
+      }
+export type HelpAbsentPlayerMutationHookResult = ReturnType<typeof useHelpAbsentPlayerMutation>;
+export type HelpAbsentPlayerMutationResult = Apollo.MutationResult<HelpAbsentPlayerMutation>;
+export type HelpAbsentPlayerMutationOptions = Apollo.BaseMutationOptions<HelpAbsentPlayerMutation, HelpAbsentPlayerMutationVariables>;
+export const LeaveSeatDocument = gql`
+    mutation LeaveSeat($gameId: String!, $playerToken: String!) {
+  leaveGame(gameId: $gameId, playerToken: $playerToken)
+}
+    `;
+export type LeaveSeatMutationFn = Apollo.MutationFunction<LeaveSeatMutation, LeaveSeatMutationVariables>;
+
+/**
+ * __useLeaveSeatMutation__
+ *
+ * To run a mutation, you first call `useLeaveSeatMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLeaveSeatMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [leaveSeatMutation, { data, loading, error }] = useLeaveSeatMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function useLeaveSeatMutation(baseOptions?: Apollo.MutationHookOptions<LeaveSeatMutation, LeaveSeatMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LeaveSeatMutation, LeaveSeatMutationVariables>(LeaveSeatDocument, options);
+      }
+export type LeaveSeatMutationHookResult = ReturnType<typeof useLeaveSeatMutation>;
+export type LeaveSeatMutationResult = Apollo.MutationResult<LeaveSeatMutation>;
+export type LeaveSeatMutationOptions = Apollo.BaseMutationOptions<LeaveSeatMutation, LeaveSeatMutationVariables>;
 export const RecoverSeatDocument = gql`
     query RecoverSeat($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
