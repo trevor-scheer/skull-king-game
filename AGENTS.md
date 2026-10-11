@@ -38,6 +38,11 @@ do not assume the entire package is browser-compatible. Keep authoritative
 gameplay rules in the core, transport logic in the server, and presentation in
 the client. Client checks help players but do not replace server validation.
 
+Optional rules are split into `trickRules.ts` (winner and creature resolution),
+`bonusPoints.ts` (capture and Loot bonuses), `scoring.ts` (Classic/Rascal formulas),
+and `pirateAbilities.ts` (authenticated Pirate choices). Keep those modules
+independent of GraphQL and React.
+
 Games live in a process-local `Map`. Finished games are removed after ten
 minutes; unfinished games have no expiry. Restarting the server loses games.
 The schema declares subscriptions, but this revision has no working subscription
@@ -49,6 +54,11 @@ the result, supplying the completed hand's ID as `expectedHandId`. Duplicate or
 stale requests return `false` without advancing. `currentRound` is null in the
 lobby and postgame; `playerTurn` is null outside the round's play phase. Deploy
 the schema and generated client together; older clients need a reload.
+With pirate abilities enabled, a winning Pirate can pause `trick_result` for
+its owner's choice. Resolve it with the pending ability ID and player token;
+stale choices return false. Multi-step powers rotate that ID so retries cannot
+draw twice. Juanita's undealt cards are visible only to the owner. Do not let
+the result timer advance through a pending choice.
 Tokens identify players within games; other players' hands are
 removed from public state. Do not expose tokens, hands, or unrevealed bids in
 public queries, logs, or future subscription broadcasts.
@@ -101,19 +111,24 @@ configuration are supplied. No CI workflow or automated browser suite exists
 at this revision. Do not run `yarn clean` casually: it deletes ignored build and
 dependency files.
 
-On October 11, 2026, the reliability pass passed 69 Jest tests and 20 snapshots
+On October 11, 2026, the options pass passed 190 Jest tests and 20 snapshots
 (one test remained TODO) and both builds under Node 24.15.0 with Apollo 5.2.0.
-API tests complete ten-round games with two and six players, exercise stale
-advancement requests, and check private/public state. A browser smoke check
-verified a completed trick, a simulated advancement failure, and Retry into
-round two with a new hand and scores. This is not a full multi-browser match
-test. The web build still emits existing Sass deprecation warnings.
+API tests cover every deck combination, complete ten-round games with two and
+six players under both scoring modes, and exercise private powers, stale
+requests, and wager payouts. Browser smoke checks verified settings through
+creation/lobby, Loot rendering, and Bendt drawing/discarding before play resumed.
+The earlier reliability pass also verified retry after an advancement failure.
+These are not a full multi-browser match test. Existing Sass warnings remain.
 
 ## Rules and change discipline
 
-The implemented default deck has 68 cards: 56 numbered cards, five Escapes,
-five Pirates, one Tigress, and one Skull King. Mermaids, Kraken, White Whale,
+The current-standard default deck has 70 cards: 56 numbered cards, five Escapes,
+five Pirates, one Tigress, one Skull King, and two Mermaids. Kraken, White Whale,
 and Loot are opt-in via `DeckConfiguration`; enabling all gives 74 cards.
+Mermaids default on even in a partial configuration; explicitly setting
+`includeMermaids: false` selects the 68-card simple variant.
+`pirateAbilities` defaults to false and `scoringMode` to `classic`; `rascal` is
+the other supported mode. These are game-creation settings, shown in the lobby.
 Joining is capped at six players despite a separate eight-player check in
 `start()`. Standard play has ten rounds, with the round number determining
 hand size. Treat deck composition, capacity, and scoring as explicit product
@@ -125,13 +140,29 @@ card interaction, turn order, scoring, API output, and client presentation.
 In particular, the FAQ confirms that Mermaid wins a trick containing Mermaid,
 Skull King, and Pirate; the second sea creature takes effect when Kraken and
 White Whale both appear; and Loot bonuses require both partners to bid exactly.
+Use the [current English rulebook](https://cdnm.heyzine.com/files/uploaded/46b5bd7166a9f579404e175e4990c9d415b4aac7.pdf)
+for edition-sensitive behavior: Mermaid capturing Skull King awards 40, and
+an all-special White Whale trick is discarded with the would-be winner leading
+next. The FAQ clarifies that Kraken after White Whale determines the leader
+without either creature. The current [Rascal scoring sheet](https://cdn.shopify.com/s/files/1/0565/3230/4053/files/Skull_King_Rascal_Scoring.pdf?v=1784153921)
+awards half ordinary capture bonuses when off by one; Loot and Pirate wagers
+still require exact bids. Pirate wagers lose their full stake on a missed bid.
+The user explicitly selected the live FAQ over conflicting rulebook page 19:
+White Whale preserves an established lead suit. Keep that regression and note
+the conflict instead of claiming the undated FAQ is provably newer. Current
+Kraken behavior follows page 19: it releases the suit requirement. A later
+White Whale does not restore a requirement already released; this transition
+avoids retroactively changing which earlier cards were legal. Current
+remaining house-rule deviations are two-player play without Graybeard (Loot
+allowed) and ending tied games after ten rounds. Official two-player play uses
+Graybeard and excludes Loot; official tied games play extra rounds. The UI
+discloses those limitations. Six-player capacity is an app limit, not a rulebook
+limit.
 
-`SKULL_KING_RULES.md`, `CLAUDE.md`, and `IMPROVEMENTS.md` provide context, but
-are not authoritative specifications. The rules document incorrectly says
-Mermaids lose to numbered cards and Skull King loses when the other cards are
-Escapes; it also lists suits and deck composition that differ from the code.
-Reconcile it against the chosen edition before using it to teach players or
-write tests. An unchecked roadmap item is not proof that code is absent.
+`SKULL_KING_RULES.md` summarizes supported rules and explicit limitations;
+`CLAUDE.md` delegates here. `IMPROVEMENTS.md` is historical brainstorming with
+stale claims. Use publisher sources plus the source-precedence decision above
+when changing rules. An unchecked roadmap item is not proof that code is absent.
 
 Preserve unrelated local edits. Use isolated worktrees and `trevor/` branches for
 nontrivial changes. Keep commits cohesive. For behavioral fixes, add meaningful
@@ -152,13 +183,13 @@ Apollo's cache so summary queries do not require missing card fields.
    player/host credential. Decide who can start a room and own transitions,
    then enforce that policy in the authoritative path. An expected hand ID
    prevents stale advancement; it is not an authorization credential.
-3. **Make enabled cards complete.** `Scorecard.scoreBonusPoints` handles only
-   14s and Skull King/Pirate bonuses. It lacks Mermaid capture and Loot alliance
-   scoring and infers capture bonuses from card presence rather than the
-   actual winner. Review White Whale scoring, Kraken/White Whale fallback,
-   special-card leads, and all-Escape/Loot interactions against the selected
-   rules. Loot images `loot-1.jpg` and `loot-2.jpg` are absent, and optional
-   cards lack entries in the hand sort table.
+3. **Keep optional rules covered.** Mermaid captures, Loot alliances, creature
+   interactions, Pirate powers, and Classic/Rascal scoring now have dedicated
+   tests. Bonus scoring uses completed hands with winners and card owners;
+   preserve that metadata when changing state storage. Played Tigress choices
+   are snapshots, not mutations of shared deck cards. Loot uses a CSS card face
+   and optional cards have explicit hand sort positions. Newer expansion cards,
+   Graybeard, Cannonball, and configurable round schedules remain future work.
 4. **Recover from routine failures.** `Hand.tsx` clears its click lock only on
    success; `BidForm.tsx` marks a bid submitted before its mutation succeeds.
    Reset pending state on failure and provide retry feedback. Fix room changes
