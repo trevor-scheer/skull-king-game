@@ -7,6 +7,7 @@ import { join } from 'node:path';
 export class Rooms {
   readonly games = new Map<string, Game>();
   readonly updates = new EventEmitter();
+  readonly saved = new EventEmitter();
   private touched = new Map<string, number>();
   private results = new Map<string, { handId: string; due: number }>();
   constructor(readonly directory: string, private now = Date.now) {
@@ -35,6 +36,7 @@ export class Rooms {
     renameSync(temporary, destination);
     this.touched.set(id, this.now());
     this.updates.emit(id);
+    this.saved.emit("saved", id, game);
   }
 
   tick() {

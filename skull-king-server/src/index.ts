@@ -8,11 +8,16 @@ import { existsSync } from 'node:fs';
 import resolvers from './resolvers';
 import typeDefs from './typeDefs';
 import { Rooms } from './rooms';
+import { Accounts } from './accounts';
+import { accountRoutes } from './accountRoutes';
+import { observeAccountHistory } from './accountHistory';
 import type { Context } from './context';
 export type { Context } from './context';
 
 export async function createApplication(dataDirectory = process.env.DATA_DIR ?? './data') {
   const rooms = new Rooms(resolve(dataDirectory, 'rooms'));
+  const accounts = new Accounts(resolve(dataDirectory, 'accounts.sqlite'));
+  const stopHistory = observeAccountHistory(accounts, rooms);
   const server = new ApolloServer<Context>({
     typeDefs, resolvers,
     includeStacktraceInErrorResponses: false,
@@ -34,6 +39,7 @@ export async function createApplication(dataDirectory = process.env.DATA_DIR ?? 
     if (requests.size > 10000) for (const [ip, entry] of requests) if (entry.reset < now) requests.delete(ip);
     next();
   });
+  app.use('/api/account', accountRoutes(accounts, rooms, origins));
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
   app.get('/events/:gameId', (req, res) => {
     const id = String(req.params.gameId);
@@ -57,7 +63,7 @@ export async function createApplication(dataDirectory = process.env.DATA_DIR ?? 
   });
   const timer = setInterval(() => { try { rooms.tick(); } catch (error) { console.error('Room maintenance failed', error instanceof Error ? error.message : 'unknown error'); } }, 500);
   timer.unref();
-  return { app, rooms, stop: async () => { clearInterval(timer); for (const id of rooms.games.keys()) rooms.save(id); await server.stop(); } };
+  return { app, rooms, accounts, stop: async () => { clearInterval(timer); for (const id of rooms.games.keys()) rooms.save(id); await server.stop(); stopHistory(); accounts.close(); } };
 }
 
 if (require.main === module) {
