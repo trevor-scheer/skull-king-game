@@ -48,7 +48,7 @@ export const BidForm: React.FunctionComponent = function () {
     );
   }
 
-  const roundNumber = data?.state?.currentRound?.roundNumber ?? 0;
+  const roundNumber = data?.state?.currentRound?.cardsPerPlayer ?? 0;
   const bidOptions = Array.from({ length: roundNumber + 1 }, (_, i) => i);
 
   return (

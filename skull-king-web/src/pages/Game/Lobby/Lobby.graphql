@@ -1,6 +1,11 @@
 query LobbyQuery($gameId: String!, $playerToken: String) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    me { id }
+    roundSchedule
+    tieBreakers
+    cannonball
+    maxPlayers
     scoringMode
     pirateAbilities
     deckConfig {

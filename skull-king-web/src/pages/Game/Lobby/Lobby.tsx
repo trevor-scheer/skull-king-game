@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { useLobbyQueryQuery } from "../../../types/graphqlTypes";
@@ -8,6 +9,7 @@ import "./Lobby.scss";
 export const Lobby: React.FunctionComponent = function () {
   const gameId = useGameId() ?? ""; // TODO: hacky fallback
   const [playerToken, setToken] = usePlayerToken();
+  const [copied, setCopied] = useState(false);
   const variables = { gameId, playerToken };
 
   const { data, loading, error } = useLobbyQueryQuery({
@@ -20,12 +22,16 @@ export const Lobby: React.FunctionComponent = function () {
     setToken(playerToken, gameId);
   }
 
-  if (error) console.error(error);
+  if (error && !data) return <p role="alert">Couldn’t load the lobby. Reconnecting…</p>;
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <div className="Lobby">
+      <section aria-label="Invite friends">
+        <label>Invite link<input aria-label="Invite link" value={window.location.href} readOnly onFocus={event => event.target.select()} /></label>
+        <button onClick={() => { void navigator.clipboard?.writeText(window.location.href).then(() => setCopied(true)).catch(() => setCopied(false)); }}>{copied ? "Copied!" : "Copy invite link"}</button>
+      </section>
       <p className="Lobby-header">Players in lobby</p>
       <ol className="Lobby-playerList">
         {data?.state?.players.map((player) => (
@@ -37,7 +43,7 @@ export const Lobby: React.FunctionComponent = function () {
           <h2>Rules for this voyage</h2>
           <p>
             {data.state.scoringMode === "rascal" ? "Rascal" : "Classic"} scoring
-            · Ten rounds
+            · {data.state.roundSchedule.length} rounds ({data.state.roundSchedule.join(", ")} cards)
           </p>
           <p>Pirate abilities: {data.state.pirateAbilities ? "On" : "Off"}</p>
           <ul>
@@ -54,10 +60,11 @@ export const Lobby: React.FunctionComponent = function () {
             <li>Loot: {data.state.deckConfig.includeLoot ? "On" : "Off"}</li>
           </ul>
           <p>These rules stay fixed for the game.</p>
-          <p>Two-player games omit Graybeard. Ties end after ten rounds without a tiebreaker.</p>
+          <p>{data.state.tieBreakers ? "Tied leaders play extra rounds." : "Tied leaders share victory."} {data.state.cannonball && "Cannonball choices enabled."}</p>
+          <p>Up to {data.state.maxPlayers} players. With two humans, Graybeard joins automatically; Loot is removed.</p>
         </section>
       )}
-      {playerToken ? <StartGame /> : <JoinGame onJoin={onJoin} />}
+      {!data?.state?.me ? <JoinGame onJoin={onJoin} /> : data.state.me.id === data.state.players[0]?.id ? <StartGame /> : <p>Waiting for {data.state.players[0]?.name} to set sail.</p>}
     </div>
   );
 };

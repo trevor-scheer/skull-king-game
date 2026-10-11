@@ -1,3 +1,4 @@
+import { CannonLoad } from "./CannonLoad/CannonLoad";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { useGameStateQuery } from "../../../types/graphqlTypes";
@@ -35,6 +36,7 @@ export const InGame: React.FunctionComponent = function () {
         currentPlayerId={me?.id ?? ""}
         playerTurn={playerTurn ?? ""}
       >
+        {phase === "load" && <CannonLoad />}
         {/* Center content based on game phase */}
         {phase === "play" && <PlayedCards />}
         {phase === "trick_result" && <TrickResult paused={Boolean(currentRound?.pirateAbility)} />}

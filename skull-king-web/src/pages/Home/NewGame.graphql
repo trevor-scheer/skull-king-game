@@ -1,11 +1,17 @@
 mutation NewGame(
   $deckConfig: DeckConfigInput
   $pirateAbilities: Boolean
+  $roundSchedule: [Int!]
+  $tieBreakers: Boolean
+  $cannonball: Boolean
   $scoringMode: ScoringMode
 ) {
   newGame(
     deckConfig: $deckConfig
     pirateAbilities: $pirateAbilities
     scoringMode: $scoringMode
+    roundSchedule: $roundSchedule
+    tieBreakers: $tieBreakers
+    cannonball: $cannonball
   )
 }

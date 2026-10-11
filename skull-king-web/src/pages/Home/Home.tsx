@@ -42,6 +42,10 @@ export function Home() {
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
   const [pirateAbilities, setPirateAbilities] = useState(false);
   const [scoringMode, setScoringMode] = useState(ScoringMode.Classic);
+  const [roundPreset, setRoundPreset] = useState("standard");
+  const [customRounds, setCustomRounds] = useState("1, 2, 3, 4, 5");
+  const [tieBreakers, setTieBreakers] = useState(true);
+  const [cannonball, setCannonball] = useState(false);
   const [createFailed, setCreateFailed] = useState(false);
   const [deckConfig, setDeckConfig] = useState<DeckConfigInput>({
     includeMermaids: true,
@@ -74,8 +78,10 @@ export function Home() {
   async function launchGame() {
     setCreateFailed(false);
     try {
+      const roundSchedule = roundPreset === "custom" ? customRounds.split(",").map(value => Number(value.trim())) : ROUND_PRESETS[roundPreset].cards;
+      if (!roundSchedule.length || roundSchedule.length > 20 || roundSchedule.some(value => !Number.isInteger(value) || value < 1 || value > 10)) throw new Error("Choose 1–20 rounds of 1–10 cards.");
       const result = await createGame({
-        variables: { deckConfig, pirateAbilities, scoringMode },
+        variables: { deckConfig, pirateAbilities, scoringMode, roundSchedule, tieBreakers, cannonball: scoringMode === ScoringMode.Rascal && cannonball },
       });
       if (!result.data?.newGame) throw new Error("Missing game");
       setRedirectTo(result.data.newGame);
@@ -197,17 +203,23 @@ export function Home() {
               : "Everyone can earn 10 points per card dealt. An exact bid earns all, off by one earns half, and a larger miss earns none. Loot and Pirate wagers still require exact bids."}
           </p>
           <p className="Home-scoringDescription">
-            Ten rounds · 2–6 players · Rules are fixed when the game is created.
+            2–8 players with the base deck. Rules are fixed for each voyage.
           </p>
-          <p className="Home-scoringDescription">
-            Current house rules: two-player games omit Graybeard, and tied games
-            end after ten rounds without a tiebreaker.
-          </p>
+          <label className="Home-scoringLabel" htmlFor="round-schedule">Round schedule</label>
+          <select id="round-schedule" className="Home-scoringSelect" value={roundPreset} onChange={event => setRoundPreset(event.target.value)}>
+            {Object.entries(ROUND_PRESETS).map(([key, preset]) => <option key={key} value={key}>{preset.label} · {preset.cards.join(", ")}</option>)}
+            <option value="custom">Custom schedule</option>
+          </select>
+          {roundPreset === "custom" && <label>Cards per round, separated by commas <input value={customRounds} onChange={event => setCustomRounds(event.target.value)} placeholder="2, 4, 6, 8, 10" /></label>}
+          <label className="Home-cardOption"><input type="checkbox" checked={tieBreakers} onChange={event => setTieBreakers(event.target.checked)} />Play extra rounds to break a tie</label>
+          {!tieBreakers && <p>House rule: tied leaders share the victory.</p>}
+          {scoringMode === ScoringMode.Rascal && <label className="Home-cardOption"><input type="checkbox" checked={cannonball} onChange={event => setCannonball(event.target.checked)} />Cannonball choices: choose steady Grapeshot or risk 15 points per card for an exact bid.</label>}
+          <p>Two-player games include Graybeard’s ghost and omit Loot. Large crews deal fewer cards when the deck requires it.</p>
         </div>
 
         {createFailed && (
           <p className="Home-createError" role="alert">
-            Couldn’t create the game. Your settings are saved here—try again.
+            Couldn’t create the game. Check that a custom schedule has 1–20 rounds of 1–10 cards, then try again.
           </p>
         )}
 
@@ -222,3 +234,13 @@ export function Home() {
     </div>
   );
 }
+
+const ROUND_PRESETS: Record<string, {label:string;cards:number[]}> = {
+  standard: {label:"Standard",cards:[1,2,3,4,5,6,7,8,9,10]},
+  evenKeeled: {label:"Even Keeled",cards:[2,4,6,8,10]},
+  skipToTheBrawl: {label:"Skip to the Brawl",cards:[6,7,8,9,10]},
+  swiftAndSalty: {label:"Swift-n-Salty",cards:[5,5,5,5,5]},
+  broadside: {label:"Broadside Barrage",cards:Array(10).fill(10)},
+  whirlpool: {label:"Whirlpool",cards:[9,9,7,7,5,5,3,3,1,1]},
+  bedtime: {label:"Past Your Bedtime",cards:[1]},
+};

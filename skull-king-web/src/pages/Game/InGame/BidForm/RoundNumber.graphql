@@ -4,6 +4,7 @@ query RoundNumber($gameId: String!, $playerToken: String!) {
     currentRound {
       id
       roundNumber
+      cardsPerPlayer
     }
   }
 }

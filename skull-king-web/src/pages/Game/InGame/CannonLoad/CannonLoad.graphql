@@ -1,0 +1,6 @@
+query CannonChoice($gameId:String!, $playerToken:String!) {
+  state(gameId:$gameId, playerToken:$playerToken) { id currentRound { id roundNumber cardsPerPlayer myCannonLoad } }
+}
+mutation LoadCannon($gameId:String!, $playerToken:String!, $load:CannonLoad!, $expectedRoundNumber:Int!) {
+  loadCannon(gameId:$gameId, playerToken:$playerToken, load:$load, expectedRoundNumber:$expectedRoundNumber)
+}

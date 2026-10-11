@@ -292,7 +292,7 @@ export type RoundNumberQueryVariables = Exact<{
 }>;
 
 
-export type RoundNumberQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound?: { __typename?: 'Round', id: number, roundNumber: number } | null } | null };
+export type RoundNumberQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound?: { __typename?: 'Round', id: number, roundNumber: number, cardsPerPlayer: number } | null } | null };
 
 export type SubmitBidMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -302,6 +302,24 @@ export type SubmitBidMutationVariables = Exact<{
 
 
 export type SubmitBidMutation = { __typename?: 'Mutation', submitBid: boolean };
+
+export type CannonChoiceQueryVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+}>;
+
+
+export type CannonChoiceQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound?: { __typename?: 'Round', id: number, roundNumber: number, cardsPerPlayer: number, myCannonLoad?: CannonLoad | null } | null } | null };
+
+export type LoadCannonMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  load: CannonLoad;
+  expectedRoundNumber: Scalars['Int']['input'];
+}>;
+
+
+export type LoadCannonMutation = { __typename?: 'Mutation', loadCannon: boolean };
 
 export type GameStateQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -417,7 +435,7 @@ export type LobbyQueryQueryVariables = Exact<{
 }>;
 
 
-export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, scoringMode: ScoringMode, pirateAbilities: boolean, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
+export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, roundSchedule: Array<number>, tieBreakers: boolean, cannonball: boolean, maxPlayers: number, scoringMode: ScoringMode, pirateAbilities: boolean, me?: { __typename?: 'Player', id: string } | null, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
 
 export type PlayersQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -442,6 +460,9 @@ export type GamesQuery = { __typename?: 'Query', games: Array<string> };
 export type NewGameMutationVariables = Exact<{
   deckConfig?: InputMaybe<DeckConfigInput>;
   pirateAbilities?: InputMaybe<Scalars['Boolean']['input']>;
+  roundSchedule?: InputMaybe<Array<Scalars['Int']['input']> | Scalars['Int']['input']>;
+  tieBreakers?: InputMaybe<Scalars['Boolean']['input']>;
+  cannonball?: InputMaybe<Scalars['Boolean']['input']>;
   scoringMode?: InputMaybe<ScoringMode>;
 }>;
 
@@ -514,6 +535,7 @@ export const RoundNumberDocument = gql`
     currentRound {
       id
       roundNumber
+      cardsPerPlayer
     }
   }
 }
@@ -588,6 +610,95 @@ export function useSubmitBidMutation(baseOptions?: Apollo.MutationHookOptions<Su
 export type SubmitBidMutationHookResult = ReturnType<typeof useSubmitBidMutation>;
 export type SubmitBidMutationResult = Apollo.MutationResult<SubmitBidMutation>;
 export type SubmitBidMutationOptions = Apollo.BaseMutationOptions<SubmitBidMutation, SubmitBidMutationVariables>;
+export const CannonChoiceDocument = gql`
+    query CannonChoice($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    currentRound {
+      id
+      roundNumber
+      cardsPerPlayer
+      myCannonLoad
+    }
+  }
+}
+    `;
+
+/**
+ * __useCannonChoiceQuery__
+ *
+ * To run a query within a React component, call `useCannonChoiceQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCannonChoiceQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCannonChoiceQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function useCannonChoiceQuery(baseOptions: Apollo.QueryHookOptions<CannonChoiceQuery, CannonChoiceQueryVariables> & ({ variables: CannonChoiceQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CannonChoiceQuery, CannonChoiceQueryVariables>(CannonChoiceDocument, options);
+      }
+export function useCannonChoiceLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CannonChoiceQuery, CannonChoiceQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CannonChoiceQuery, CannonChoiceQueryVariables>(CannonChoiceDocument, options);
+        }
+// @ts-ignore
+export function useCannonChoiceSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CannonChoiceQuery, CannonChoiceQueryVariables>): Apollo.UseSuspenseQueryResult<CannonChoiceQuery, CannonChoiceQueryVariables>;
+export function useCannonChoiceSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CannonChoiceQuery, CannonChoiceQueryVariables>): Apollo.UseSuspenseQueryResult<CannonChoiceQuery | undefined, CannonChoiceQueryVariables>;
+export function useCannonChoiceSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CannonChoiceQuery, CannonChoiceQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CannonChoiceQuery, CannonChoiceQueryVariables>(CannonChoiceDocument, options);
+        }
+export type CannonChoiceQueryHookResult = ReturnType<typeof useCannonChoiceQuery>;
+export type CannonChoiceLazyQueryHookResult = ReturnType<typeof useCannonChoiceLazyQuery>;
+export type CannonChoiceSuspenseQueryHookResult = ReturnType<typeof useCannonChoiceSuspenseQuery>;
+export type CannonChoiceQueryResult = Apollo.QueryResult<CannonChoiceQuery, CannonChoiceQueryVariables>;
+export const LoadCannonDocument = gql`
+    mutation LoadCannon($gameId: String!, $playerToken: String!, $load: CannonLoad!, $expectedRoundNumber: Int!) {
+  loadCannon(
+    gameId: $gameId
+    playerToken: $playerToken
+    load: $load
+    expectedRoundNumber: $expectedRoundNumber
+  )
+}
+    `;
+export type LoadCannonMutationFn = Apollo.MutationFunction<LoadCannonMutation, LoadCannonMutationVariables>;
+
+/**
+ * __useLoadCannonMutation__
+ *
+ * To run a mutation, you first call `useLoadCannonMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLoadCannonMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [loadCannonMutation, { data, loading, error }] = useLoadCannonMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *      load: // value for 'load'
+ *      expectedRoundNumber: // value for 'expectedRoundNumber'
+ *   },
+ * });
+ */
+export function useLoadCannonMutation(baseOptions?: Apollo.MutationHookOptions<LoadCannonMutation, LoadCannonMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LoadCannonMutation, LoadCannonMutationVariables>(LoadCannonDocument, options);
+      }
+export type LoadCannonMutationHookResult = ReturnType<typeof useLoadCannonMutation>;
+export type LoadCannonMutationResult = Apollo.MutationResult<LoadCannonMutation>;
+export type LoadCannonMutationOptions = Apollo.BaseMutationOptions<LoadCannonMutation, LoadCannonMutationVariables>;
 export const GameStateDocument = gql`
     query GameState($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
@@ -1291,6 +1402,13 @@ export const LobbyQueryDocument = gql`
     query LobbyQuery($gameId: String!, $playerToken: String) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    me {
+      id
+    }
+    roundSchedule
+    tieBreakers
+    cannonball
+    maxPlayers
     scoringMode
     pirateAbilities
     deckConfig {
@@ -1463,11 +1581,14 @@ export type GamesLazyQueryHookResult = ReturnType<typeof useGamesLazyQuery>;
 export type GamesSuspenseQueryHookResult = ReturnType<typeof useGamesSuspenseQuery>;
 export type GamesQueryResult = Apollo.QueryResult<GamesQuery, GamesQueryVariables>;
 export const NewGameDocument = gql`
-    mutation NewGame($deckConfig: DeckConfigInput, $pirateAbilities: Boolean, $scoringMode: ScoringMode) {
+    mutation NewGame($deckConfig: DeckConfigInput, $pirateAbilities: Boolean, $roundSchedule: [Int!], $tieBreakers: Boolean, $cannonball: Boolean, $scoringMode: ScoringMode) {
   newGame(
     deckConfig: $deckConfig
     pirateAbilities: $pirateAbilities
     scoringMode: $scoringMode
+    roundSchedule: $roundSchedule
+    tieBreakers: $tieBreakers
+    cannonball: $cannonball
   )
 }
     `;
@@ -1488,6 +1609,9 @@ export type NewGameMutationFn = Apollo.MutationFunction<NewGameMutation, NewGame
  *   variables: {
  *      deckConfig: // value for 'deckConfig'
  *      pirateAbilities: // value for 'pirateAbilities'
+ *      roundSchedule: // value for 'roundSchedule'
+ *      tieBreakers: // value for 'tieBreakers'
+ *      cannonball: // value for 'cannonball'
  *      scoringMode: // value for 'scoringMode'
  *   },
  * });
