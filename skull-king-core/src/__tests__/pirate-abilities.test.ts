@@ -130,4 +130,12 @@ describe("optional pirate abilities", () => {
     round.lastCompletedHand!.winningCard = null;
     expect(createPirateAbility(round)).toBeNull();
   });
+
+  it.each(["kraken", "whiteWhale", "skullKing"] as const)("does not activate a pirate when %s negates or captures it in actual play", (type) => {
+    const { game } = pirateGame("pirate-1", true, false, { id: type, type });
+    const round = game.getStateForPlayer().currentRound!;
+    expect(round.pirateAbility).toBeNull();
+    if (type !== "skullKing") expect(round.lastCompletedHand!.winningCard).toBeNull();
+    expect(game.advanceFromTrickResult()).toBe(true);
+  });
 });
