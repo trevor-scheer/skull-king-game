@@ -13,3 +13,10 @@
 
 # Private server checkpoints and accounts
 /data/
+
+# Local configuration and browser reports
+.env
+.env.*
+!.env.example
+/playwright-report/
+/test-results/

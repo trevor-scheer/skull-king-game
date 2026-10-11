@@ -18,7 +18,9 @@
     "start": "node ./skull-king-server/dist/index.js",
     "heroku": "node ./skull-king-server/dist/index.js",
     "debug": "node --inspect-brk ./skull-king-server/dist/index.js",
-    "codegen": "yarn workspace @skull-king/web codegen"
+    "codegen": "yarn workspace @skull-king/web codegen",
+    "test:e2e": "playwright test",
+    "check": "yarn test --runInBand && yarn build && yarn build:web"
   },
   "workspaces": [
     "skull-king-core",
@@ -26,6 +28,7 @@
     "skull-king-web"
   ],
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
     "jest": "^29.7.0",
