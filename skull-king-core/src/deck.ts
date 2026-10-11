@@ -53,6 +53,17 @@ export class Deck {
     return card;
   }
 
+  public drawMany(count: number) {
+    if (!Number.isInteger(count) || count < 0 || count > this.cardsInPlay.length) {
+      throw new Error("Not enough undealt cards to draw");
+    }
+    return Array.from({ length: count }, () => this.draw());
+  }
+
+  public getUndealtCards(): Card[] {
+    return this.cardsInPlay.map((card) => ({ ...card }));
+  }
+
   public getCard(id: string) {
     return this.cardMap.get(id);
   }

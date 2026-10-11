@@ -6,6 +6,7 @@ import { Scorecard } from "./scorecard";
 import { ScoringMode } from "./scoring";
 import { randomUUID } from "crypto";
 import { determineTrickWinner, isEscapeCard } from "./trickRules";
+import { createPirateAbility, PirateAbility, PirateAbilityInput, pirateAbilityForPlayer, resolvePirateAbility } from "./pirateAbilities";
 
 export interface Round {
   roundNumber: number;
@@ -18,6 +19,8 @@ export interface Round {
   tricksWon: Map<string, Card[][]>;
   hands: Hand[];
   lastCompletedHand: Hand | null;
+  pirateAbility?: PirateAbility | null;
+  pirateWagers?: Map<string, number>;
 }
 
 export interface Hand {
@@ -246,10 +249,22 @@ export class Game {
 
     // Transition to trick_result phase so players can see who won
     this.currentRound.phase = "trick_result";
+    if (this.options.pirateAbilities) {
+      this.currentRound.pirateAbility = createPirateAbility(this.currentRound);
+    }
+  }
+
+  public usePirateAbility(playerToken: string, expectedAbilityId: string, input: PirateAbilityInput) {
+    const actor = this.playerTokens.get(playerToken);
+    assert(actor, "Invalid player token");
+    assert(this.options.pirateAbilities, "Pirate abilities are disabled");
+    if (!this.currentRound) return false;
+    return resolvePirateAbility(this.currentRound, this.players, this.deck, actor, expectedAbilityId, input);
   }
 
   // Advance from trick_result phase to continue the game
   public advanceFromTrickResult(expectedHandId?: string) {
+    if (this.currentRound?.pirateAbility) return false;
     if (expectedHandId !== undefined && (
       this.currentRound?.phase !== "trick_result" ||
       this.currentRound.lastCompletedHand?.id !== expectedHandId
@@ -413,6 +428,7 @@ export class Game {
       myBid: undefined as number | undefined,
       leader: this.players[this.currentRound.leader]?.name ?? null,
       playerTurn: this.playerTurn(),
+      pirateAbility: pirateAbilityForPlayer(this.currentRound, playerToken ? this.playerTokens.get(playerToken) : undefined, this.deck),
     } : null;
 
     const gameState = {
@@ -421,6 +437,7 @@ export class Game {
       currentRound: currentRoundData,
       scorecard: this.scorecard?.getScoreCard(),
       options: this.options,
+      pirateAbilities: this.options.pirateAbilities ?? false,
       deckConfig: {
         includeMermaids: this.options.deckConfig?.includeMermaids ?? false,
         includeKraken: this.options.deckConfig?.includeKraken ?? false,
@@ -464,4 +481,5 @@ export interface GameOptions {
   mode?: "standard";
   deck?: Deck;
   deckConfig?: DeckConfiguration;
+  pirateAbilities?: boolean;
 }

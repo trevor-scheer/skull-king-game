@@ -1,3 +1,5 @@
+import { pirateAbilityTypeDefs } from "./pirateAbilityTypeDefs";
+
 const typeDefs = `#graphql
   type Query {
     players(gameId: String!): String!
@@ -20,7 +22,7 @@ const typeDefs = `#graphql
   }
 
   type Mutation {
-    newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode): String!
+    newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode, pirateAbilities: Boolean): String!
     startGame(gameId: String!): Boolean!
     addPlayer(gameId: String!, name: String!): String!
     submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
@@ -36,6 +38,7 @@ const typeDefs = `#graphql
       selection: String
     ): Boolean!
     advanceTrick(gameId: String!, expectedHandId: String!): Boolean!
+    usePirateAbility(gameId: String!, playerToken: String!, expectedAbilityId: String!, input: PirateAbilityInput!): Boolean!
   }
 
   type Subscription {
@@ -53,6 +56,7 @@ const typeDefs = `#graphql
     scorecard: [[ScoreBlock!]!]
     deckConfig: DeckConfig!
     scoringMode: ScoringMode!
+    pirateAbilities: Boolean!
   }
 
   enum ScoringMode {
@@ -91,6 +95,7 @@ const typeDefs = `#graphql
     cardsPlayed: [PlayedCard!]!
     hands: [Hand!]!
     lastCompletedHand: Hand
+    pirateAbility: PirateAbility
   }
 
   type Hand {
@@ -122,6 +127,7 @@ const typeDefs = `#graphql
     bonusPoints: Int!
     totalPoints: Int!
   }
+${pirateAbilityTypeDefs}
 `;
 
 export default typeDefs;

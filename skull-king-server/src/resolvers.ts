@@ -18,9 +18,9 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
     },
   },
   Mutation: {
-    newGame(_, { deckConfig, scoringMode }: { deckConfig?: DeckConfiguration; scoringMode?: ScoringMode }, context) {
+    newGame(_, { deckConfig, scoringMode, pirateAbilities }: { deckConfig?: DeckConfiguration; scoringMode?: ScoringMode; pirateAbilities?: boolean }, context) {
       const id = randomUUID();
-      const game = new Game(id, { deckConfig, scoringMode });
+      const game = new Game(id, { deckConfig, scoringMode, pirateAbilities });
       game.onGameEnd(() => {
         setTimeout(() => context.games.delete(id), 1000 * 60 * 10);
       });
@@ -61,6 +61,11 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       const game = games.get(gameId);
       assertGame(game, gameId);
       return game.advanceFromTrickResult(expectedHandId);
+    },
+    usePirateAbility(_, { gameId, playerToken, expectedAbilityId, input }, { games }) {
+      const game = games.get(gameId);
+      assertGame(game, gameId);
+      return game.usePirateAbility(playerToken, expectedAbilityId, input);
     },
   },
   Card: {
