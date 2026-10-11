@@ -7,8 +7,11 @@
   "author": "Trevor Scheer <trevor.scheer@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@apollo/server": "^4.11.3",
+    "@apollo/server": "^5.2.0",
     "@skull-king/core": "workspace:*",
-    "graphql": "^16.10.0"
+    "graphql": "^16.12.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
