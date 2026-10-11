@@ -12,6 +12,12 @@ const typeDefs = `#graphql
     includeKraken: Boolean
     includeWhiteWhale: Boolean
     includeLoot: Boolean
+    includeExpansion: Boolean
+    includeFirstMate: Boolean
+    includeStingray: Boolean
+    includeDavyJones: Boolean
+    includeWalkThePlank: Boolean
+    includeLastVolley: Boolean
   }
 
   type DeckConfig {
@@ -19,6 +25,12 @@ const typeDefs = `#graphql
     includeKraken: Boolean!
     includeWhiteWhale: Boolean!
     includeLoot: Boolean!
+    includeExpansion: Boolean!
+    includeFirstMate: Boolean!
+    includeStingray: Boolean!
+    includeDavyJones: Boolean!
+    includeWalkThePlank: Boolean!
+    includeLastVolley: Boolean!
   }
 
   type Mutation {
@@ -31,6 +43,8 @@ const typeDefs = `#graphql
       gameId: String!
       playerToken: String!
       cardId: String!
+      numberChoice: Int
+      colorChoice: Color
     ): Boolean!
     playSpecialCard(
       gameId: String!
@@ -39,6 +53,7 @@ const typeDefs = `#graphql
       selection: String
     ): Boolean!
     advanceTrick(gameId: String!, playerToken: String!, expectedHandId: String!): Boolean!
+    choosePlankTarget(gameId: String!, playerToken: String!, expectedChoiceId: String!, cardId: String!): Boolean!
     usePirateAbility(gameId: String!, playerToken: String!, expectedAbilityId: String!, input: PirateAbilityInput!): Boolean!
   }
 
@@ -95,6 +110,9 @@ const typeDefs = `#graphql
     id: String!
     color: String!
     number: Int!
+    expansion: Boolean
+    choice: Boolean
+    wild: Boolean
   }
 
   type Round {
@@ -114,6 +132,14 @@ const typeDefs = `#graphql
     hands: [Hand!]!
     lastCompletedHand: Hand
     pirateAbility: PirateAbility
+    plankChoice: PlankChoice
+    myForcedCardId: String
+  }
+
+  type PlankChoice {
+    id: String!
+    playerId: String!
+    cardIds: [String!]!
   }
 
   type Hand {
@@ -122,6 +148,7 @@ const typeDefs = `#graphql
     cardsPlayed: [PlayedCard!]!
     winningCard: PlayedCard
     trickDiscarded: Boolean
+    removedCardIds: [String!]
   }
 
   type PlayedCard {

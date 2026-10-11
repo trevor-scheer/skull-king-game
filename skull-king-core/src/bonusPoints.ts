@@ -5,6 +5,7 @@ import {
   determineTrickWinner,
   isEscapeCard,
   isPirateCard,
+  isSeaCreature,
 } from "./trickRules";
 
 type BonusRound = Pick<Round, "tricksWon" | "bids"> &
@@ -12,18 +13,24 @@ type BonusRound = Pick<Round, "tricksWon" | "bids"> &
 
 function captureBonus(hand: Hand) {
   if (hand.trickDiscarded || !hand.winningCard) return 0;
-  const cards = hand.cardsPlayed.map((play) => play.card);
+  const cards = hand.cardsPlayed
+    .filter(({ card }) => !hand.removedCardIds?.includes(card.id))
+    .map((play) => play.card);
   let points = cards.reduce(
     (sum, card) =>
       sum +
-      (isColoredCard(card) && card.number === 14
+      (isColoredCard(card) && card.number === 14 && !card.choice
         ? card.color === "BLACK"
           ? 20
           : 10
         : 0),
     0,
   );
-  if (activeSeaCreature(cards) === "whiteWhale") return points;
+  if (
+    activeSeaCreature(cards) === "whiteWhale" ||
+    activeSeaCreature(cards) === "stingray"
+  )
+    return points;
   const winner = hand.winningCard.card;
   if (isPirateCard(winner)) {
     points +=
@@ -64,7 +71,7 @@ function legacyHand(cards: Card[], playerName: string): Hand {
 export function scoreRoundBonuses(
   round: BonusRound,
   playerName: string,
-): { captureBonus: number; lootBonus: number } {
+): { captureBonus: number; lootBonus: number; expansionBonus: number } {
   const hands =
     round.hands ??
     (round.tricksWon.get(playerName) ?? []).map((cards) =>
@@ -72,16 +79,46 @@ export function scoreRoundBonuses(
     );
   let captures = 0;
   let lootBonus = 0;
+  let expansionBonus = 0;
   const exact = (name: string) =>
     round.bids.has(name) &&
     round.bids.get(name) === (round.tricksWon.get(name)?.length ?? 0);
   for (const hand of hands) {
+    const surviving = hand.cardsPlayed.filter(
+      ({ card }) => !hand.removedCardIds?.includes(card.id),
+    );
+    const davy = surviving.find(
+      ({ card }) => isSpecialCard(card) && card.type === "davyJones",
+    );
+    if (davy?.playerId === playerName)
+      expansionBonus +=
+        20 * surviving.filter(({ card }) => isSeaCreature(card)).length;
     if (hand.trickDiscarded || !hand.winningCard) continue;
     const winner = hand.winningCard.playerId;
-    if (winner === playerName) captures += captureBonus(hand);
+    if (winner === playerName) {
+      captures += captureBonus(hand);
+      for (const { card } of surviving) {
+        if (isColoredCard(card) && card.expansion && !card.choice && !card.wild)
+          expansionBonus += card.number === 7 ? -5 : card.number === 8 ? 5 : 0;
+      }
+      const winningCard = hand.winningCard.card;
+      if (
+        !activeSeaCreature(surviving.map(({ card }) => card)) &&
+        isSpecialCard(winningCard) &&
+        ["skullKing", "mermaid"].includes(winningCard.type)
+      ) {
+        expansionBonus +=
+          30 *
+          surviving.filter(
+            ({ card }) => isSpecialCard(card) && card.type === "firstMate",
+          ).length;
+      }
+    }
     if (
       activeSeaCreature(hand.cardsPlayed.map((play) => play.card)) ===
-      "whiteWhale"
+        "whiteWhale" ||
+      activeSeaCreature(hand.cardsPlayed.map((play) => play.card)) ===
+        "stingray"
     )
       continue;
     if (!exact(winner)) continue;
@@ -96,5 +133,5 @@ export function scoreRoundBonuses(
       if (playerName === playerId || playerName === winner) lootBonus += 20;
     }
   }
-  return { captureBonus: captures, lootBonus };
+  return { captureBonus: captures, lootBonus, expansionBonus };
 }

@@ -5,6 +5,9 @@ export interface ColoredCard {
   id: string;
   color: Color;
   number: number;
+  expansion?: boolean;
+  choice?: boolean;
+  wild?: boolean;
 }
 
 export function isColoredCard(card: Card): card is ColoredCard {
@@ -19,7 +22,13 @@ export type SpecialCardTypes =
   | "mermaid"
   | "kraken"
   | "whiteWhale"
-  | "loot";
+  | "loot"
+  | "maryThorne"
+  | "firstMate"
+  | "stingray"
+  | "davyJones"
+  | "walkThePlank"
+  | "lastVolley";
 
 export interface SpecialCard {
   id: string;
@@ -39,7 +48,7 @@ const coloredCards: ColoredCard[] = colors
       id: `${color.toLocaleLowerCase()}-${index + 1}`,
       color,
       number: index + 1,
-    }))
+    })),
   )
   .flat();
 
@@ -73,6 +82,12 @@ export interface DeckConfiguration {
   includeKraken?: boolean;
   includeWhiteWhale?: boolean;
   includeLoot?: boolean;
+  includeExpansion?: boolean;
+  includeFirstMate?: boolean;
+  includeStingray?: boolean;
+  includeDavyJones?: boolean;
+  includeWalkThePlank?: boolean;
+  includeLastVolley?: boolean;
 }
 
 // Build a deck based on configuration
@@ -98,6 +113,40 @@ export function buildDeck(config: DeckConfiguration = {}): Card[] {
     deck.push(...lootCards.slice());
   }
 
+  if (config.includeExpansion) {
+    for (const color of colors) {
+      for (const number of [7, 8])
+        deck.push({
+          id: `${color.toLowerCase()}-expansion-${number}`,
+          color,
+          number,
+          expansion: true,
+        });
+      deck.push({
+        id: `${color.toLowerCase()}-zero-fourteen`,
+        color,
+        number: 0,
+        choice: true,
+        expansion: true,
+      });
+    }
+    deck.push({
+      id: "wild-15",
+      color: "YELLOW",
+      number: 15,
+      wild: true,
+      expansion: true,
+    });
+    deck.push({ id: "maryThorne", type: "maryThorne" });
+  }
+  for (const [option, type] of [
+    ["includeFirstMate", "firstMate"],
+    ["includeStingray", "stingray"],
+    ["includeDavyJones", "davyJones"],
+    ["includeWalkThePlank", "walkThePlank"],
+    ["includeLastVolley", "lastVolley"],
+  ] as const)
+    if (config[option]) deck.push({ id: type, type });
   return deck;
 }
 
@@ -105,10 +154,12 @@ export const basicDeck: Card[] = buildDeck();
 
 export const cardsMap: Map<string, Card> = new Map(
   Object.entries(
-    basicDeck.reduce((acc, card) => {
-      acc[card.id] = card;
-      return acc;
-    }, {} as { [key: string]: Card })
-  )
+    basicDeck.reduce(
+      (acc, card) => {
+        acc[card.id] = card;
+        return acc;
+      },
+      {} as { [key: string]: Card },
+    ),
+  ),
 );
-

@@ -49,10 +49,10 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       assertGame(game, gameId);
       return game.loadCannon({ playerToken, load, expectedRoundNumber });
     },
-    playColoredCard(_, { gameId, playerToken, cardId }, { games }) {
+    playColoredCard(_, { gameId, playerToken, cardId, numberChoice, colorChoice }, { games }) {
       const game = games.get(gameId);
       assertGame(game, gameId);
-      game.playCard({ playerToken, cardId });
+      game.playCard({ playerToken, cardId, numberChoice, colorChoice });
       return true;
     },
     playSpecialCard(_, { gameId, playerToken, cardId, selection }, { games }) {
@@ -60,6 +60,11 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       assertGame(game, gameId);
       game.playCard({ playerToken, cardId, selection });
       return true;
+    },
+    choosePlankTarget(_, { gameId, playerToken, expectedChoiceId, cardId }, { games }) {
+      const game = games.get(gameId);
+      assertGame(game, gameId);
+      return game.choosePlankTarget(playerToken, expectedChoiceId, cardId);
     },
     advanceTrick(_, { gameId, playerToken, expectedHandId }, { games }) {
       const game = games.get(gameId);

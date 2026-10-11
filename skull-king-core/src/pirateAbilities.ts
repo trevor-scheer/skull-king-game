@@ -12,30 +12,64 @@ export const PIRATE_ABILITIES = {
   "pirate-3": { kind: "juanita", name: "Juanita Jade" },
   "pirate-4": { kind: "bendt", name: "Bendt the Bandit" },
   "pirate-5": { kind: "harry", name: "Harry the Giant" },
+  maryThorne: { kind: "mary", name: "Mary Thorne" },
 } as const;
 
 export interface PirateAbility {
   id: string;
   playerId: string;
   pirateId: string;
-  kind: "rosie" | "rascal" | "juanita" | "bendt" | "harry";
+  kind: "rosie" | "rascal" | "juanita" | "bendt" | "harry" | "mary";
   name: string;
   stage: "choose" | "discard" | "view";
+  optional?: boolean;
 }
 
 export interface PirateAbilityInput {
-  action: "decline" | "chooseLeader" | "wager" | "draw" | "discard" | "reveal" | "finish" | "adjustBid";
+  action:
+    | "decline"
+    | "chooseLeader"
+    | "wager"
+    | "draw"
+    | "discard"
+    | "reveal"
+    | "finish"
+    | "adjustBid"
+    | "forceCard";
   playerId?: string | null;
   cardIds?: string[] | null;
   amount?: number | null;
 }
 
 export function createPirateAbility(round: Round): PirateAbility | null {
-  const winner = round.lastCompletedHand?.winningCard;
-  if (!winner || !isSpecialCard(winner.card) || winner.card.type !== "pirate") return null;
-  const pirate = PIRATE_ABILITIES[winner.card.id as keyof typeof PIRATE_ABILITIES];
-  if (!pirate || (round.hands.length === round.cardsPerPlayer && pirate.kind !== "harry")) return null;
-  return { ...pirate, id: randomUUID(), playerId: winner.playerId, pirateId: winner.card.id, stage: "choose" };
+  const hand = round.lastCompletedHand;
+  const winner = hand?.winningCard;
+  if (!winner || !isSpecialCard(winner.card)) return null;
+  const candidates =
+    winner.card.type === "firstMate"
+      ? hand!.cardsPlayed
+          .filter(({ card }) => !hand!.removedCardIds?.includes(card.id))
+          .map(({ card }) => card)
+      : [winner.card];
+  const abilities: PirateAbility[] = [];
+  for (const card of candidates) {
+    const pirate = PIRATE_ABILITIES[card.id as keyof typeof PIRATE_ABILITIES];
+    if (
+      !pirate ||
+      (round.hands.length === round.cardsPerPlayer && pirate.kind !== "harry")
+    )
+      continue;
+    abilities.push({
+      ...pirate,
+      id: randomUUID(),
+      playerId: winner.playerId,
+      pirateId: card.id,
+      stage: "choose",
+      optional: pirate.kind !== "mary" || winner.card.type === "firstMate",
+    });
+  }
+  round.pirateAbilityQueue = abilities.slice(1);
+  return abilities[0] ?? null;
 }
 
 export function resolvePirateAbility(
@@ -48,76 +82,170 @@ export function resolvePirateAbility(
 ): boolean {
   const ability = round.pirateAbility;
   if (!ability || ability.id !== expectedAbilityId) return false;
-  assert(round.phase === "trick_result", "Pirate abilities must be used after their trick");
-  assert(ability.playerId === actor, "Only the winning player can use this pirate ability");
+  assert(
+    round.phase === "trick_result",
+    "Pirate abilities must be used after their trick",
+  );
+  assert(
+    ability.playerId === actor,
+    "Only the winning player can use this pirate ability",
+  );
   const player = players.find((candidate) => candidate.id === actor)!;
-  const complete = () => { round.pirateAbility = null; };
+  const complete = () => {
+    round.pirateAbility = round.pirateAbilityQueue?.shift() ?? null;
+  };
   const nextStage = (stage: PirateAbility["stage"]) => {
     round.pirateAbility = { ...ability, id: randomUUID(), stage };
   };
   const noExtras = (allowed: ("playerId" | "cardIds" | "amount")[] = []) => {
     for (const field of ["playerId", "cardIds", "amount"] as const) {
-      assert(input[field] == null || allowed.includes(field), "Unexpected pirate ability choice");
+      assert(
+        input[field] == null || allowed.includes(field),
+        "Unexpected pirate ability choice",
+      );
     }
   };
 
   if (input.action === "decline") {
     noExtras();
-    assert(ability.stage === "choose", "Finish this pirate ability before continuing");
+    assert(
+      ability.optional !== false,
+      "Mary must choose a player for her power",
+    );
+    assert(
+      ability.stage === "choose",
+      "Finish this pirate ability before continuing",
+    );
     complete();
     return true;
   }
 
-  if (ability.kind === "rosie" && ability.stage === "choose" && input.action === "chooseLeader") {
+  if (
+    ability.kind === "rosie" &&
+    ability.stage === "choose" &&
+    input.action === "chooseLeader"
+  ) {
     noExtras(["playerId"]);
-    const leader = players.findIndex((candidate) => candidate.id === input.playerId);
+    const leader = players.findIndex(
+      (candidate) => candidate.id === input.playerId,
+    );
     assert(leader >= 0, "Choose a player in this game to lead");
     round.leader = leader;
     complete();
-  } else if (ability.kind === "rascal" && ability.stage === "choose" && input.action === "wager") {
+  } else if (
+    ability.kind === "rascal" &&
+    ability.stage === "choose" &&
+    input.action === "wager"
+  ) {
     noExtras(["amount"]);
-    assert(input.amount === 0 || input.amount === 10 || input.amount === 20, "Wager must be 0, 10, or 20 points");
+    assert(
+      input.amount === 0 || input.amount === 10 || input.amount === 20,
+      "Wager must be 0, 10, or 20 points",
+    );
     round.pirateWagers ??= new Map();
-    round.pirateWagers.set(actor, (round.pirateWagers.get(actor) ?? 0) + input.amount);
+    round.pirateWagers.set(
+      actor,
+      (round.pirateWagers.get(actor) ?? 0) + input.amount,
+    );
     complete();
-  } else if (ability.kind === "harry" && ability.stage === "choose" && input.action === "adjustBid") {
+  } else if (
+    ability.kind === "harry" &&
+    ability.stage === "choose" &&
+    input.action === "adjustBid"
+  ) {
     noExtras(["amount"]);
-    assert(input.amount === -1 || input.amount === 0 || input.amount === 1, "Change the bid by -1, 0, or 1");
+    assert(
+      input.amount === -1 || input.amount === 0 || input.amount === 1,
+      "Change the bid by -1, 0, or 1",
+    );
     const bid = round.bids.get(actor);
     assert(bid != null, "Player has not bid");
     const adjusted = bid + input.amount;
-    assert(adjusted >= 0 && adjusted <= round.cardsPerPlayer, "Adjusted bid must fit the round");
+    assert(
+      adjusted >= 0 && adjusted <= round.cardsPerPlayer,
+      "Adjusted bid must fit the round",
+    );
     round.bids.set(actor, adjusted);
     complete();
-  } else if (ability.kind === "bendt" && ability.stage === "choose" && input.action === "draw") {
+  } else if (
+    ability.kind === "bendt" &&
+    ability.stage === "choose" &&
+    input.action === "draw"
+  ) {
     noExtras();
     const cards = deck.drawMany(2);
     player.hand.push(...cards);
     nextStage("discard");
-  } else if (ability.kind === "bendt" && ability.stage === "discard" && input.action === "discard") {
+  } else if (
+    ability.kind === "bendt" &&
+    ability.stage === "discard" &&
+    input.action === "discard"
+  ) {
     noExtras(["cardIds"]);
     const ids = input.cardIds;
-    assert(ids?.length === 2 && new Set(ids).size === 2, "Choose two different cards to discard");
-    assert(ids.every((id) => player.hand.some((card) => card.id === id)), "Discard only cards in your hand");
+    assert(
+      ids?.length === 2 && new Set(ids).size === 2,
+      "Choose two different cards to discard",
+    );
+    assert(
+      ids.every((id) => player.hand.some((card) => card.id === id)),
+      "Discard only cards in your hand",
+    );
+    assert(
+      !ids.includes(round.forcedCards?.get(actor) ?? ""),
+      "Mary’s selected card must remain in your hand",
+    );
     player.hand = player.hand.filter((card) => !ids.includes(card.id));
     complete();
-  } else if (ability.kind === "juanita" && ability.stage === "choose" && input.action === "reveal") {
+  } else if (
+    ability.kind === "juanita" &&
+    ability.stage === "choose" &&
+    input.action === "reveal"
+  ) {
     noExtras();
     nextStage("view");
-  } else if (ability.kind === "juanita" && ability.stage === "view" && input.action === "finish") {
+  } else if (
+    ability.kind === "juanita" &&
+    ability.stage === "view" &&
+    input.action === "finish"
+  ) {
     noExtras();
     complete();
+  } else if (
+    ability.kind === "mary" &&
+    ability.stage === "choose" &&
+    input.action === "forceCard"
+  ) {
+    noExtras(["playerId"]);
+    const target = players.find((candidate) => candidate.id === input.playerId);
+    assert(
+      target && target.hand.length > 0,
+      "Choose a player with cards remaining",
+    );
+    const card = target.hand[Math.floor(Math.random() * target.hand.length)];
+    round.forcedCards ??= new Map();
+    round.forcedCards.set(target.id, card.id);
+    complete();
   } else {
-    throw new Error("This choice is not available for the current pirate ability");
+    throw new Error(
+      "This choice is not available for the current pirate ability",
+    );
   }
   return true;
 }
 
-export function pirateAbilityForPlayer(round: Round, actor: string | undefined, deck: Deck) {
+export function pirateAbilityForPlayer(
+  round: Round,
+  actor: string | undefined,
+  deck: Deck,
+) {
   const ability = round.pirateAbility;
   if (!ability) return null;
-  const privateCards: Card[] = ability.playerId === actor && ability.kind === "juanita" && ability.stage === "view"
-    ? deck.getUndealtCards()
-    : [];
-  return { ...ability, privateCards };
+  const privateCards: Card[] =
+    ability.playerId === actor &&
+    ability.kind === "juanita" &&
+    ability.stage === "view"
+      ? deck.getUndealtCards()
+      : [];
+  return { ...ability, canDecline: ability.optional !== false, privateCards };
 }

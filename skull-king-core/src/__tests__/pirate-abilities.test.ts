@@ -5,7 +5,7 @@ const abilityId = (game: ReturnType<typeof pirateGame>["game"]) => game.getState
 
 describe("optional pirate abilities", () => {
   it("maps powers to the pirate names printed on the existing artwork", () => {
-    expect(Object.values(PIRATE_ABILITIES).map(({ kind }) => kind)).toEqual(["rosie", "rascal", "juanita", "bendt", "harry"]);
+    expect(Object.values(PIRATE_ABILITIES).map(({ kind }) => kind)).toEqual(["rosie", "rascal", "juanita", "bendt", "harry", "mary"]);
   });
 
   it("keeps abilities off by default and blocks using them when disabled", () => {

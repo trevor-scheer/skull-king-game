@@ -48,7 +48,7 @@ export class Scorecard {
         tricksBid,
         tricksWon: numTricksWon,
         captureBonus: bonuses.captureBonus,
-        exactBonus: bonuses.lootBonus,
+        exactBonus: bonuses.lootBonus + bonuses.expansionBonus,
         wager: round.pirateWagers?.get(playerName),
       });
       const scoreBlock: ScoreBlock = {

@@ -7,6 +7,7 @@ export const pirateAbilityTypeDefs = `#graphql
     discard
     reveal
     finish
+    forceCard
     adjustBid
   }
 
@@ -24,6 +25,7 @@ export const pirateAbilityTypeDefs = `#graphql
     kind: String!
     playerId: String!
     stage: String!
+    canDecline: Boolean!
     privateCards: [Card!]!
   }
 `;

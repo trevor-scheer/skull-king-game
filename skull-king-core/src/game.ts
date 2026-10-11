@@ -9,8 +9,10 @@ import { Scorecard } from "./scorecard";
 import { ScoringMode, CannonLoad } from "./scoring";
 import { cardsForRound, hasTiedLeaders, validateRoundSchedule } from "./roundOptions";
 import { randomUUID } from "crypto";
-import { determineTrickWinner, isEscapeCard } from "./trickRules";
+import { determineTrickWinner, defersLeadSuit } from "./trickRules";
 import { createPirateAbility, PirateAbility, PirateAbilityInput, pirateAbilityForPlayer, resolvePirateAbility } from "./pirateAbilities";
+
+import { declareExpansionCard, expansionTurnOrder, PlankChoice, preparePlankChoice } from "./expansion";
 
 export interface Round {
   roundNumber: number;
@@ -29,6 +31,11 @@ export interface Round {
   lastCompletedHand: Hand | null;
   pirateAbility?: PirateAbility | null;
   pirateWagers?: Map<string, number>;
+  pirateAbilityQueue?: PirateAbility[];
+  forcedCards?: Map<string, string>;
+  volleyPlayerId?: string;
+  plankChoice?: PlankChoice | null;
+  removedCardIds?: string[];
 }
 
 export interface Hand {
@@ -37,6 +44,7 @@ export interface Hand {
   cardsPlayed: PlayedCard[];
   winningCard: PlayedCard | null;
   trickDiscarded?: boolean;
+  removedCardIds?: string[];
 }
 
 export interface PlayedCard {
@@ -183,10 +191,14 @@ export class Game {
     playerToken,
     cardId,
     selection,
+    numberChoice,
+    colorChoice,
   }: {
     playerToken: string;
     cardId: string;
     selection?: "escape" | "pirate";
+    numberChoice?: number;
+    colorChoice?: Color;
   }) {
     const playerId = this.playerTokens.get(playerToken);
 
@@ -225,6 +237,8 @@ export class Game {
     } else {
       assert(selection == null, "Only Tigress can have a selection");
     }
+    declareExpansionCard(card, this.currentRound.trickColor, numberChoice, colorChoice);
+    this.currentRound.forcedCards?.delete(playerId);
     // Remove card from player hand
     player.hand.splice(cardInHandIndex, 1);
     // Set the trick color if necessary
@@ -247,15 +261,19 @@ export class Game {
   }
 
   private playGraybeardIfNext() {
-    if (this.currentRound?.phase !== "play") return;
-    const player = this.players.find((candidate) => candidate.name === this.playerTurn());
-    if (!player?.isAutomated) return;
-    const topCard = player.hand.shift();
-    assert(topCard, "Graybeard has no card to reveal");
-    const card = graybeardCard(topCard);
-    this.maybeSetTrickColor(card);
-    this.currentRound.cardsPlayed.push({ id: `${player.id}-${card.id}`, playerId: player.id, card });
-    this.maybeEndHand();
+    while (this.currentRound?.phase === "play") {
+      const player = this.players.find((candidate) => candidate.name === this.playerTurn());
+      if (!player?.isAutomated) return;
+      const forced = this.currentRound.forcedCards?.get(player.id);
+      const index = forced ? player.hand.findIndex(card => card.id === forced) : 0;
+      const [topCard] = player.hand.splice(index, 1);
+      assert(topCard, "Graybeard has no card to reveal");
+      this.currentRound.forcedCards?.delete(player.id);
+      const card = graybeardCard(topCard);
+      this.maybeSetTrickColor(card);
+      this.currentRound.cardsPlayed.push({ id: `${player.id}-${card.id}`, playerId: player.id, card });
+      this.maybeEndHand();
+    }
   }
 
   private maybeSetTrickColor(card: Card) {
@@ -270,7 +288,7 @@ export class Game {
     }
     if (isSpecialCard(card)) return;
     if (trickColor != null) return;
-    if (!cardsPlayed.every(({ card }) => isEscapeCard(card))) return;
+    if (!cardsPlayed.every(({ card }) => defersLeadSuit(card))) return;
     this.currentRound.trickColor = card.color;
   }
 
@@ -280,7 +298,12 @@ export class Game {
       "Programming error: `currentRound` is unexpectedly `null`"
     );
     const { cardsPlayed, tricksWon } = this.currentRound;
-    if (cardsPlayed.length < this.players.length) return;
+    const turns = expansionTurnOrder(this.currentRound, this.playerOrder(), this.players.map((player) => player.id));
+    if (cardsPlayed.length < turns.length) return;
+    preparePlankChoice(this.currentRound);
+    if (this.currentRound.plankChoice) return;
+    const volley = cardsPlayed.find(({card}) => isSpecialCard(card) && card.type === "lastVolley");
+    if (volley && this.currentRound.hands.length + 1 < this.currentRound.cardsPerPlayer) this.currentRound.volleyPlayerId = volley.playerId;
 
     // End hand - determine winner and store result
     const { winner: trickWinner, trickDiscarded } = this.determineWinningCard();
@@ -303,6 +326,7 @@ export class Game {
       cardsPlayed: this.currentRound.cardsPlayed,
       winningCard: trickDiscarded ? null : trickWinner,
       trickDiscarded,
+      removedCardIds: this.currentRound.removedCardIds,
     };
 
     this.currentRound.hands = [...this.currentRound.hands, completedHand];
@@ -318,6 +342,20 @@ export class Game {
       const winnerIsAutomated = this.players.some((player) => player.isAutomated && player.id === trickWinner.playerId);
       this.currentRound.pirateAbility = winnerIsAutomated ? null : createPirateAbility(this.currentRound);
     }
+  }
+
+  public choosePlankTarget(playerToken: string, expectedChoiceId: string, cardId: string) {
+    const actor = this.playerTokens.get(playerToken);
+    assert(actor, "Invalid player token");
+    const round = this.currentRound;
+    const choice = round?.plankChoice;
+    if (!round || !choice || choice.id !== expectedChoiceId) return false;
+    assert(choice.playerId === actor, "Only the player of Walk the Plank may choose");
+    assert(choice.cardIds.includes(cardId), "Choose a Pirate from this trick");
+    round.removedCardIds = [cardId];
+    round.plankChoice = null;
+    this.maybeEndHand();
+    return true;
   }
 
   public usePirateAbility(playerToken: string, expectedAbilityId: string, input: PirateAbilityInput) {
@@ -352,6 +390,7 @@ export class Game {
     this.currentRound.trickColor = null;
     this.currentRound.cardsPlayed = [];
     this.currentRound.lastCompletedHand = null;
+    this.currentRound.removedCardIds = undefined;
 
     // Check if round is complete (based on number of hands played, not tricks won,
     // since Kraken/White Whale can discard tricks)
@@ -367,7 +406,7 @@ export class Game {
 
   private determineWinningCard() {
     assert(this.currentRound, "No active round");
-    return determineTrickWinner(this.currentRound.cardsPlayed, this.currentRound.trickColor);
+    return determineTrickWinner(this.currentRound.cardsPlayed, this.currentRound.trickColor, this.currentRound.removedCardIds);
   }
 
   private updateScores() {
@@ -385,6 +424,10 @@ export class Game {
     );
     const { trickColor } = this.currentRound;
     const [card] = hand.splice(cardIndex, 1);
+    const actor = this.playerTurn();
+    const forced = actor ? this.currentRound.forcedCards?.get(actor) : undefined;
+    if (forced) return card.id === forced;
+    if (isColoredCard(card) && card.wild && trickColor !== "BLACK") return true;
     // Can always play a special card
     if (isSpecialCard(card)) return true;
     // Can play anything if no trick color is set
@@ -392,7 +435,7 @@ export class Game {
     // Can always play a card that matches the trick color
     if (card.color === trickColor) return true;
     // Can play anything if you don't have a card of the trick color
-    if (hand.every((card) => isSpecialCard(card) || card.color !== trickColor))
+    if (hand.every((card) => isSpecialCard(card) || (card.color !== trickColor && !(card.wild && trickColor !== "BLACK"))))
       return true;
     return false;
   }
@@ -403,8 +446,9 @@ export class Game {
   }
 
   private playerTurn(): string | null {
-    if (this.currentRound?.phase !== "play") return null;
-    const playerIndex = this.playerOrder()[this.currentRound.cardsPlayed.length];
+    if (this.currentRound?.phase !== "play" || this.currentRound.plankChoice) return null;
+    const order = expansionTurnOrder(this.currentRound, this.playerOrder(), this.players.map((player) => player.id));
+    const playerIndex = order[this.currentRound.cardsPlayed.length];
     return this.players[playerIndex]?.name ?? null;
   }
 
@@ -507,6 +551,7 @@ export class Game {
       cannonLoads: undefined,
       revealedBids: this.currentRound.phase === "bid" ? [] : [...this.currentRound.bids].map(([playerId, count]) => ({ playerId, count })),
       revealedCannonLoads: this.currentRound.phase === "bid" || this.currentRound.phase === "load" ? [] : [...(this.currentRound.cannonLoads ?? [])].map(([playerId, load]) => ({ playerId, load })),
+      myForcedCardId: this.currentRound.forcedCards?.get(this.playerTokens.get(playerToken ?? "") ?? "") ?? null,
       leader: this.players[this.currentRound.leader]?.name ?? null,
       playerTurn: this.playerTurn(),
       pirateAbility: pirateAbilityForPlayer(this.currentRound, playerToken ? this.playerTokens.get(playerToken) : undefined, this.deck),
@@ -532,6 +577,12 @@ export class Game {
         includeKraken: this.options.deckConfig?.includeKraken ?? false,
         includeWhiteWhale: this.options.deckConfig?.includeWhiteWhale ?? false,
         includeLoot: this.players.some((player) => player.isAutomated) ? false : this.options.deckConfig?.includeLoot ?? false,
+        includeExpansion: this.options.deckConfig?.includeExpansion ?? false,
+        includeFirstMate: this.options.deckConfig?.includeFirstMate ?? false,
+        includeStingray: this.options.deckConfig?.includeStingray ?? false,
+        includeDavyJones: this.options.deckConfig?.includeDavyJones ?? false,
+        includeWalkThePlank: this.players.some(player => player.isAutomated) ? false : this.options.deckConfig?.includeWalkThePlank ?? false,
+        includeLastVolley: this.options.deckConfig?.includeLastVolley ?? false,
       },
       scoringMode: this.options.scoringMode ?? "classic",
       roundSchedule: [...this.options.roundSchedule!],
