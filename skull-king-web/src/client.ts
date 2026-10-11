@@ -13,7 +13,8 @@ export const client = new ApolloClient({
   cache: new InMemoryCache({
     typePolicies: {
       PlayedCard: {
-        keyFields: ["card", ["id"]],
+        // Played cards are trick snapshots; summary queries omit their card details.
+        keyFields: false,
       },
       Player: {
         fields: {
