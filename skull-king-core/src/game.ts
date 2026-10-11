@@ -41,7 +41,7 @@ export class Game {
   private options: GameOptions;
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
-  private currentRound: Round;
+  private currentRound: Round | null;
   private endGameListeners: (() => void)[] = [];
 
   constructor(id: string, options?: GameOptions) {
@@ -53,18 +53,7 @@ export class Game {
     this.deck = options?.deck ?? new Deck({ deckConfig: options?.deckConfig });
     this.mode = options?.mode ?? "standard";
     this.phase = "setup";
-    this.currentRound = {
-      roundNumber: 0,
-      phase: "bid",
-      bids: new Map(),
-      cardsPlayed: [],
-      dealer: 0,
-      leader: 1,
-      trickColor: null,
-      tricksWon: new Map(),
-      hands: [],
-      lastCompletedHand: null,
-    };
+    this.currentRound = null;
   }
 
   public onGameEnd(listener: () => void) {
@@ -249,7 +238,13 @@ export class Game {
   }
 
   // Advance from trick_result phase to continue the game
-  public advanceFromTrickResult() {
+  public advanceFromTrickResult(expectedHandId?: string) {
+    if (expectedHandId !== undefined && (
+      this.currentRound?.phase !== "trick_result" ||
+      this.currentRound.lastCompletedHand?.id !== expectedHandId
+    )) {
+      return false;
+    }
     assert(
       this.currentRound,
       "Programming error: `currentRound` is unexpectedly `null`"
@@ -275,6 +270,7 @@ export class Game {
       // Continue to next trick
       this.currentRound.phase = "play";
     }
+    return true;
   }
 
   private determineWinningCard(): { winner: PlayedCard; trickDiscarded: boolean } {
@@ -464,38 +460,19 @@ export class Game {
     return player === playerId;
   }
 
-  private playerTurn() {
-    // Player order for the round
-    const order = this.playerOrder();
-    assert(
-      this.currentRound,
-      "Programming error: `currentRound` is unexpectedly `null`"
-    );
-    // We can use cards played so far to determine whose turn it is
-    const { cardsPlayed } = this.currentRound;
-    // Number of cards played correlates to the index of the player whose turn it is from the order array
-    const playerTurnIndex = cardsPlayed.length;
-    // Get the index of the player which correlates to the actual players array in the game
-    const playerTurnIdx = order[playerTurnIndex];
-    // Get player from the players array using the lookup
-    const player = Array.from(this.playerNames)[playerTurnIdx];
-
-    return player;
+  private playerTurn(): string | null {
+    if (this.currentRound?.phase !== "play") return null;
+    const playerIndex = this.playerOrder()[this.currentRound.cardsPlayed.length];
+    return this.players[playerIndex]?.name ?? null;
   }
 
   private nextRound() {
-    assert(
-      this.currentRound,
-      "Programming error: `currentRound` is unexpectedly `null`"
-    );
-    if (this.currentRound.roundNumber === 10) {
-      // TODO: implement endGame
+    if (this.currentRound?.roundNumber === 10) {
       this.endGame();
       return;
     }
 
-    const previousRound = { ...this.currentRound };
-    const newRoundNumber = previousRound.roundNumber + 1;
+    const newRoundNumber = (this.currentRound?.roundNumber ?? 0) + 1;
     // -1 is for round number offset (dealer starts at 0, round starts at 1)
     const newDealer = (newRoundNumber - 1) % this.players.length;
     const newLeader = (newDealer + 1) % this.players.length;
@@ -563,7 +540,7 @@ export class Game {
   private endGame() {
     this.phase = "postgame";
     // Clear currentRound in postgame - game is over
-    (this as any).currentRound = null;
+    this.currentRound = null;
     this.endGameListeners.forEach((listener) => listener());
   }
 
@@ -595,17 +572,13 @@ export class Game {
       })),
       me: undefined as Player | undefined,
     };
-    if (playerToken && this.currentRound) {
+    if (playerToken) {
       const playerName = this.playerTokens.get(playerToken);
-      const me = this.players.find((player) => player.name === playerName)!;
+      const me = this.players.find((player) => player.name === playerName);
       gameState.me = me;
-      if (currentRoundData) {
+      if (me && currentRoundData && this.currentRound) {
         currentRoundData.myBid = this.currentRound.bids.get(me.name);
       }
-    } else if (playerToken) {
-      const playerName = this.playerTokens.get(playerToken);
-      const me = this.players.find((player) => player.name === playerName)!;
-      gameState.me = me;
     }
 
     return gameState;

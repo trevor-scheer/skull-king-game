@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../../hooks/useGameId";
 import {
@@ -13,46 +13,74 @@ const TRANSITION_DELAY_MS = 2500;
 export const TrickResult: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
-  const advanceCalledRef = useRef(false);
+  const retryAdvanceRef = useRef<(() => void) | null>(null);
+  const [advanceFailed, setAdvanceFailed] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
 
-  const { data, loading } = useTrickResultDataQuery({
+  const { data, loading, error, refetch } = useTrickResultDataQuery({
     variables: { gameId: gameId!, playerToken: playerToken! },
     pollInterval: 1000,
+    skip: !gameId || !playerToken,
   });
 
   const [advanceTrick] = useAdvanceTrickMutation();
 
   const lastCompletedHand = data?.state?.currentRound?.lastCompletedHand;
+  const handId = lastCompletedHand?.id;
   const phase = data?.state?.currentRound?.phase;
   const cardsPlayed = lastCompletedHand?.cardsPlayed ?? [];
   const winningCard = lastCompletedHand?.winningCard;
 
-  // Auto-advance after delay
   useEffect(() => {
-    if (phase !== "trick_result" || !lastCompletedHand || advanceCalledRef.current) {
+    setAdvanceFailed(false);
+    setAdvancing(false);
+    if (phase !== "trick_result" || !handId || !gameId) {
       return;
     }
 
-    const timer = setTimeout(async () => {
-      if (advanceCalledRef.current) return;
-      advanceCalledRef.current = true;
+    let active = true;
+    let pending = false;
+    const advance = async () => {
+      if (!active || pending) return;
+      pending = true;
+      setAdvancing(true);
+      setAdvanceFailed(false);
       try {
-        await advanceTrick({ variables: { gameId: gameId! } });
-      } catch (error) {
-        // Another player may have already advanced, which is fine
-        console.log("Trick already advanced");
+        await advanceTrick({ variables: { gameId, expectedHandId: handId } });
+        // Both a successful advance and an already-advanced result need fresh state.
+        if (active) await refetch();
+      } catch {
+        if (active) setAdvanceFailed(true);
+      } finally {
+        pending = false;
+        if (active) setAdvancing(false);
       }
-    }, TRANSITION_DELAY_MS);
+    };
 
-    return () => clearTimeout(timer);
-  }, [phase, lastCompletedHand, gameId, advanceTrick]);
+    retryAdvanceRef.current = () => void advance();
+    const timer = setTimeout(() => void advance(), TRANSITION_DELAY_MS);
 
-  // Reset the ref when phase changes away from trick_result
-  useEffect(() => {
-    if (phase !== "trick_result") {
-      advanceCalledRef.current = false;
-    }
-  }, [phase]);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      retryAdvanceRef.current = null;
+    };
+  }, [phase, handId, gameId, advanceTrick, refetch]);
+
+  if (error && !lastCompletedHand) {
+    return (
+      <div className="TrickResult TrickResult--loading">
+        <p role="alert">Couldn’t load the trick result.</p>
+        <button
+          className="TrickResult-retry"
+          onClick={() => void refetch().catch(() => undefined)}
+          disabled={loading}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (loading || !lastCompletedHand) {
     return (
@@ -92,9 +120,22 @@ export const TrickResult: React.FunctionComponent = function () {
           );
         })}
       </ol>
-      <div className="TrickResult-countdown">
-        Next trick starting soon...
-      </div>
+      {advanceFailed ? (
+        <div className="TrickResult-recovery">
+          <p role="alert">Couldn’t continue the game. Please try again.</p>
+          <button
+            className="TrickResult-retry"
+            onClick={() => retryAdvanceRef.current?.()}
+            disabled={advancing}
+          >
+            Retry
+          </button>
+        </div>
+      ) : (
+        <div className="TrickResult-countdown" role="status">
+          {advancing ? "Continuing the game..." : "Next trick starting soon..."}
+        </div>
+      )}
     </div>
   );
 };

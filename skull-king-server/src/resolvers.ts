@@ -57,11 +57,10 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       game.playCard({ playerToken, cardId, selection });
       return true;
     },
-    advanceTrick(_, { gameId }, { games }) {
+    advanceTrick(_, { gameId, expectedHandId }, { games }) {
       const game = games.get(gameId);
       assertGame(game, gameId);
-      game.advanceFromTrickResult();
-      return true;
+      return game.advanceFromTrickResult(expectedHandId);
     },
   },
   Card: {

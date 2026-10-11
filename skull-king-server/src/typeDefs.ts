@@ -35,7 +35,7 @@ const typeDefs = `#graphql
       cardId: String!
       selection: String
     ): Boolean!
-    advanceTrick(gameId: String!): Boolean!
+    advanceTrick(gameId: String!, expectedHandId: String!): Boolean!
   }
 
   type Subscription {
@@ -48,7 +48,7 @@ const typeDefs = `#graphql
     phase: String!
     me: Player
     players: [Player!]!
-    currentRound: Round!
+    currentRound: Round
     # deck: Deck!
     scorecard: [[ScoreBlock!]!]
     deckConfig: DeckConfig!
@@ -79,7 +79,7 @@ const typeDefs = `#graphql
     roundNumber: Int!
     phase: String!
     leader: String!
-    playerTurn: String!
+    playerTurn: String
     myBid: Int
     trickColor: Color
     cardsPlayed: [PlayedCard!]!

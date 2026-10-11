@@ -18,7 +18,7 @@ export const PreviousHand: React.FunctionComponent = function () {
   if (loading) return null;
   // console.log(data?.state?.currentRound.hands[0]?.winningCard);
 
-  const card = data?.state?.currentRound.hands[0]?.winningCard?.card;
+  const card = data?.state?.currentRound?.hands[0]?.winningCard?.card;
   if (card?.__typename === "ColoredCard") {
     console.log(card);
   } else if (card?.__typename === "SpecialCard") {

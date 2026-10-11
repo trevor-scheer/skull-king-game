@@ -138,6 +138,32 @@
     font-size: $font-size-sm;
     color: $color-text-muted;
   }
+
+  &-recovery {
+    margin-top: var(--space-md);
+    color: $color-text-light;
+    text-align: center;
+  }
+
+  &-retry {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid $color-gold-medium;
+    border-radius: var(--radius-sm);
+    background: $color-wood-dark;
+    color: $color-gold-light;
+    font: inherit;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid $color-gold-light;
+      outline-offset: 3px;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+  }
 }
 
 @keyframes trick-result-appear {

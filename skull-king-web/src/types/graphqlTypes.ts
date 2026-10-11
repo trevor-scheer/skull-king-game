@@ -50,7 +50,7 @@ export type DeckConfigInput = {
 
 export type GameState = {
   __typename?: 'GameState';
-  currentRound: Round;
+  currentRound?: Maybe<Round>;
   deckConfig: DeckConfig;
   id: Scalars['String']['output'];
   me?: Maybe<Player>;
@@ -87,6 +87,7 @@ export type MutationAddPlayerArgs = {
 
 
 export type MutationAdvanceTrickArgs = {
+  expectedHandId: Scalars['String']['input'];
   gameId: Scalars['String']['input'];
 };
 
@@ -163,7 +164,7 @@ export type Round = {
   leader: Scalars['String']['output'];
   myBid?: Maybe<Scalars['Int']['output']>;
   phase: Scalars['String']['output'];
-  playerTurn: Scalars['String']['output'];
+  playerTurn?: Maybe<Scalars['String']['output']>;
   roundNumber: Scalars['Int']['output'];
   trickColor?: Maybe<Color>;
 };
@@ -210,7 +211,7 @@ export type RoundNumberQueryVariables = Exact<{
 }>;
 
 
-export type RoundNumberQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, roundNumber: number } } | null };
+export type RoundNumberQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound?: { __typename?: 'Round', id: number, roundNumber: number } | null } | null };
 
 export type SubmitBidMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -227,7 +228,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn: string, myBid?: number | null, roundNumber: number, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } } | null };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
 
 export type MyHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -235,7 +236,7 @@ export type MyHandQueryVariables = Exact<{
 }>;
 
 
-export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound: { __typename?: 'Round', id: number, phase: string, playerTurn: string, trickColor?: Color | null, myBid?: number | null } } | null };
+export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, playerTurn?: string | null, trickColor?: Color | null, myBid?: number | null } | null } | null };
 
 export type PlayColoredCardMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -262,7 +263,7 @@ export type CardsPlayedQueryVariables = Exact<{
 }>;
 
 
-export type CardsPlayedQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }> } } | null };
+export type CardsPlayedQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }> } | null } | null };
 
 export type PreviousHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -270,7 +271,7 @@ export type PreviousHandQueryVariables = Exact<{
 }>;
 
 
-export type PreviousHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, hands: Array<{ __typename?: 'Hand', id: string, trickColor?: Color | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null }> } } | null };
+export type PreviousHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound?: { __typename?: 'Round', id: number, hands: Array<{ __typename?: 'Hand', id: string, trickColor?: Color | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null }> } | null } | null };
 
 type CardFragment_ColoredCard_Fragment = { __typename: 'ColoredCard', id: string, color: string, number: number };
 
@@ -288,6 +289,7 @@ export type ScorecardQuery = { __typename?: 'Query', state?: { __typename?: 'Gam
 
 export type AdvanceTrickMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
+  expectedHandId: Scalars['String']['input'];
 }>;
 
 
@@ -299,7 +301,7 @@ export type TrickResultDataQueryVariables = Exact<{
 }>;
 
 
-export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound: { __typename?: 'Round', id: number, phase: string, lastCompletedHand?: { __typename?: 'Hand', id: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } } | null };
+export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, leader: string, playerTurn?: string | null, myBid?: number | null, trickColor?: Color | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } | null } | null };
 
 export type AddPlayerMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -871,8 +873,8 @@ export type ScorecardLazyQueryHookResult = ReturnType<typeof useScorecardLazyQue
 export type ScorecardSuspenseQueryHookResult = ReturnType<typeof useScorecardSuspenseQuery>;
 export type ScorecardQueryResult = Apollo.QueryResult<ScorecardQuery, ScorecardQueryVariables>;
 export const AdvanceTrickDocument = gql`
-    mutation AdvanceTrick($gameId: String!) {
-  advanceTrick(gameId: $gameId)
+    mutation AdvanceTrick($gameId: String!, $expectedHandId: String!) {
+  advanceTrick(gameId: $gameId, expectedHandId: $expectedHandId)
 }
     `;
 export type AdvanceTrickMutationFn = Apollo.MutationFunction<AdvanceTrickMutation, AdvanceTrickMutationVariables>;
@@ -891,6 +893,7 @@ export type AdvanceTrickMutationFn = Apollo.MutationFunction<AdvanceTrickMutatio
  * const [advanceTrickMutation, { data, loading, error }] = useAdvanceTrickMutation({
  *   variables: {
  *      gameId: // value for 'gameId'
+ *      expectedHandId: // value for 'expectedHandId'
  *   },
  * });
  */
@@ -905,9 +908,19 @@ export const TrickResultDataDocument = gql`
     query TrickResultData($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    phase
     currentRound {
       id
       phase
+      roundNumber
+      leader
+      playerTurn
+      myBid
+      trickColor
+      cardsPlayed {
+        id
+        playerId
+      }
       lastCompletedHand {
         id
         cardsPlayed {
