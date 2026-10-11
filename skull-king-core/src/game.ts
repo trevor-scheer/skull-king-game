@@ -61,6 +61,8 @@ export class Game {
   }
 
   public addPlayer(name: string) {
+    assert(this.phase === "setup", "Can't join a game after it has started");
+    assert(name.trim().length > 0, "Player name can't be blank");
     if (this.players.length === 6) {
       throw new Error("Can't have more than 6 players");
     } else if (this.playerNames.has(name)) {
@@ -110,6 +112,10 @@ export class Game {
       "Can't place bids outside of bid phase"
     );
     assert(
+      Number.isInteger(count) && count >= 0,
+      "Bid must be a nonnegative integer"
+    );
+    assert(
       count <= this.currentRound.roundNumber,
       "Can't bid more than there are cards in the current hand"
     );
@@ -150,15 +156,7 @@ export class Game {
     const player = this.players.find((p) => p.name === playerId);
     assert(player, "Programming error, player not found");
 
-    const cardInHandIndex = player.hand.findIndex((c) => {
-      if (isColoredCard(c) && isColoredCard(card)) {
-        return c.color === card.color && c.number === card.number;
-      } else if (isSpecialCard(c) && isSpecialCard(card)) {
-        return c.type === card.type;
-      } else {
-        return false;
-      }
-    });
+    const cardInHandIndex = player.hand.findIndex((c) => c.id === cardId);
     assert(cardInHandIndex > -1, "Card not found in player's hand");
     assert(this.canPlayCard([...player.hand], cardInHandIndex), "Illegal move");
 
@@ -167,7 +165,13 @@ export class Game {
         selection,
         "Can't play tigress card without providing a selection"
       );
+      assert(
+        selection === "pirate" || selection === "escape",
+        "Tigress selection must be pirate or escape"
+      );
       card.selection = selection;
+    } else {
+      assert(selection == null, "Only Tigress can have a selection");
     }
     // Remove card from player hand
     player.hand.splice(cardInHandIndex, 1);
