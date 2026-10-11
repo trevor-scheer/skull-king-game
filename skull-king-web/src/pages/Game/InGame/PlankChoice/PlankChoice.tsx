@@ -14,7 +14,7 @@ export function PlankChoice() {
   const { data, refetch } = usePlankChoiceStateQuery({
     variables: { gameId, playerToken },
     skip: !gameId || !playerToken,
-    pollInterval: 1000,
+    pollInterval: 10000,
   });
   const [choose, { loading }] = useChoosePlankTargetMutation();
   const [error, setError] = useState<string | null>(null);

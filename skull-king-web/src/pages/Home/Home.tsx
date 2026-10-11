@@ -60,7 +60,7 @@ export function Home() {
     includeLoot: false,
   });
 
-  const { data, loading, error } = useGamesQuery({ pollInterval: 2000 });
+  const { data, loading, error } = useGamesQuery({ pollInterval: 10000 });
 
   if (error) console.error(error);
 

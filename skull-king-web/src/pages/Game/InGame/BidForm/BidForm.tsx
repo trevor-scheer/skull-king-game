@@ -20,7 +20,7 @@ export const BidForm: React.FunctionComponent = function () {
 
   const { data, loading } = useRoundNumberQuery({
     variables: { gameId, playerToken: playerToken! },
-    pollInterval: 2000,
+    pollInterval: 10000,
   });
 
   async function handleSubmit(event: React.MouseEvent<HTMLButtonElement>) {

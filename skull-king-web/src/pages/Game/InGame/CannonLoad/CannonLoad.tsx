@@ -5,7 +5,7 @@ import { CannonLoad as Load, useCannonChoiceQuery, useLoadCannonMutation } from 
 export function CannonLoad() {
   const gameId = useGameId()!;
   const [playerToken] = usePlayerToken();
-  const { data, refetch } = useCannonChoiceQuery({variables:{gameId,playerToken:playerToken!},pollInterval:2000});
+  const { data, refetch } = useCannonChoiceQuery({variables:{gameId,playerToken:playerToken!},pollInterval: 10000});
   const [choose, {loading}] = useLoadCannonMutation();
   const [error,setError] = useState<string | null>(null);
   const round = data?.state?.currentRound;

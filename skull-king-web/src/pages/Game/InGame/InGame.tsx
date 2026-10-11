@@ -20,7 +20,7 @@ export const InGame: React.FunctionComponent = function () {
   // TODO: error handling
   const { data, loading } = useGameStateQuery({
     variables: { gameId: gameId!, playerToken: playerToken! },
-    pollInterval: 2000,
+    pollInterval: 10000,
   });
 
   if (loading) return <div className="InGame-loading">Loading...</div>;

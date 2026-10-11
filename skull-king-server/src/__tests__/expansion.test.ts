@@ -83,7 +83,8 @@ test.each([3, 6])(
   "finishes ten rounds with all expansion cards, %i players and API choices",
   async (count) => {
     const game = new Game("expansion", {
-      deck: new Deck({ deckConfig, shuffleSeed: 0.999 }),
+      deck: new Deck({ customDeck: buildDeck(deckConfig).reverse(), noShuffle: true }),
+      tieBreakers: false,
       pirateAbilities: true,
     });
     const tokens = new Map(

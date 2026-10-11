@@ -11,7 +11,7 @@ export const PreviousHand: React.FunctionComponent = function () {
       gameId,
       playerToken: playerToken!,
     },
-    pollInterval: 2000,
+    pollInterval: 10000,
 
   });
 

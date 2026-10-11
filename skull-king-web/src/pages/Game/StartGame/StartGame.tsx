@@ -14,7 +14,7 @@ export const StartGame: React.FunctionComponent = function () {
 
   const { loading, data } = usePlayersQuery({
     variables: { gameId: gameId! },
-    pollInterval: 2000,
+    pollInterval: 10000,
   });
   const [startGame, { loading: starting }] = useStartGameMutation({
     variables: { gameId: gameId!, playerToken: playerToken! },

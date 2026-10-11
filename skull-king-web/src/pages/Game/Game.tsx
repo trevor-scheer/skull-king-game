@@ -1,3 +1,4 @@
+import { RoomControls } from "./Practice/PracticeControls";
 import { AccountResume } from "../Account/AccountResume";
 import { SeatRecovery } from "./SeatRecovery/SeatRecovery";
 import { useRoomConnection } from "../../hooks/useRoomConnection";
@@ -17,7 +18,7 @@ export function Game() {
   const connected = useRoomConnection(gameId);
   const { data, loading, error, refetch } = useGamePhaseQuery({
     variables: { gameId },
-    pollInterval: 2000,
+    pollInterval: 10000,
   });
 
   if (error && !data) return <p role="alert">Connection interrupted. Your seat is saved. <button onClick={() => void refetch().catch(() => undefined)}>Reconnect</button></p>;
@@ -31,6 +32,7 @@ export function Game() {
   return <>
     <AccountResume gameId={gameId} phase={data.state.phase} />
     <SeatRecovery gameId={gameId} />
+    {data.state.phase === "play" && playerToken && <RoomControls />}
     {!connected && <p role="status">Reconnecting live updates… Your seat is saved; checking for changes.</p>}
     {data.state.phase === "setup" ? <Lobby /> : data.state.phase === "postgame" ? <PostGame /> : playerToken ? <InGame /> : <Spectator />}
   </>;

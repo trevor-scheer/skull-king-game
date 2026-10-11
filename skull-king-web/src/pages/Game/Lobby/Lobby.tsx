@@ -15,7 +15,7 @@ export const Lobby: React.FunctionComponent = function () {
 
   const { data, loading, error } = useLobbyQueryQuery({
     variables,
-    pollInterval: 2000,
+    pollInterval: 10000,
   });
 
   function onJoin(playerToken: string | null) {

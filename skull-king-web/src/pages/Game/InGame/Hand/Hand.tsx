@@ -22,7 +22,7 @@ export const Hand: React.FunctionComponent = function () {
   const [actionError, setActionError] = useState<string | null>(null);
   const { data, loading, error, refetch } = useMyHandQuery({
     variables: { gameId, playerToken: playerToken! },
-    pollInterval: 2000,
+    pollInterval: 10000,
     skip: !gameId || !playerToken,
   });
 

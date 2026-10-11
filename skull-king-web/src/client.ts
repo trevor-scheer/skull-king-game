@@ -1,11 +1,22 @@
-import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
+
+import { BatchHttpLink } from "@apollo/client/link/batch-http";
+import { getMainDefinition } from "@apollo/client/utilities";
 
 declare const __API_URL__: string | undefined;
 export const API_URL = typeof __API_URL__ === "string" && __API_URL__ ? __API_URL__ : "/graphql";
-const devLink = new HttpLink({ uri: API_URL, credentials: "include" });
+const options = { uri: API_URL, credentials: "include" };
+const link = ApolloLink.split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return definition.kind === "OperationDefinition" && definition.operation === "query";
+  },
+  new BatchHttpLink({ ...options, batchMax: 10, batchInterval: 20 }),
+  new HttpLink(options),
+);
 
 export const client = new ApolloClient({
-  link: devLink,
+  link,
   cache: new InMemoryCache({
     typePolicies: {
       PlayedCard: {

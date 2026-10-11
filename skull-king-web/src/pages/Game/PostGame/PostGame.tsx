@@ -10,7 +10,7 @@ export function PostGame() {
   const [playerToken,setToken] = usePlayerToken();
   const navigate = useNavigate();
   const [error,setError] = useState<string | null>(null);
-  const {data} = useFinalResultQuery({variables:{gameId,playerToken},pollInterval:2000});
+  const {data} = useFinalResultQuery({variables:{gameId,playerToken},pollInterval: 10000});
   const [rematch,{loading}] = useRematchMutation();
   const rounds = data?.state?.scorecard ?? [];
   const final = rounds[rounds.length - 1] ?? [];

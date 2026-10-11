@@ -32,7 +32,7 @@ export const Scorecard: React.FunctionComponent = function () {
   // TODO: error handling
   const { data, loading } = useScorecardQuery({
     variables: { gameId, playerToken: playerToken! },
-    pollInterval: 2000,
+    pollInterval: 10000,
 
   });
 

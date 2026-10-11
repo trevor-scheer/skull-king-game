@@ -19,7 +19,7 @@ export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = functi
 
   const { data, loading, error, refetch } = useTrickResultDataQuery({
     variables: { gameId: gameId!, playerToken: playerToken! },
-    pollInterval: 1000,
+    pollInterval: 10000,
     skip: !gameId || !playerToken,
   });
 

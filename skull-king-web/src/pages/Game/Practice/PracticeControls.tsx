@@ -15,7 +15,7 @@ type Player = { id:string; name:string; isBot:boolean; isAutomated:boolean; isAu
 type State = { phase:string; practice:boolean; maxPlayers:number; me:{id:string;isAutoplay:boolean}|null; players:Player[] };
 function Controls({ lobby }: { lobby:boolean }) {
   const gameId = useGameId() ?? ''; const [playerToken, setToken] = usePlayerToken(); const client = useApolloClient(); const navigate = useNavigate();
-  const { data, refetch } = useQuery<{state:State|null}>(PRACTICE_STATE, { variables:{gameId,playerToken}, pollInterval:3000 });
+  const { data, refetch } = useQuery<{state:State|null}>(PRACTICE_STATE, { variables:{gameId,playerToken}, pollInterval: 10000 });
   const [busy,setBusy] = useState(false); const [message,setMessage] = useState('');
   const state=data?.state; const me=state?.me;
   if (!state || !me || (lobby ? state.phase!=='setup' : state.phase!=='play')) return null;

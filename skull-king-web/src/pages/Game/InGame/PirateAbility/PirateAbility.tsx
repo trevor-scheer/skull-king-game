@@ -42,7 +42,7 @@ export function PirateAbility() {
   const { data, error, refetch } = usePirateAbilityStateQuery({
     variables: { gameId: gameId ?? "", playerToken: playerToken ?? "" },
     skip: !gameId || !playerToken,
-    pollInterval: 1000,
+    pollInterval: 10000,
   });
   const state = data?.state;
   const ability = state?.currentRound?.pirateAbility;
