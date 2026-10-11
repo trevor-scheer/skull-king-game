@@ -1,3 +1,4 @@
+import { AccountResume } from "../Account/AccountResume";
 import { SeatRecovery } from "./SeatRecovery/SeatRecovery";
 import { useRoomConnection } from "../../hooks/useRoomConnection";
 import { Link } from "react-router-dom";
@@ -28,6 +29,7 @@ export function Game() {
   }
 
   return <>
+    <AccountResume gameId={gameId} phase={data.state.phase} />
     <SeatRecovery gameId={gameId} />
     {!connected && <p role="status">Reconnecting live updates… Your seat is saved; checking for changes.</p>}
     {data.state.phase === "setup" ? <Lobby /> : data.state.phase === "postgame" ? <PostGame /> : playerToken ? <InGame /> : <Spectator />}

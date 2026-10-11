@@ -132,7 +132,7 @@ export class Accounts {
   linkedGames(account: Account, games: Map<string, Game>) {
     return this.db.prepare('SELECT game_id,player_id FROM seats WHERE user_id=?').all(account.id).flatMap((seat) => {
       const gameId = String(seat.game_id); const state = games.get(gameId)?.getStateForPlayer();
-      return state && state.phase !== 'postgame' ? [{ gameId, playerName: String(seat.player_id), phase: state.phase }] : [];
+      return state ? [{ gameId, playerName: String(seat.player_id), phase: state.phase }] : [];
     });
   }
   recordCompleted(gameId: string, game: Game) {
@@ -148,9 +148,13 @@ export class Accounts {
         const owner = this.db.prepare('SELECT user_id FROM seats WHERE game_id=? AND player_id=?').get(gameId, result.playerName);
         this.db.prepare('INSERT INTO results VALUES(?,?,?,?,?)').run(gameId, result.playerName, owner?.user_id ?? null, result.totalPoints, Number(result.totalPoints === highest));
       }
-      // Finished room credentials are no longer needed for cross-device play.
-      this.db.prepare('DELETE FROM seats WHERE game_id=?').run(gameId);
+
     });
+  }
+  pruneSeats(games: Map<string, Game>) {
+    for (const row of this.db.prepare('SELECT DISTINCT game_id FROM seats').all()) {
+      if (!games.has(String(row.game_id))) this.db.prepare('DELETE FROM seats WHERE game_id=?').run(row.game_id);
+    }
   }
   history(account: Account, all = false) {
     return this.db.prepare(`SELECT matches.id AS gameId,finished,scoring,schedule,eligible,points,won FROM results JOIN matches ON matches.id=results.game_id WHERE user_id=? ORDER BY finished DESC ${all ? "" : "LIMIT 200"}`).all(account.id);

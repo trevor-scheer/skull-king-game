@@ -27,6 +27,8 @@ it('records a server-timed final trick once and backfills durable finished rooms
     rooms.tick(); now += 5001; rooms.tick();
     expect(game.getStateForPlayer().phase).toBe('postgame');
     expect(accounts.history(account)).toHaveLength(1);
+    expect(accounts.resumeSeat(account, 'match', game)).toBe(alice);
+    expect(accounts.linkedGames(account, rooms.games)).toEqual([expect.objectContaining({gameId:'match', phase:'postgame'})]);
     expect(accounts.leaderboard()[0]).toMatchObject({ username: 'alice', wins: 1, games: 1 });
     rooms.save('match'); expect(accounts.history(account)).toHaveLength(1);
     stop(); accounts.close();

@@ -6,6 +6,9 @@ import type { Rooms } from './rooms';
 export function observeAccountHistory(accounts: Accounts, rooms: Rooms) {
   const record = (id: string, game: Game) => accounts.recordCompleted(id, game);
   rooms.saved.on('saved', record);
+  const prune = () => accounts.pruneSeats(rooms.games);
+  rooms.saved.on('expired', prune);
+  prune();
   for (const [id, game] of rooms.games) record(id, game);
-  return () => rooms.saved.off('saved', record);
+  return () => { rooms.saved.off('saved', record); rooms.saved.off('expired', prune); };
 }

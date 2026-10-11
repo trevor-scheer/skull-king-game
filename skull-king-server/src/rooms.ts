@@ -59,6 +59,7 @@ export class Rooms {
         this.results.delete(id);
         try { unlinkSync(join(this.directory, `${id}.room`)); } catch { /* Already removed. */ }
         this.updates.emit(id);
+        this.saved.emit("expired", id);
       }
     }
   }
