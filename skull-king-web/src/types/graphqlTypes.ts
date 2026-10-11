@@ -55,8 +55,10 @@ export type GameState = {
   id: Scalars['String']['output'];
   me?: Maybe<Player>;
   phase: Scalars['String']['output'];
+  pirateAbilities: Scalars['Boolean']['output'];
   players: Array<Player>;
   scorecard?: Maybe<Array<Array<ScoreBlock>>>;
+  scoringMode: ScoringMode;
 };
 
 export type Hand = {
@@ -77,6 +79,7 @@ export type Mutation = {
   playSpecialCard: Scalars['Boolean']['output'];
   startGame: Scalars['Boolean']['output'];
   submitBid: Scalars['Boolean']['output'];
+  usePirateAbility: Scalars['Boolean']['output'];
 };
 
 
@@ -94,6 +97,8 @@ export type MutationAdvanceTrickArgs = {
 
 export type MutationNewGameArgs = {
   deckConfig?: InputMaybe<DeckConfigInput>;
+  pirateAbilities?: InputMaybe<Scalars['Boolean']['input']>;
+  scoringMode?: InputMaybe<ScoringMode>;
 };
 
 
@@ -121,6 +126,43 @@ export type MutationSubmitBidArgs = {
   count: Scalars['Int']['input'];
   gameId: Scalars['String']['input'];
   playerToken: Scalars['String']['input'];
+};
+
+
+export type MutationUsePirateAbilityArgs = {
+  expectedAbilityId: Scalars['String']['input'];
+  gameId: Scalars['String']['input'];
+  input: PirateAbilityInput;
+  playerToken: Scalars['String']['input'];
+};
+
+export type PirateAbility = {
+  __typename?: 'PirateAbility';
+  id: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  pirateId: Scalars['String']['output'];
+  playerId: Scalars['String']['output'];
+  privateCards: Array<Card>;
+  stage: Scalars['String']['output'];
+};
+
+export enum PirateAbilityAction {
+  AdjustBid = 'adjustBid',
+  ChooseLeader = 'chooseLeader',
+  Decline = 'decline',
+  Discard = 'discard',
+  Draw = 'draw',
+  Finish = 'finish',
+  Reveal = 'reveal',
+  Wager = 'wager'
+}
+
+export type PirateAbilityInput = {
+  action: PirateAbilityAction;
+  amount?: InputMaybe<Scalars['Int']['input']>;
+  cardIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  playerId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type PlayedCard = {
@@ -164,6 +206,7 @@ export type Round = {
   leader: Scalars['String']['output'];
   myBid?: Maybe<Scalars['Int']['output']>;
   phase: Scalars['String']['output'];
+  pirateAbility?: Maybe<PirateAbility>;
   playerTurn?: Maybe<Scalars['String']['output']>;
   roundNumber: Scalars['Int']['output'];
   trickColor?: Maybe<Color>;
@@ -178,6 +221,11 @@ export type ScoreBlock = {
   tricksBid: Scalars['Int']['output'];
   tricksWon: Scalars['Int']['output'];
 };
+
+export enum ScoringMode {
+  Classic = 'classic',
+  Rascal = 'rascal'
+}
 
 export type SpecialCard = {
   __typename?: 'SpecialCard';
@@ -228,7 +276,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
 
 export type MyHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -256,6 +304,24 @@ export type PlaySpecialCardMutationVariables = Exact<{
 
 
 export type PlaySpecialCardMutation = { __typename?: 'Mutation', playSpecialCard: boolean };
+
+export type PirateAbilityStateQueryVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+}>;
+
+
+export type PirateAbilityStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, hand: Array<{ __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, myBid?: number | null, leader: string, playerTurn?: string | null, pirateAbility?: { __typename?: 'PirateAbility', id: string, pirateId: string, name: string, kind: string, playerId: string, stage: string, privateCards: Array<{ __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null }> } | null } | null } | null };
+
+export type ResolvePirateAbilityMutationVariables = Exact<{
+  gameId: Scalars['String']['input'];
+  playerToken: Scalars['String']['input'];
+  expectedAbilityId: Scalars['String']['input'];
+  input: PirateAbilityInput;
+}>;
+
+
+export type ResolvePirateAbilityMutation = { __typename?: 'Mutation', usePirateAbility: boolean };
 
 export type CardsPlayedQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -301,7 +367,7 @@ export type TrickResultDataQueryVariables = Exact<{
 }>;
 
 
-export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, leader: string, playerTurn?: string | null, myBid?: number | null, trickColor?: Color | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } | null } | null };
+export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, leader: string, playerTurn?: string | null, myBid?: number | null, trickColor?: Color | null, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } | null } | null };
 
 export type AddPlayerMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -317,7 +383,7 @@ export type LobbyQueryQueryVariables = Exact<{
 }>;
 
 
-export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
+export type LobbyQueryQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, scoringMode: ScoringMode, pirateAbilities: boolean, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string }> } | null };
 
 export type PlayersQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -340,6 +406,8 @@ export type GamesQuery = { __typename?: 'Query', games: Array<string> };
 
 export type NewGameMutationVariables = Exact<{
   deckConfig?: InputMaybe<DeckConfigInput>;
+  pirateAbilities?: InputMaybe<Scalars['Boolean']['input']>;
+  scoringMode?: InputMaybe<ScoringMode>;
 }>;
 
 
@@ -500,6 +568,9 @@ export const GameStateDocument = gql`
     currentRound {
       id
       phase
+      pirateAbility {
+        id
+      }
       leader
       playerTurn
       myBid
@@ -687,6 +758,139 @@ export function usePlaySpecialCardMutation(baseOptions?: Apollo.MutationHookOpti
 export type PlaySpecialCardMutationHookResult = ReturnType<typeof usePlaySpecialCardMutation>;
 export type PlaySpecialCardMutationResult = Apollo.MutationResult<PlaySpecialCardMutation>;
 export type PlaySpecialCardMutationOptions = Apollo.BaseMutationOptions<PlaySpecialCardMutation, PlaySpecialCardMutationVariables>;
+export const PirateAbilityStateDocument = gql`
+    query PirateAbilityState($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    phase
+    players {
+      id
+      name
+    }
+    me {
+      id
+      hand {
+        __typename
+        ... on ColoredCard {
+          id
+          color
+          number
+        }
+        ... on SpecialCard {
+          id
+          type
+          selection
+        }
+      }
+    }
+    currentRound {
+      id
+      phase
+      roundNumber
+      myBid
+      leader
+      playerTurn
+      pirateAbility {
+        id
+        pirateId
+        name
+        kind
+        playerId
+        stage
+        privateCards {
+          __typename
+          ... on ColoredCard {
+            id
+            color
+            number
+          }
+          ... on SpecialCard {
+            id
+            type
+            selection
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __usePirateAbilityStateQuery__
+ *
+ * To run a query within a React component, call `usePirateAbilityStateQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePirateAbilityStateQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePirateAbilityStateQuery({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *   },
+ * });
+ */
+export function usePirateAbilityStateQuery(baseOptions: Apollo.QueryHookOptions<PirateAbilityStateQuery, PirateAbilityStateQueryVariables> & ({ variables: PirateAbilityStateQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>(PirateAbilityStateDocument, options);
+      }
+export function usePirateAbilityStateLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>(PirateAbilityStateDocument, options);
+        }
+// @ts-ignore
+export function usePirateAbilityStateSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>): Apollo.UseSuspenseQueryResult<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>;
+export function usePirateAbilityStateSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>): Apollo.UseSuspenseQueryResult<PirateAbilityStateQuery | undefined, PirateAbilityStateQueryVariables>;
+export function usePirateAbilityStateSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>(PirateAbilityStateDocument, options);
+        }
+export type PirateAbilityStateQueryHookResult = ReturnType<typeof usePirateAbilityStateQuery>;
+export type PirateAbilityStateLazyQueryHookResult = ReturnType<typeof usePirateAbilityStateLazyQuery>;
+export type PirateAbilityStateSuspenseQueryHookResult = ReturnType<typeof usePirateAbilityStateSuspenseQuery>;
+export type PirateAbilityStateQueryResult = Apollo.QueryResult<PirateAbilityStateQuery, PirateAbilityStateQueryVariables>;
+export const ResolvePirateAbilityDocument = gql`
+    mutation ResolvePirateAbility($gameId: String!, $playerToken: String!, $expectedAbilityId: String!, $input: PirateAbilityInput!) {
+  usePirateAbility(
+    gameId: $gameId
+    playerToken: $playerToken
+    expectedAbilityId: $expectedAbilityId
+    input: $input
+  )
+}
+    `;
+export type ResolvePirateAbilityMutationFn = Apollo.MutationFunction<ResolvePirateAbilityMutation, ResolvePirateAbilityMutationVariables>;
+
+/**
+ * __useResolvePirateAbilityMutation__
+ *
+ * To run a mutation, you first call `useResolvePirateAbilityMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useResolvePirateAbilityMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [resolvePirateAbilityMutation, { data, loading, error }] = useResolvePirateAbilityMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *      playerToken: // value for 'playerToken'
+ *      expectedAbilityId: // value for 'expectedAbilityId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useResolvePirateAbilityMutation(baseOptions?: Apollo.MutationHookOptions<ResolvePirateAbilityMutation, ResolvePirateAbilityMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ResolvePirateAbilityMutation, ResolvePirateAbilityMutationVariables>(ResolvePirateAbilityDocument, options);
+      }
+export type ResolvePirateAbilityMutationHookResult = ReturnType<typeof useResolvePirateAbilityMutation>;
+export type ResolvePirateAbilityMutationResult = Apollo.MutationResult<ResolvePirateAbilityMutation>;
+export type ResolvePirateAbilityMutationOptions = Apollo.BaseMutationOptions<ResolvePirateAbilityMutation, ResolvePirateAbilityMutationVariables>;
 export const CardsPlayedDocument = gql`
     query CardsPlayed($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
@@ -912,6 +1116,9 @@ export const TrickResultDataDocument = gql`
     currentRound {
       id
       phase
+      pirateAbility {
+        id
+      }
       roundNumber
       leader
       playerTurn
@@ -1035,6 +1242,14 @@ export const LobbyQueryDocument = gql`
     query LobbyQuery($gameId: String!, $playerToken: String) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    scoringMode
+    pirateAbilities
+    deckConfig {
+      includeMermaids
+      includeKraken
+      includeWhiteWhale
+      includeLoot
+    }
     players {
       id
       name
@@ -1198,8 +1413,12 @@ export type GamesLazyQueryHookResult = ReturnType<typeof useGamesLazyQuery>;
 export type GamesSuspenseQueryHookResult = ReturnType<typeof useGamesSuspenseQuery>;
 export type GamesQueryResult = Apollo.QueryResult<GamesQuery, GamesQueryVariables>;
 export const NewGameDocument = gql`
-    mutation NewGame($deckConfig: DeckConfigInput) {
-  newGame(deckConfig: $deckConfig)
+    mutation NewGame($deckConfig: DeckConfigInput, $pirateAbilities: Boolean, $scoringMode: ScoringMode) {
+  newGame(
+    deckConfig: $deckConfig
+    pirateAbilities: $pirateAbilities
+    scoringMode: $scoringMode
+  )
 }
     `;
 export type NewGameMutationFn = Apollo.MutationFunction<NewGameMutation, NewGameMutationVariables>;
@@ -1218,6 +1437,8 @@ export type NewGameMutationFn = Apollo.MutationFunction<NewGameMutation, NewGame
  * const [newGameMutation, { data, loading, error }] = useNewGameMutation({
  *   variables: {
  *      deckConfig: // value for 'deckConfig'
+ *      pirateAbilities: // value for 'pirateAbilities'
+ *      scoringMode: // value for 'scoringMode'
  *   },
  * });
  */

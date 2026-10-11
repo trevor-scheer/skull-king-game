@@ -200,6 +200,28 @@
     opacity: 0.7;
   }
 
+  &-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+
+    button {
+      padding: var(--space-sm);
+      border: 1px solid $color-wood-medium;
+      border-radius: var(--radius-sm);
+      background: $color-parchment-light;
+      color: $color-text-dark;
+      cursor: pointer;
+    }
+  }
+
+  &-scoringLabel { display: block; margin: var(--space-md) 0 var(--space-sm); }
+  &-scoringSelect { width: 100%; padding: var(--space-sm); font: inherit; }
+  &-scoringDescription { color: $color-text-dark; font-size: $font-size-sm; line-height: 1.5; }
+  &-createError { color: $color-text-light; text-align: center; }
+  :is(button, input, select):focus-visible { outline: 3px solid $color-gold-dark; outline-offset: 3px; }
+
   // Create button
   &-createButton {
     @include button-primary;

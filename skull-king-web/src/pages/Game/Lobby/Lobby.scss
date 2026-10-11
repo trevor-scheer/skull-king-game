@@ -79,6 +79,14 @@
   }
 
   // Loading state
+  &-rules {
+    width: 100%;
+    color: $color-text-dark;
+    line-height: 1.5;
+    h2 { font-size: $font-size-lg; margin: 0; }
+    ul { columns: 2; padding-left: var(--space-lg); }
+  }
+
   &-loading {
     @include flex-center;
     min-height: 200px;

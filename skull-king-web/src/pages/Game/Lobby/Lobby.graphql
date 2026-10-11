@@ -1,6 +1,14 @@
 query LobbyQuery($gameId: String!, $playerToken: String) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    scoringMode
+    pirateAbilities
+    deckConfig {
+      includeMermaids
+      includeKraken
+      includeWhiteWhale
+      includeLoot
+    }
     players {
       id
       name

@@ -32,6 +32,31 @@ export const Lobby: React.FunctionComponent = function () {
           <li key={player.name}>{player.name}</li>
         ))}
       </ol>
+      {data?.state && (
+        <section className="Lobby-rules" aria-label="Game rules">
+          <h2>Rules for this voyage</h2>
+          <p>
+            {data.state.scoringMode === "rascal" ? "Rascal" : "Classic"} scoring
+            · Ten rounds
+          </p>
+          <p>Pirate abilities: {data.state.pirateAbilities ? "On" : "Off"}</p>
+          <ul>
+            <li>
+              Mermaids: {data.state.deckConfig.includeMermaids ? "On" : "Off"}
+            </li>
+            <li>
+              Kraken: {data.state.deckConfig.includeKraken ? "On" : "Off"}
+            </li>
+            <li>
+              White Whale:{" "}
+              {data.state.deckConfig.includeWhiteWhale ? "On" : "Off"}
+            </li>
+            <li>Loot: {data.state.deckConfig.includeLoot ? "On" : "Off"}</li>
+          </ul>
+          <p>These rules stay fixed for the game.</p>
+          <p>Two-player games omit Graybeard. Ties end after ten rounds without a tiebreaker.</p>
+        </section>
+      )}
       {playerToken ? <StartGame /> : <JoinGame onJoin={onJoin} />}
     </div>
   );

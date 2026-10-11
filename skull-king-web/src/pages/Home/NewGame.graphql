@@ -1,3 +1,11 @@
-mutation NewGame($deckConfig: DeckConfigInput) {
-  newGame(deckConfig: $deckConfig)
+mutation NewGame(
+  $deckConfig: DeckConfigInput
+  $pirateAbilities: Boolean
+  $scoringMode: ScoringMode
+) {
+  newGame(
+    deckConfig: $deckConfig
+    pirateAbilities: $pirateAbilities
+    scoringMode: $scoringMode
+  )
 }

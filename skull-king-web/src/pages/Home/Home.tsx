@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useGamesQuery, useNewGameMutation, DeckConfigInput } from "../../types/graphqlTypes";
+import {
+  useGamesQuery,
+  useNewGameMutation,
+  DeckConfigInput,
+  ScoringMode,
+} from "../../types/graphqlTypes";
 import "./Home.scss";
 
 interface OptionalCard {
@@ -13,7 +18,8 @@ const OPTIONAL_CARDS: OptionalCard[] = [
   {
     key: "includeMermaids",
     name: "Mermaids",
-    description: "Beat Skull King, lose to Pirates",
+    description:
+      "Beat numbered cards and capture the Skull King; lose to Pirates otherwise",
   },
   {
     key: "includeKraken",
@@ -34,8 +40,11 @@ const OPTIONAL_CARDS: OptionalCard[] = [
 
 export function Home() {
   const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+  const [pirateAbilities, setPirateAbilities] = useState(false);
+  const [scoringMode, setScoringMode] = useState(ScoringMode.Classic);
+  const [createFailed, setCreateFailed] = useState(false);
   const [deckConfig, setDeckConfig] = useState<DeckConfigInput>({
-    includeMermaids: false,
+    includeMermaids: true,
     includeKraken: false,
     includeWhiteWhale: false,
     includeLoot: false,
@@ -52,6 +61,28 @@ export function Home() {
   const toggleCard = (key: keyof DeckConfigInput) => {
     setDeckConfig((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const chooseDeck = (preset: "simple" | "mermaids" | "all") => {
+    setDeckConfig({
+      includeMermaids: preset !== "simple",
+      includeKraken: preset === "all",
+      includeWhiteWhale: preset === "all",
+      includeLoot: preset === "all",
+    });
+  };
+
+  async function launchGame() {
+    setCreateFailed(false);
+    try {
+      const result = await createGame({
+        variables: { deckConfig, pirateAbilities, scoringMode },
+      });
+      if (!result.data?.newGame) throw new Error("Missing game");
+      setRedirectTo(result.data.newGame);
+    } catch {
+      setCreateFailed(true);
+    }
+  }
 
   if (redirectTo) {
     return <Navigate to={`/game/${redirectTo}`} />;
@@ -100,10 +131,18 @@ export function Home() {
         )}
 
         <div className="Home-optionalCards">
-          <h2 className="Home-sectionTitle">Optional Cards</h2>
+          <h2 className="Home-sectionTitle">Cards in the Deck</h2>
           <p className="Home-optionalCardsDescription">
-            Select expansion cards to include in your game
+            Standard play includes Mermaids. Adjust individual cards for your crew.
+            All decks include the Tigress.
           </p>
+          <div className="Home-presets" role="group" aria-label="Deck presets">
+            <button onClick={() => chooseDeck("simple")}>Simple deck</button>
+            <button onClick={() => chooseDeck("mermaids")}>Standard deck</button>
+            <button onClick={() => chooseDeck("all")}>
+              All base-game cards
+            </button>
+          </div>
           <div className="Home-cardOptions">
             {OPTIONAL_CARDS.map((card) => (
               <label key={card.key} className="Home-cardOption">
@@ -114,20 +153,67 @@ export function Home() {
                 />
                 <span className="Home-cardOptionContent">
                   <span className="Home-cardName">{card.name}</span>
-                  <span className="Home-cardDescription">{card.description}</span>
+                  <span className="Home-cardDescription">
+                    {card.description}
+                  </span>
                 </span>
               </label>
             ))}
           </div>
         </div>
 
+        <div className="Home-optionalCards">
+          <h2 className="Home-sectionTitle">Rules for Your Crew</h2>
+          <label className="Home-cardOption">
+            <input
+              type="checkbox"
+              checked={pirateAbilities}
+              onChange={(event) => setPirateAbilities(event.target.checked)}
+            />
+            <span className="Home-cardOptionContent">
+              <span className="Home-cardName">Pirate abilities</span>
+              <span className="Home-cardDescription">
+                Use each Pirate’s special power after winning a trick.
+              </span>
+            </span>
+          </label>
+          <label className="Home-scoringLabel" htmlFor="scoring-mode">
+            Scoring
+          </label>
+          <select
+            id="scoring-mode"
+            className="Home-scoringSelect"
+            value={scoringMode}
+            onChange={(event) =>
+              setScoringMode(event.target.value as ScoringMode)
+            }
+          >
+            <option value={ScoringMode.Classic}>Classic</option>
+            <option value={ScoringMode.Rascal}>Rascal</option>
+          </select>
+          <p className="Home-scoringDescription">
+            {scoringMode === ScoringMode.Classic
+              ? "Score 20 per trick bid correctly. A zero bid wins or loses 10 points per card dealt; other missed bids lose 10 per trick off."
+              : "Everyone can earn 10 points per card dealt. An exact bid earns all, off by one earns half, and a larger miss earns none. Loot and Pirate wagers still require exact bids."}
+          </p>
+          <p className="Home-scoringDescription">
+            Ten rounds · 2–6 players · Rules are fixed when the game is created.
+          </p>
+          <p className="Home-scoringDescription">
+            Current house rules: two-player games omit Graybeard, and tied games
+            end after ten rounds without a tiebreaker.
+          </p>
+        </div>
+
+        {createFailed && (
+          <p className="Home-createError" role="alert">
+            Couldn’t create the game. Your settings are saved here—try again.
+          </p>
+        )}
+
         <button
           className="Home-createButton"
-          onClick={() =>
-            createGame({ variables: { deckConfig } }).then((result) => {
-              setRedirectTo(result.data?.newGame);
-            })
-          }
+          onClick={() => void launchGame()}
           disabled={creating}
         >
           {creating ? "Launching Ship..." : "Start New Voyage"}
