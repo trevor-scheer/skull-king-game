@@ -53,6 +53,7 @@ export type GameState = {
   currentRound?: Maybe<Round>;
   deckConfig: DeckConfig;
   id: Scalars['String']['output'];
+  legalCardIds: Array<Scalars['String']['output']>;
   me?: Maybe<Player>;
   phase: Scalars['String']['output'];
   pirateAbilities: Scalars['Boolean']['output'];
@@ -176,9 +177,13 @@ export type PlayedCard = {
 
 export type Player = {
   __typename?: 'Player';
+  bid?: Maybe<Scalars['Int']['output']>;
   hand: Array<Card>;
+  handCount: Scalars['Int']['output'];
   id: Scalars['String']['output'];
+  isAutomated: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  tricksWon: Scalars['Int']['output'];
 };
 
 export type Query = {
@@ -266,7 +271,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, name: string } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, legalCardIds: Array<string>, players: Array<{ __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number }>, me?: { __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
 
 export type MyHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -549,13 +554,22 @@ export const GameStateDocument = gql`
     query GameState($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    legalCardIds
     players {
       id
       name
+      handCount
+      isAutomated
+      bid
+      tricksWon
     }
     me {
       id
       name
+      handCount
+      isAutomated
+      bid
+      tricksWon
     }
     currentRound {
       id

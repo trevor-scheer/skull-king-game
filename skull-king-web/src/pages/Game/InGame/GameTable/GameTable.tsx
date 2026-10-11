@@ -4,14 +4,16 @@ import "./GameTable.scss";
 interface PlayerInfo {
   id: string;
   name: string;
+  handCount: number;
+  isAutomated: boolean;
+  bid?: number | null;
+  tricksWon: number;
 }
 
 interface GameTableProps {
   players: PlayerInfo[];
   currentPlayerId: string;
   playerTurn: string;
-  roundNumber: number;
-  cardsPlayedCount: number;
   children: React.ReactNode; // The center content (played cards, bid form, etc.)
 }
 
@@ -61,8 +63,6 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
   players,
   currentPlayerId,
   playerTurn,
-  roundNumber,
-  cardsPlayedCount,
   children,
 }) => {
   // Filter out current player and get opponent order
@@ -75,15 +75,6 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
   ].filter((p) => p.id !== currentPlayerId);
 
   const positions = getPlayerPositions(players.length);
-
-  // Calculate how many cards each opponent should have
-  // (roundNumber cards dealt, minus cards played this round)
-  // For simplicity, show roundNumber - cardsPlayedThisHand cards
-  // We don't have per-player card count, so estimate based on round
-  const opponentCardCount = Math.max(
-    0,
-    roundNumber - Math.floor(cardsPlayedCount / Math.max(players.length, 1))
-  );
 
   return (
     <div className="GameTable">
@@ -108,8 +99,12 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
               data-position={position?.position}
             >
               <div className="GameTable-opponentName">{opponent.name}</div>
+              <div className="GameTable-opponentStats">
+                {opponent.isAutomated ? "Automatic hand" : opponent.bid == null ? "Bid hidden" : `Bid ${opponent.bid}`}
+                {` · Won ${opponent.tricksWon} · ${opponent.handCount} cards`}
+              </div>
               <div className="GameTable-opponentHand">
-                {Array.from({ length: opponentCardCount }).map((_, i) => (
+                {Array.from({ length: opponent.handCount }).map((_, i) => (
                   <CardBack key={i} size="small" className="GameTable-opponentCard" />
                 ))}
               </div>

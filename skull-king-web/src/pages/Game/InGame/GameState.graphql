@@ -1,13 +1,22 @@
 query GameState($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    legalCardIds
     players {
       id
       name
+      handCount
+      isAutomated
+      bid
+      tricksWon
     }
     me {
       id
       name
+      handCount
+      isAutomated
+      bid
+      tricksWon
     }
     currentRound {
       id

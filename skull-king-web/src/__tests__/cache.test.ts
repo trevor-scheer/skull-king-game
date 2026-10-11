@@ -8,11 +8,12 @@ test("caches a completed trick from the game-state polling query", () => {
     state: {
       __typename: "GameState",
       id: variables.gameId,
+      legalCardIds: [],
       players: [
-        { __typename: "Player", id: "Anne", name: "Anne" },
-        { __typename: "Player", id: "Mary", name: "Mary" },
+        { __typename: "Player", id: "Anne", name: "Anne", handCount: 0, isAutomated: false, bid: 0, tricksWon: 0 },
+        { __typename: "Player", id: "Mary", name: "Mary", handCount: 0, isAutomated: false, bid: 1, tricksWon: 1 },
       ],
-      me: { __typename: "Player", id: "Anne", name: "Anne" },
+      me: { __typename: "Player", id: "Anne", name: "Anne", handCount: 0, isAutomated: false, bid: 0, tricksWon: 0 },
       currentRound: {
         __typename: "Round",
         id: 1,

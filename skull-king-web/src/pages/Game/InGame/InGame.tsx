@@ -11,12 +11,6 @@ import { TrickResult } from "./TrickResult/TrickResult";
 import { PirateAbility } from "./PirateAbility/PirateAbility";
 import "./InGame.scss";
 
-// Extended type for currentRound with fields that may not be in generated types yet
-interface ExtendedRound {
-  roundNumber?: number;
-  cardsPlayed?: { id: string }[];
-}
-
 export const InGame: React.FunctionComponent = function () {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
@@ -32,22 +26,14 @@ export const InGame: React.FunctionComponent = function () {
   const players = data?.state?.players ?? [];
   const me = data?.state?.me;
   const currentRound = data?.state?.currentRound;
-  const extendedRound = currentRound as typeof currentRound & ExtendedRound;
 
   const { phase, myBid, leader, playerTurn } = currentRound ?? {};
-  const roundNumber = extendedRound?.roundNumber ?? 1;
-
-  // Count cards played in current trick
-  const cardsPlayedCount = extendedRound?.cardsPlayed?.length ?? 0;
-
   return (
     <div className="InGame">
       <GameTable
         players={players}
         currentPlayerId={me?.id ?? ""}
         playerTurn={playerTurn ?? ""}
-        roundNumber={roundNumber}
-        cardsPlayedCount={cardsPlayedCount}
       >
         {/* Center content based on game phase */}
         {phase === "play" && <PlayedCards />}
@@ -68,6 +54,8 @@ export const InGame: React.FunctionComponent = function () {
         )}
       </GameTable>
       {currentRound?.pirateAbility && <PirateAbility />}
+
+      {me && <p className="InGame-myStats">{me.bid == null ? "Your bid is hidden" : `Your bid: ${me.bid}`} · Won {me.tricksWon}</p>}
 
       {/* Player's hand at the bottom */}
       <Hand />
