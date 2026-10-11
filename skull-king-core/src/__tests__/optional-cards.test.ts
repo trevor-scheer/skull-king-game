@@ -175,6 +175,43 @@ describe("optional-card trick rules", () => {
     expect(() => play(2)).toThrow("Illegal move");
   });
 
+  it("Kraken releases following suit while preserving the original would-be winner", () => {
+    const cards = [number("GREEN", 5), special("kraken"), number("YELLOW", 14)];
+    const { game, play } = trickGame(cards, [[], [], [number("GREEN", 10)]]);
+    play(0);
+    expect(game.getStateForPlayer().currentRound!.trickColor).toBe("GREEN");
+    play(1);
+    expect(game.getStateForPlayer().currentRound!.trickColor).toBeNull();
+    expect(() => play(2)).not.toThrow();
+    const result = game.getStateForPlayer().currentRound!;
+    expect(result.lastCompletedHand!.trickDiscarded).toBe(true);
+    expect(result.leader).toBe("P0");
+  });
+
+  it("Kraken after White Whale releases the suit and uses the normal next leader", () => {
+    const cards = [
+      number("GREEN", 5),
+      special("whiteWhale"),
+      special("kraken"),
+      number("YELLOW", 14),
+    ];
+    const { game, play } = trickGame(cards, [
+      [],
+      [],
+      [],
+      [number("GREEN", 10)],
+    ]);
+    play(0);
+    play(1);
+    expect(game.getStateForPlayer().currentRound!.trickColor).toBe("GREEN");
+    play(2);
+    expect(game.getStateForPlayer().currentRound!.trickColor).toBeNull();
+    expect(() => play(3)).not.toThrow();
+    const result = game.getStateForPlayer().currentRound!;
+    expect(result.lastCompletedHand!.trickDiscarded).toBe(true);
+    expect(result.leader).toBe("P0");
+  });
+
   it("White Whale discarding only specials gives the normal winner the next lead", () => {
     const result = finishTrick([special("pirate"), special("whiteWhale")]);
     expect(result.lastCompletedHand!.winningCard).toBeNull();
