@@ -81,9 +81,14 @@ export function determineTrickWinner(
       return { winner: highestNumber(numbered), trickDiscarded: false };
   }
 
-  // Ignore the active creature. A defeated creature acts as an Escape.
+  // The publisher FAQ chooses Kraken's next leader as if neither creature played.
   const remaining = cards.filter(
-    ({ card }) => !(isSpecialCard(card) && card.type === creature),
+    ({ card }) =>
+      !(
+        isSpecialCard(card) &&
+        (card.type === creature ||
+          (creature === "kraken" && card.type === "whiteWhale"))
+      ),
   );
   const lead = remaining.find(
     ({ card }) =>

@@ -145,8 +145,9 @@ export class Game {
   }) {
     const playerId = this.playerTokens.get(playerToken);
 
-    const card = this.deck.getCard(cardId);
-    assert(card, "Programming error: Invalid cardId provided");
+    const deckCard = this.deck.getCard(cardId);
+    assert(deckCard, "Programming error: Invalid cardId provided");
+    const card = { ...deckCard };
     assert(playerId, "Invalid player token provided");
     assert(this.phase === "play", "Can't play a card during this game phase");
     assert(
