@@ -46,7 +46,7 @@ test("Mary’s forced card is private at the GraphQL boundary", async () => {
   ];
   game.start();
   const { players, currentRound: round } = game.__debugDump();
-  round!.roundNumber = 2;
+  round!.cardsPerPlayer = 2;
   round!.phase = "play";
   round!.leader = 0;
   const cards = buildDeck(deckConfig);

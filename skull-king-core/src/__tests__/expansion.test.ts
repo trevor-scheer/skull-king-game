@@ -37,7 +37,7 @@ function table(hands: string[][], abilities = false) {
   game.start();
   const dump = game.__debugDump();
   const round = dump.currentRound!;
-  round.roundNumber = hands[0].length;
+  round.cardsPerPlayer = hands[0].length;
   round.phase = "play";
   round.leader = 0;
   hands.forEach((ids, index) => {

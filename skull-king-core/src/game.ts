@@ -269,6 +269,8 @@ export class Game {
   private beginRoundPlay() {
     assert(this.currentRound, "No active round");
     this.currentRound.phase = "play";
+    const order = expansionTurnOrder(this.currentRound, this.playerOrder(), this.players.map(player => player.id));
+    if (order.length) this.currentRound.leader = order[0];
     this.playGraybeardIfNext();
   }
 
