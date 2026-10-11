@@ -3,6 +3,7 @@ import { Card, Color, DeckConfiguration, isColoredCard, isSpecialCard } from "./
 import { Player } from "./player";
 import { assert } from "./utils/assert";
 import { Scorecard } from "./scorecard";
+import { ScoringMode } from "./scoring";
 import { randomUUID } from "crypto";
 import { determineTrickWinner, isEscapeCard } from "./trickRules";
 
@@ -48,6 +49,10 @@ export class Game {
   constructor(id: string, options?: GameOptions) {
     this.id = id;
     this.options = options ?? {};
+    assert(
+      options?.scoringMode == null || options.scoringMode === "classic" || options.scoringMode === "rascal",
+      "Unknown scoring mode"
+    );
     this.players = [];
     this.playerNames = new Set();
     this.playerTokens = new Map();
@@ -87,7 +92,7 @@ export class Game {
     if (this.players.length > 8) {
       throw Error("A maximum of 8 players can play the game");
     }
-    this.scorecard = new Scorecard(this.playerNames);
+    this.scorecard = new Scorecard(this.playerNames, this.options.scoringMode ?? "classic");
     this.phase = "play";
     this.nextRound();
   }
@@ -421,6 +426,7 @@ export class Game {
         includeWhiteWhale: this.options.deckConfig?.includeWhiteWhale ?? false,
         includeLoot: this.options.deckConfig?.includeLoot ?? false,
       },
+      scoringMode: this.options.scoringMode ?? "classic",
       players: this.players.map((player) => ({
         ...player,
         hand: [],
@@ -453,6 +459,7 @@ export class Game {
 }
 
 export interface GameOptions {
+  scoringMode?: ScoringMode;
   mode?: "standard";
   deck?: Deck;
   deckConfig?: DeckConfiguration;

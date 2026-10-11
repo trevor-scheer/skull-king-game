@@ -20,7 +20,7 @@ const typeDefs = `#graphql
   }
 
   type Mutation {
-    newGame(deckConfig: DeckConfigInput): String!
+    newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode): String!
     startGame(gameId: String!): Boolean!
     addPlayer(gameId: String!, name: String!): String!
     submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
@@ -52,6 +52,12 @@ const typeDefs = `#graphql
     # deck: Deck!
     scorecard: [[ScoreBlock!]!]
     deckConfig: DeckConfig!
+    scoringMode: ScoringMode!
+  }
+
+  enum ScoringMode {
+    classic
+    rascal
   }
 
   type Player {
