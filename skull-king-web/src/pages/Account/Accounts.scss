@@ -1,0 +1,20 @@
+.AccountNav, .AccountActions { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; }
+.AccountNav { margin-left: auto; font-size: .95rem; }
+.AccountPage { max-width: 760px; margin: 0 auto; padding: 1.5rem; line-height: 1.6; }
+.AccountPage h1 { margin-top: 0; }
+.AccountPage form { display: grid; gap: 1rem; max-width: 420px; padding: 1rem 0; }
+.AccountPage label { display: grid; gap: .3rem; }
+.AccountPage input:not([type=checkbox]) { min-width: 0; padding: .7rem; border: 1px solid currentColor; border-radius: 6px; font: inherit; }
+.AccountPage button, .AccountResume button { min-height: 44px; padding: .55rem .85rem; cursor: pointer; font: inherit; }
+.AccountPage button:disabled { opacity: .65; cursor: wait; }
+.AccountPage details { margin: 1.2rem 0; }
+.AccountPage summary { cursor: pointer; padding: .5rem 0; }
+.AccountPage [role=alert] { border-left: 4px solid #d87b65; padding: .5rem 1rem; }
+.RecoveryCode { border: 2px solid #b49656; padding: 1rem; margin: 1rem 0; border-radius: 8px; }
+.RecoveryCode code { display: block; overflow-wrap: anywhere; user-select: all; margin: 1rem 0; }
+.AccountTable { overflow-x: auto; }
+.AccountTable table { width: 100%; border-collapse: collapse; }
+.AccountTable th, .AccountTable td { text-align: left; padding: .7rem; border-bottom: 1px solid #8885; }
+.AccountResume { font-size: .9rem; padding: .4rem 0; }
+.AccountResume p:empty { display: none; }
+@media(max-width: 540px) { .AccountNav { margin-left: 0; font-size: .85rem; } .AccountPage { padding: 1rem; } }
