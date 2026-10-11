@@ -1,4 +1,5 @@
 import { Card as CardType } from "../../../../types/graphqlTypes";
+import { PIRATE_NAMES } from "../../../../utils/pirateNames";
 import "./Card.scss";
 
 export const Card: React.FunctionComponent<{
@@ -17,7 +18,12 @@ export const Card: React.FunctionComponent<{
         if (card.selection) {
           return `Tigress: ${card.selection}`;
         }
-        return card.type;
+        if (card.type === "pirate") return PIRATE_NAMES[card.id] ?? "Pirate";
+        return card.type === "whiteWhale"
+          ? "White Whale"
+          : card.type === "loot"
+            ? "Loot"
+            : card.type;
       }
       default:
         return "";
@@ -34,14 +40,31 @@ export const Card: React.FunctionComponent<{
           className="Card-content"
           disabled={disabled}
           onClick={() => onClick?.()}
+          aria-label={altText}
         >
-          <img
-            className="Card-image"
-            src={`/cards/${card.id}${
-              "selection" in card && card.selection ? "-" + card.selection : ""
-            }.jpg`}
-            alt={altText}
-          />
+          {card.__typename === "SpecialCard" && card.type === "loot" ? (
+            <span className="Card-loot">
+              <span className="Card-lootTitle">Loot</span>
+              <span className="Card-lootCoin" aria-hidden="true">
+                ⚓
+              </span>
+              <span>Form an alliance</span>
+              <span className="Card-lootBonus">+20 each</span>
+              <span className="Card-lootRule">
+                Both partners must bid exactly
+              </span>
+            </span>
+          ) : (
+            <img
+              className="Card-image"
+              src={`/cards/${card.id}${
+                "selection" in card && card.selection
+                  ? "-" + card.selection
+                  : ""
+              }.jpg`}
+              alt={altText}
+            />
+          )}
         </button>
       )}
     </li>

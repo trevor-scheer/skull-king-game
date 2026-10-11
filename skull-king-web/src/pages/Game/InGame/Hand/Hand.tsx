@@ -180,14 +180,18 @@ function getSortOrder(card: SpecialCard | ColoredCard) {
     PURPLE: 40,
     BLACK: 60,
     pirate: 80,
+    mermaid: 75,
     tigress: 85,
     skullKing: 90,
     escape: 91,
+    loot: 92,
+    whiteWhale: 95,
+    kraken: 96,
   };
 
   if (isColoredCard(card)) {
     return bases[card.color] + card.number;
   } else {
-    return bases[card.type];
+    return bases[card.type] ?? 100;
   }
 }
