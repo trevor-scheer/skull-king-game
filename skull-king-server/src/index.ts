@@ -16,17 +16,7 @@ export async function createApplication(dataDirectory = process.env.DATA_DIR ?? 
   const server = new ApolloServer<Context>({
     typeDefs, resolvers,
     includeStacktraceInErrorResponses: false,
-    plugins: [{ async requestDidStart() {
-      const before = new Set(rooms.games.keys());
-      return {
-      async willSendResponse({ operation, request }) {
-        if (operation?.operation !== 'mutation') return;
-        // A multi-field mutation can partly succeed; checkpoint all touched rooms even on errors.
-        const id = request.variables?.gameId;
-        if (typeof id === 'string') rooms.save(id);
-        else for (const gameId of rooms.games.keys()) if (!before.has(gameId)) rooms.save(gameId);
-      },
-    }; } }],
+
   });
   await server.start();
   const app = express();

@@ -80,6 +80,17 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
   },
 };
 
+// Persist at the action boundary, including mutations that use literal GraphQL arguments.
+const mutations = resolvers!.Mutation as Record<string, (parent: unknown, args: any, context: Context, info: any) => unknown>;
+for (const [name, resolve] of Object.entries(mutations)) {
+  mutations[name] = async (parent, args, context, info) => {
+    const result = await resolve(parent, args, context, info);
+    const id = typeof args.gameId === "string" ? args.gameId : name === "newGame" ? result : undefined;
+    if (typeof id === "string") context.rooms?.save(id);
+    return result;
+  };
+}
+
 function assertGame(game: Game | undefined, gameId?: string): asserts game {
   if (!game) {
     throw Error(`No game found with ID: ${gameId}`);

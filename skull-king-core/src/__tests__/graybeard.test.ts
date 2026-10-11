@@ -10,6 +10,7 @@ function fixture(hands?: string[][], powers = false) {
   const ghost = debug.players.find((player) => player.isAutomated)!;
   if (hands) {
     debug.currentRound!.roundNumber = hands[0].length;
+    debug.currentRound!.cardsPerPlayer = hands[0].length;
     debug.players.forEach((player, index) => {
       player.hand = hands[index].map((id) => debug.deck.getCard(id)!);
       expect(player.hand.every(Boolean)).toBe(true);

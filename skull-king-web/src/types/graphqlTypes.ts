@@ -17,6 +17,11 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export enum CannonLoad {
+  Cannonball = 'cannonball',
+  Grapeshot = 'grapeshot'
+}
+
 export type Card = ColoredCard | SpecialCard;
 
 export enum Color {
@@ -50,16 +55,20 @@ export type DeckConfigInput = {
 
 export type GameState = {
   __typename?: 'GameState';
+  cannonball: Scalars['Boolean']['output'];
   currentRound?: Maybe<Round>;
   deckConfig: DeckConfig;
   id: Scalars['String']['output'];
   legalCardIds: Array<Scalars['String']['output']>;
+  maxPlayers: Scalars['Int']['output'];
   me?: Maybe<Player>;
   phase: Scalars['String']['output'];
   pirateAbilities: Scalars['Boolean']['output'];
   players: Array<Player>;
+  roundSchedule: Array<Scalars['Int']['output']>;
   scorecard?: Maybe<Array<Array<ScoreBlock>>>;
   scoringMode: ScoringMode;
+  tieBreakers: Scalars['Boolean']['output'];
 };
 
 export type Hand = {
@@ -75,6 +84,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   addPlayer: Scalars['String']['output'];
   advanceTrick: Scalars['Boolean']['output'];
+  loadCannon: Scalars['Boolean']['output'];
   newGame: Scalars['String']['output'];
   playColoredCard: Scalars['Boolean']['output'];
   playSpecialCard: Scalars['Boolean']['output'];
@@ -97,10 +107,21 @@ export type MutationAdvanceTrickArgs = {
 };
 
 
+export type MutationLoadCannonArgs = {
+  expectedRoundNumber: Scalars['Int']['input'];
+  gameId: Scalars['String']['input'];
+  load: CannonLoad;
+  playerToken: Scalars['String']['input'];
+};
+
+
 export type MutationNewGameArgs = {
+  cannonball?: InputMaybe<Scalars['Boolean']['input']>;
   deckConfig?: InputMaybe<DeckConfigInput>;
   pirateAbilities?: InputMaybe<Scalars['Boolean']['input']>;
+  roundSchedule?: InputMaybe<Array<Scalars['Int']['input']>>;
   scoringMode?: InputMaybe<ScoringMode>;
+  tieBreakers?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -204,17 +225,34 @@ export type QueryStateArgs = {
   playerToken?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type RevealedBid = {
+  __typename?: 'RevealedBid';
+  count: Scalars['Int']['output'];
+  playerId: Scalars['String']['output'];
+};
+
+export type RevealedCannonLoad = {
+  __typename?: 'RevealedCannonLoad';
+  load: CannonLoad;
+  playerId: Scalars['String']['output'];
+};
+
 export type Round = {
   __typename?: 'Round';
+  cardsPerPlayer: Scalars['Int']['output'];
   cardsPlayed: Array<PlayedCard>;
   hands: Array<Hand>;
   id: Scalars['Int']['output'];
+  isTieBreaker: Scalars['Boolean']['output'];
   lastCompletedHand?: Maybe<Hand>;
   leader: Scalars['String']['output'];
   myBid?: Maybe<Scalars['Int']['output']>;
+  myCannonLoad?: Maybe<CannonLoad>;
   phase: Scalars['String']['output'];
   pirateAbility?: Maybe<PirateAbility>;
   playerTurn?: Maybe<Scalars['String']['output']>;
+  revealedBids: Array<RevealedBid>;
+  revealedCannonLoads: Array<RevealedCannonLoad>;
   roundNumber: Scalars['Int']['output'];
   trickColor?: Maybe<Color>;
 };

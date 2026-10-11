@@ -8,7 +8,7 @@ import typeDefs from "../typeDefs";
 
 it.each(["classic", "rascal"] as const)("completes an official two-human %s match with private automatic hands", async (scoringMode) => {
   const deckConfig = { includeLoot: true, includeKraken: true, includeWhiteWhale: true };
-  const game = new Game("graybeard", { scoringMode, pirateAbilities: true, deckConfig, deck: new Deck({ deckConfig, shuffleSeed: 0.99 }) });
+  const game = new Game("graybeard", { tieBreakers: false, scoringMode, pirateAbilities: true, deckConfig, deck: new Deck({ deckConfig, shuffleSeed: 0.99 }) });
   const tokens = new Map([["Alice", game.addPlayer("Alice")], ["Bob", game.addPlayer("Bob")]]);
   const server = new ApolloServer<Context>({ typeDefs, resolvers });
   const context: Context = { games: new Map([["graybeard", game]]) };
@@ -30,7 +30,7 @@ it.each(["classic", "rascal"] as const)("completes an official two-human %s matc
   let completed = 0;
   let ghostWins = 0;
   try {
-    await execute(`mutation { startGame(gameId:"graybeard") }`);
+    await execute(`mutation { startGame(gameId:"graybeard",playerToken:"${tokens.get("Alice")}") }`);
     while ((await read()).phase !== "postgame") {
       expect(completed).toBeLessThan(60);
       let state = await read();
@@ -67,7 +67,7 @@ it.each(["classic", "rascal"] as const)("completes an official two-human %s matc
       }
       const ability = state.currentRound.pirateAbility;
       if (ability) await execute(`mutation Decline($token:String!,$id:String!) { usePirateAbility(gameId:"graybeard",playerToken:$token,expectedAbilityId:$id,input:{action:decline}) }`, { token: tokens.get(ability.playerId), id: ability.id });
-      expect((await execute(`mutation Advance($id:String!) { advanceTrick(gameId:"graybeard",expectedHandId:$id) }`, { id: hand.id })).advanceTrick).toBe(true);
+      expect((await execute(`mutation Advance($id:String!) { advanceTrick(gameId:"graybeard",playerToken:"${tokens.get("Alice")}",expectedHandId:$id) }`, { id: hand.id })).advanceTrick).toBe(true);
       completed++;
     }
     expect(completed).toBe(55);
