@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useGameId } from "../../../hooks/useGameId";
 import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { useAddPlayerMutation } from "../../../types/graphqlTypes";
@@ -16,21 +16,18 @@ export const JoinGame: React.FunctionComponent<{
 
   const [createPlayer, result] = useAddPlayerMutation({
     variables: { gameId: gameId!, name },
-    onError: console.error,
   });
 
-  useEffect(() => {
-    if (result.data?.addPlayer) {
-      onJoin(result.data.addPlayer);
-    }
-  }, [result.data?.addPlayer, onJoin]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      createPlayer();
-      setDefaultName(name);
-    }
+    if (!name.trim() || result.loading) return;
+    try {
+      const response = await createPlayer();
+      if (response.data?.addPlayer) {
+        setDefaultName(name);
+        onJoin(response.data.addPlayer);
+      }
+    } catch { /* Mutation error is displayed below. */ }
   };
 
   return (
@@ -41,10 +38,13 @@ export const JoinGame: React.FunctionComponent<{
           className="JoinGame-input"
           onChange={(e) => updateName(e.target.value)}
           value={name}
+          maxLength={32}
+          autoComplete="nickname"
           placeholder="Captain Jack..."
           autoFocus
         />
       </label>
+      {result.error && <p role="alert">{result.error.message}</p>}
       <button
         className="JoinGame-button"
         type="submit"

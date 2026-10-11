@@ -35,6 +35,7 @@ const typeDefs = `#graphql
 
   type Mutation {
     newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode, pirateAbilities: Boolean, roundSchedule: [Int!], tieBreakers: Boolean, cannonball: Boolean): String!
+    rematchGame(gameId: String!, playerToken: String!): String!
     startGame(gameId: String!, playerToken: String!): Boolean!
     addPlayer(gameId: String!, name: String!): String!
     submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
@@ -59,6 +60,7 @@ const typeDefs = `#graphql
 
   type GameState {
     id: String!
+    nextGameId: String
     phase: String!
     me: Player
     players: [Player!]!

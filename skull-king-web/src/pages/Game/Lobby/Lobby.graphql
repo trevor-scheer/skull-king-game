@@ -12,6 +12,12 @@ query LobbyQuery($gameId: String!, $playerToken: String) {
       includeMermaids
       includeKraken
       includeWhiteWhale
+      includeExpansion
+      includeFirstMate
+      includeStingray
+      includeDavyJones
+      includeWalkThePlank
+      includeLastVolley
       includeLoot
     }
     players {

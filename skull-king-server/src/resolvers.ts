@@ -25,6 +25,16 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       context.games.set(id, game);
       return id;
     },
+    rematchGame(_, { gameId, playerToken }, context) {
+      const game = context.games.get(gameId);
+      assertGame(game, gameId);
+      const state = requirePlayer(game, playerToken);
+      if (state.nextGameId) return state.nextGameId;
+      const id = randomUUID();
+      context.games.set(id, game.createRematch(id));
+      context.rooms?.save(id);
+      return id;
+    },
     startGame(_, { gameId, playerToken }, { games }) {
       const game = games.get(gameId);
       assertGame(game, gameId);

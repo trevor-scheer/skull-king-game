@@ -1,0 +1,6 @@
+query FinalResult($gameId:String!, $playerToken:String) {
+  state(gameId:$gameId, playerToken:$playerToken) {
+    id nextGameId me { id } scorecard { playerName totalPoints }
+  }
+}
+mutation Rematch($gameId:String!, $playerToken:String!) { rematchGame(gameId:$gameId, playerToken:$playerToken) }

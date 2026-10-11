@@ -1,3 +1,4 @@
+import { SeatRecovery } from "./SeatRecovery/SeatRecovery";
 import { useRoomConnection } from "../../hooks/useRoomConnection";
 import { Link } from "react-router-dom";
 import { usePlayerToken } from "../../hooks/PlayerTokenContext";
@@ -27,6 +28,7 @@ export function Game() {
   }
 
   return <>
+    <SeatRecovery gameId={gameId} />
     {!connected && <p role="status">Reconnecting live updates… Your seat is saved; checking for changes.</p>}
     {data.state.phase === "setup" ? <Lobby /> : data.state.phase === "postgame" ? <PostGame /> : playerToken ? <InGame /> : <Spectator />}
   </>;

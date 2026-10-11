@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ApolloProvider } from "@apollo/client";
 import { RouterProvider } from "react-router-dom";
 import "./App.css";
@@ -7,7 +8,7 @@ import { router } from "./router";
 function App() {
   return (
     <ApolloProvider client={client}>
-      <RouterProvider router={router} />
+      <ErrorBoundary><RouterProvider router={router} /></ErrorBoundary>
     </ApolloProvider>
   );
 }

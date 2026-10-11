@@ -15,6 +15,12 @@ interface OptionalCard {
 }
 
 const OPTIONAL_CARDS: OptionalCard[] = [
+  { key: "includeExpansion", name: "Expansion numbers & Mary Thorne", description: "Extra 7s and 8s, 0/14 choices, Wild 15, and Mary’s forced-card power" },
+  { key: "includeFirstMate", name: "First Mate Con", description: "Beats Pirates and can use their captured powers" },
+  { key: "includeStingray", name: "Spotted Stingray", description: "Lowest number wins, ignoring suits" },
+  { key: "includeDavyJones", name: "Davy Jones’ Locker", description: "Removes sea creatures and earns 20 per creature on an exact bid" },
+  { key: "includeWalkThePlank", name: "Walk the Plank", description: "Removes a Pirate at the end of the trick" },
+  { key: "includeLastVolley", name: "The Last Volley", description: "Play an extra card, then skip the final trick" },
   {
     key: "includeMermaids",
     name: "Mermaids",
@@ -66,12 +72,18 @@ export function Home() {
     setDeckConfig((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const chooseDeck = (preset: "simple" | "mermaids" | "all") => {
+  const chooseDeck = (preset: "simple" | "mermaids" | "all" | "expansion") => {
     setDeckConfig({
       includeMermaids: preset !== "simple",
-      includeKraken: preset === "all",
-      includeWhiteWhale: preset === "all",
-      includeLoot: preset === "all",
+      includeKraken: (preset === "all" || preset === "expansion"),
+      includeWhiteWhale: (preset === "all" || preset === "expansion"),
+      includeLoot: (preset === "all" || preset === "expansion"),
+      includeExpansion: preset === "expansion",
+      includeFirstMate: preset === "expansion",
+      includeStingray: preset === "expansion",
+      includeDavyJones: preset === "expansion",
+      includeWalkThePlank: preset === "expansion",
+      includeLastVolley: preset === "expansion",
     });
   };
 
@@ -148,6 +160,7 @@ export function Home() {
             <button onClick={() => chooseDeck("all")}>
               All base-game cards
             </button>
+            <button onClick={() => chooseDeck("expansion")}>Everything, including the expansion</button>
           </div>
           <div className="Home-cardOptions">
             {OPTIONAL_CARDS.map((card) => (
@@ -203,7 +216,7 @@ export function Home() {
               : "Everyone can earn 10 points per card dealt. An exact bid earns all, off by one earns half, and a larger miss earns none. Loot and Pirate wagers still require exact bids."}
           </p>
           <p className="Home-scoringDescription">
-            2–8 players with the base deck. Rules are fixed for each voyage.
+            2–8 players with the base deck; up to nine with expansion numbers. Rules are fixed for each voyage.
           </p>
           <label className="Home-scoringLabel" htmlFor="round-schedule">Round schedule</label>
           <select id="round-schedule" className="Home-scoringSelect" value={roundPreset} onChange={event => setRoundPreset(event.target.value)}>
@@ -214,7 +227,7 @@ export function Home() {
           <label className="Home-cardOption"><input type="checkbox" checked={tieBreakers} onChange={event => setTieBreakers(event.target.checked)} />Play extra rounds to break a tie</label>
           {!tieBreakers && <p>House rule: tied leaders share the victory.</p>}
           {scoringMode === ScoringMode.Rascal && <label className="Home-cardOption"><input type="checkbox" checked={cannonball} onChange={event => setCannonball(event.target.checked)} />Cannonball choices: choose steady Grapeshot or risk 15 points per card for an exact bid.</label>}
-          <p>Two-player games include Graybeard’s ghost and omit Loot. Large crews deal fewer cards when the deck requires it.</p>
+          <p>Two-player games include Graybeard’s ghost and omit Loot, Wild 15, Walk the Plank, and 0/14 cards. Large crews deal fewer cards when the deck requires it.</p>
         </div>
 
         {createFailed && (

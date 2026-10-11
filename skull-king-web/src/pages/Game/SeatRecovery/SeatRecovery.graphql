@@ -1,0 +1,3 @@
+query RecoverSeat($gameId:String!, $playerToken:String!) {
+  state(gameId:$gameId, playerToken:$playerToken) { id me { id name } }
+}

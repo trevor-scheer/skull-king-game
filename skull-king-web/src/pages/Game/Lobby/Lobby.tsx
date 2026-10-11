@@ -57,11 +57,17 @@ export const Lobby: React.FunctionComponent = function () {
               White Whale:{" "}
               {data.state.deckConfig.includeWhiteWhale ? "On" : "Off"}
             </li>
+            <li>Expansion numbers & Mary: {data.state.deckConfig.includeExpansion ? "On" : "Off"}</li>
+            <li>First Mate: {data.state.deckConfig.includeFirstMate ? "On" : "Off"}</li>
+            <li>Spotted Stingray: {data.state.deckConfig.includeStingray ? "On" : "Off"}</li>
+            <li>Davy Jones: {data.state.deckConfig.includeDavyJones ? "On" : "Off"}</li>
+            <li>Walk the Plank: {data.state.deckConfig.includeWalkThePlank ? "On" : "Off"}</li>
+            <li>Last Volley: {data.state.deckConfig.includeLastVolley ? "On" : "Off"}</li>
             <li>Loot: {data.state.deckConfig.includeLoot ? "On" : "Off"}</li>
           </ul>
           <p>These rules stay fixed for the game.</p>
           <p>{data.state.tieBreakers ? "Tied leaders play extra rounds." : "Tied leaders share victory."} {data.state.cannonball && "Cannonball choices enabled."}</p>
-          <p>Up to {data.state.maxPlayers} players. With two humans, Graybeard joins automatically; Loot is removed.</p>
+          <p>Up to {data.state.maxPlayers} players. With two humans, Graybeard joins automatically; Loot, Wild 15, Walk the Plank, and 0/14 cards are removed.</p>
         </section>
       )}
       {!data?.state?.me ? <JoinGame onJoin={onJoin} /> : data.state.me.id === data.state.players[0]?.id ? <StartGame /> : <p>Waiting for {data.state.players[0]?.name} to set sail.</p>}

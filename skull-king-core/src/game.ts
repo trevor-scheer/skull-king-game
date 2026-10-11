@@ -63,6 +63,7 @@ export class Game {
   private mode: "standard";
   private phase: "setup" | "play" | "postgame";
   private currentRound: Round | null;
+  private nextGameId: string | null = null;
   private endGameListeners: (() => void)[] = [];
 
   constructor(id: string, options?: GameOptions) {
@@ -96,6 +97,17 @@ export class Game {
     if (game.scorecard) Object.setPrototypeOf(game.scorecard, Scorecard.prototype);
     game.endGameListeners = [];
     return game;
+  }
+
+  public createRematch(id: string): Game {
+    assert(this.phase === "postgame", "Finish this voyage before starting a rematch");
+    assert(!this.nextGameId, "A rematch already exists");
+    const next = new Game(id, { ...this.options, deck: undefined });
+    next.players = this.players.filter(player => !player.isAutomated).map(player => ({ ...player, hand: [] }));
+    next.playerNames = new Set(this.playerNames);
+    next.playerTokens = new Map(this.playerTokens);
+    this.nextGameId = id;
+    return next;
   }
 
   public onGameEnd(listener: () => void) {
@@ -567,6 +579,7 @@ export class Game {
     });
     const gameState = {
       id: this.id,
+      nextGameId: this.nextGameId ?? null,
       phase: this.phase,
       currentRound: currentRoundData,
       scorecard: this.scorecard?.getScoreCard(),
