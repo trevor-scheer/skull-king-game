@@ -60,7 +60,8 @@ function finished(id: string, practice = false) {
   const game = new Game(id, { roundSchedule: [1], twoPlayerMode: 'duel' });
   const aliceToken = game.addPlayer('Alice'); const bobToken = game.addPlayer('Bob');
   const result = [{ playerName: 'Alice', totalPoints: 20 }, { playerName: 'Bob', totalPoints: -10 }];
-  const complete = () => jest.spyOn(game, 'getStateForPlayer').mockReturnValue({ ...game.getStateForPlayer(), phase: 'postgame', scorecard: [result], practice } as any);
+  const readState = game.getStateForPlayer.bind(game);
+  const complete = () => jest.spyOn(game, 'getStateForPlayer').mockImplementation(token => ({ ...readState(token), phase: 'postgame', scorecard: [result], practice } as any));
   return { game, aliceToken, bobToken, complete };
 }
 it('records once across repeated checkpoints/restarts, excludes practice, and erases personal history', async () => {

@@ -114,10 +114,17 @@ export class Accounts {
       this.db.prepare('DELETE FROM users WHERE id=?').run(account.id);
     });
   }
+  private pruneGameSeats(gameId: string, game: Game) {
+    for (const seat of this.db.prepare('SELECT player_id,token FROM seats WHERE game_id=?').all(gameId)) {
+      const owner = typeof seat.token === 'string' ? game.getStateForPlayer(seat.token).me : undefined;
+      if (!owner || owner.id !== seat.player_id) this.db.prepare('DELETE FROM seats WHERE game_id=? AND player_id=?').run(gameId, seat.player_id);
+    }
+  }
   bindSeat(account: Account, gameId: string, game: Game, token: string) {
     const state = game.getStateForPlayer(token);
     if (!state.me || state.me.isAutomated) throw new AccountError('This device does not own that seat.', 403);
     if (state.phase === 'postgame') throw new AccountError('Link your seat before the match finishes.');
+    this.pruneGameSeats(gameId, game);
     const owner = this.db.prepare('SELECT user_id FROM seats WHERE game_id=? AND player_id=?').get(gameId, state.me.id);
     if (owner && owner.user_id !== account.id) throw new AccountError('That seat is already linked to an account.', 409);
     const ownSeat = this.db.prepare('SELECT player_id FROM seats WHERE game_id=? AND user_id=?').get(gameId, account.id);
@@ -130,6 +137,7 @@ export class Accounts {
     return seat.token;
   }
   linkedGames(account: Account, games: Map<string, Game>) {
+    this.pruneSeats(games);
     return this.db.prepare('SELECT game_id,player_id FROM seats WHERE user_id=?').all(account.id).flatMap((seat) => {
       const gameId = String(seat.game_id); const state = games.get(gameId)?.getStateForPlayer();
       return state ? [{ gameId, playerName: String(seat.player_id), phase: state.phase }] : [];
@@ -138,6 +146,7 @@ export class Accounts {
   recordCompleted(gameId: string, game: Game) {
     const state = game.getStateForPlayer();
     if (state.phase !== 'postgame' || !state.scorecard?.length) return;
+    this.pruneGameSeats(gameId, game);
     const results = state.scorecard[state.scorecard.length - 1];
     const highest = Math.max(...results.map(result => result.totalPoints));
     const hasPractice = Boolean((state as typeof state & { practice?: boolean }).practice) || state.players.some(player => Boolean((player as typeof player & { isBot?: boolean }).isBot));
@@ -153,7 +162,9 @@ export class Accounts {
   }
   pruneSeats(games: Map<string, Game>) {
     for (const row of this.db.prepare('SELECT DISTINCT game_id FROM seats').all()) {
-      if (!games.has(String(row.game_id))) this.db.prepare('DELETE FROM seats WHERE game_id=?').run(row.game_id);
+      const game = games.get(String(row.game_id));
+      if (!game) this.db.prepare('DELETE FROM seats WHERE game_id=?').run(row.game_id);
+      else this.pruneGameSeats(String(row.game_id), game);
     }
   }
   history(account: Account, all = false) {
