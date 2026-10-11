@@ -1,8 +1,12 @@
 export type ScoringMode = "classic" | "rascal";
 
+export type CannonLoad = "grapeshot" | "cannonball";
+
 export interface RoundPointsInput {
   scoringMode?: ScoringMode;
   roundNumber: number;
+  cardsPerPlayer?: number;
+  cannonLoad?: CannonLoad;
   tricksBid: number;
   tricksWon: number;
   captureBonus?: number;
@@ -15,6 +19,8 @@ export interface RoundPointsInput {
 export function calculateRoundPoints({
   scoringMode = "classic",
   roundNumber,
+  cardsPerPlayer = roundNumber,
+  cannonLoad = "grapeshot",
   tricksBid,
   tricksWon,
   captureBonus = 0,
@@ -24,7 +30,7 @@ export function calculateRoundPoints({
   const difference = Math.abs(tricksBid - tricksWon);
   const exactBid = difference === 0;
   const bonusMultiplier =
-    scoringMode === "rascal"
+    scoringMode === "rascal" && cannonLoad === "grapeshot"
       ? exactBid
         ? 1
         : difference === 1
@@ -36,9 +42,12 @@ export function calculateRoundPoints({
 
   let bidPoints: number;
   if (scoringMode === "rascal") {
-    bidPoints = roundNumber * 10 * bonusMultiplier;
+    bidPoints =
+      cardsPerPlayer *
+      (cannonLoad === "cannonball" ? 15 : 10) *
+      bonusMultiplier;
   } else if (tricksBid === 0) {
-    bidPoints = roundNumber * 10 * (exactBid ? 1 : -1);
+    bidPoints = cardsPerPlayer * 10 * (exactBid ? 1 : -1);
   } else {
     bidPoints = exactBid ? tricksWon * 20 : difference * -10;
   }

@@ -19,9 +19,9 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
     },
   },
   Mutation: {
-    newGame(_, { deckConfig, scoringMode, pirateAbilities }: { deckConfig?: DeckConfiguration; scoringMode?: ScoringMode; pirateAbilities?: boolean }, context) {
+    newGame(_, { deckConfig, scoringMode, pirateAbilities, roundSchedule, tieBreakers, cannonball }: { deckConfig?: DeckConfiguration; scoringMode?: ScoringMode; pirateAbilities?: boolean; roundSchedule?: number[]; tieBreakers?: boolean; cannonball?: boolean }, context) {
       const id = randomUUID();
-      const game = new Game(id, { deckConfig, scoringMode, pirateAbilities });
+      const game = new Game(id, { deckConfig, scoringMode, pirateAbilities, roundSchedule, tieBreakers, cannonball });
       context.games.set(id, game);
       return id;
     },
@@ -43,6 +43,11 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       assertGame(game, gameId);
       game.submitBid({ playerToken, count });
       return true;
+    },
+    loadCannon(_, { gameId, playerToken, load, expectedRoundNumber }, { games }) {
+      const game = games.get(gameId);
+      assertGame(game, gameId);
+      return game.loadCannon({ playerToken, load, expectedRoundNumber });
     },
     playColoredCard(_, { gameId, playerToken, cardId }, { games }) {
       const game = games.get(gameId);

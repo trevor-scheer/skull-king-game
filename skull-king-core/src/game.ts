@@ -5,14 +5,18 @@ import { Card, Color, DeckConfiguration, isColoredCard, isSpecialCard } from "./
 import { Player } from "./player";
 import { assert } from "./utils/assert";
 import { Scorecard } from "./scorecard";
-import { ScoringMode } from "./scoring";
+import { ScoringMode, CannonLoad } from "./scoring";
+import { cardsForRound, hasTiedLeaders, validateRoundSchedule } from "./roundOptions";
 import { randomUUID } from "crypto";
 import { determineTrickWinner, isEscapeCard } from "./trickRules";
 import { createPirateAbility, PirateAbility, PirateAbilityInput, pirateAbilityForPlayer, resolvePirateAbility } from "./pirateAbilities";
 
 export interface Round {
   roundNumber: number;
-  phase: "bid" | "play" | "trick_result";
+  cardsPerPlayer: number;
+  isTieBreaker: boolean;
+  cannonLoads?: Map<string, CannonLoad>;
+  phase: "bid" | "load" | "play" | "trick_result";
   bids: Map<string, number>;
   cardsPlayed: PlayedCard[];
   dealer: number;
@@ -53,7 +57,8 @@ export class Game {
 
   constructor(id: string, options?: GameOptions) {
     this.id = id;
-    this.options = options ?? {};
+    this.options = { ...options, roundSchedule: validateRoundSchedule(options?.roundSchedule ?? undefined) };
+    assert(!options?.cannonball || options.scoringMode === "rascal", "Cannonball requires Rascal scoring");
     assert(
       options?.scoringMode == null || options.scoringMode === "classic" || options.scoringMode === "rascal",
       "Unknown scoring mode"
@@ -90,8 +95,8 @@ export class Game {
   public addPlayer(name: string) {
     assert(this.phase === "setup", "Can't join a game after it has started");
     assert(name.trim().length > 0, "Player name can't be blank");
-    if (this.players.length === 6) {
-      throw new Error("Can't have more than 6 players");
+    if (this.players.length >= this.maxPlayers()) {
+      throw new Error(`Can't have more than ${this.maxPlayers()} players`);
     } else if (this.playerNames.has(name)) {
       throw new Error(`Name "${name}" is already in use`);
     } else {
@@ -110,9 +115,8 @@ export class Game {
     if (this.players.length < 2) {
       throw Error("At least 2 players required to start the game");
     }
-    if (this.players.length > 8) {
-      throw Error("A maximum of 8 players can play the game");
-    }
+    assert(this.players.length <= this.maxPlayers(), "Too many players for this deck");
+    cardsForRound(this.options.roundSchedule!, 1, this.deck.size, this.players.length);
     this.scorecard = new Scorecard(this.playerNames, this.options.scoringMode ?? "classic");
     this.phase = "play";
     this.nextRound();
@@ -143,15 +147,28 @@ export class Game {
       "Bid must be a nonnegative integer"
     );
     assert(
-      count <= this.currentRound.roundNumber,
+      count <= this.currentRound.cardsPerPlayer,
       "Can't bid more than there are cards in the current hand"
     );
 
     this.currentRound.bids.set(playerId, count);
 
     if (this.currentRound.bids.size === this.players.length) {
-      this.currentRound.phase = "play";
+      this.currentRound.phase = this.options.cannonball ? "load" : "play";
     }
+  }
+
+  public loadCannon({ playerToken, load, expectedRoundNumber }: { playerToken: string; load: CannonLoad; expectedRoundNumber: number }) {
+    const playerId = this.playerTokens.get(playerToken);
+    assert(playerId, "Invalid player token");
+    assert(this.options.cannonball, "Cannonball choices are disabled");
+    if (this.currentRound?.roundNumber !== expectedRoundNumber || this.currentRound.cannonLoads?.has(playerId)) return false;
+    assert(this.currentRound.phase === "load", "Choose a cannon load after bidding");
+    assert(load === "grapeshot" || load === "cannonball", "Unknown cannon load");
+    this.currentRound.cannonLoads ??= new Map();
+    this.currentRound.cannonLoads.set(playerId, load);
+    if (this.currentRound.cannonLoads.size === this.playerNames.size) this.currentRound.phase = "play";
+    return true;
   }
 
   // @throws
@@ -302,7 +319,7 @@ export class Game {
       "Can only advance from trick_result phase"
     );
 
-    const { roundNumber, hands } = this.currentRound;
+    const { cardsPerPlayer, hands } = this.currentRound;
 
     // Clear the trick for the next hand
     this.currentRound.trickColor = null;
@@ -311,7 +328,7 @@ export class Game {
 
     // Check if round is complete (based on number of hands played, not tricks won,
     // since Kraken/White Whale can discard tricks)
-    if (hands.length === roundNumber) {
+    if (hands.length === cardsPerPlayer) {
       this.updateScores();
       this.nextRound();
     } else {
@@ -365,7 +382,9 @@ export class Game {
   }
 
   private nextRound() {
-    if (this.currentRound?.roundNumber === 10) {
+    const schedule = this.options.roundSchedule!;
+    if (this.currentRound && this.currentRound.roundNumber >= schedule.length &&
+      (this.options.tieBreakers === false || !hasTiedLeaders([...this.playerNames].map(name => this.scorecard!.getPlayerScore(name))))) {
       this.endGame();
       return;
     }
@@ -377,6 +396,8 @@ export class Game {
 
     this.currentRound = {
       roundNumber: newRoundNumber,
+      cardsPerPlayer: cardsForRound(schedule, newRoundNumber, this.deck.size, this.players.length),
+      isTieBreaker: newRoundNumber > schedule.length,
       phase: "bid",
       bids: new Map(),
       cardsPlayed: [],
@@ -401,11 +422,11 @@ export class Game {
       this.currentRound,
       "Programming error: `currentRound` is unexpectedly `null`"
     );
-    const { roundNumber } = this.currentRound;
+    const { cardsPerPlayer } = this.currentRound;
     const [dealer, ...rest] = this.playerOrder();
     const dealOrder = [...rest, dealer];
 
-    for (let i = 0; i < roundNumber; i++) {
+    for (let i = 0; i < cardsPerPlayer; i++) {
       for (let playerIdx of dealOrder) {
         this.players[playerIdx].hand.push(this.deck.draw());
       }
@@ -435,6 +456,10 @@ export class Game {
     return playerOrder;
   }
 
+  private maxPlayers() {
+    return this.deck.getCard("wild-15") ? 9 : 8;
+  }
+
   private endGame() {
     this.phase = "postgame";
     // Clear currentRound in postgame - game is over
@@ -448,6 +473,10 @@ export class Game {
       ...this.currentRound,
       id: this.currentRound.roundNumber,
       myBid: undefined as number | undefined,
+      myCannonLoad: null as CannonLoad | null,
+      cannonLoads: undefined,
+      revealedBids: this.currentRound.phase === "bid" ? [] : [...this.currentRound.bids].map(([playerId, count]) => ({ playerId, count })),
+      revealedCannonLoads: this.currentRound.phase === "bid" || this.currentRound.phase === "load" ? [] : [...(this.currentRound.cannonLoads ?? [])].map(([playerId, load]) => ({ playerId, load })),
       leader: this.players[this.currentRound.leader]?.name ?? null,
       playerTurn: this.playerTurn(),
       pirateAbility: pirateAbilityForPlayer(this.currentRound, playerToken ? this.playerTokens.get(playerToken) : undefined, this.deck),
@@ -467,6 +496,10 @@ export class Game {
         includeLoot: this.options.deckConfig?.includeLoot ?? false,
       },
       scoringMode: this.options.scoringMode ?? "classic",
+      roundSchedule: [...this.options.roundSchedule!],
+      tieBreakers: this.options.tieBreakers ?? true,
+      cannonball: this.options.cannonball ?? false,
+      maxPlayers: this.maxPlayers(),
       players: this.players.map((player) => ({
         ...player,
         hand: [],
@@ -479,6 +512,7 @@ export class Game {
       gameState.me = me;
       if (me && currentRoundData && this.currentRound) {
         currentRoundData.myBid = this.currentRound.bids.get(me.name);
+        currentRoundData.myCannonLoad = this.currentRound.cannonLoads?.get(me.name) ?? null;
       }
     }
 
@@ -499,6 +533,9 @@ export class Game {
 }
 
 export interface GameOptions {
+  roundSchedule?: number[];
+  tieBreakers?: boolean;
+  cannonball?: boolean;
   scoringMode?: ScoringMode;
   mode?: "standard";
   deck?: Deck;

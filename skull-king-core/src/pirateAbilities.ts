@@ -34,7 +34,7 @@ export function createPirateAbility(round: Round): PirateAbility | null {
   const winner = round.lastCompletedHand?.winningCard;
   if (!winner || !isSpecialCard(winner.card) || winner.card.type !== "pirate") return null;
   const pirate = PIRATE_ABILITIES[winner.card.id as keyof typeof PIRATE_ABILITIES];
-  if (!pirate || (round.hands.length === round.roundNumber && pirate.kind !== "harry")) return null;
+  if (!pirate || (round.hands.length === round.cardsPerPlayer && pirate.kind !== "harry")) return null;
   return { ...pirate, id: randomUUID(), playerId: winner.playerId, pirateId: winner.card.id, stage: "choose" };
 }
 
@@ -86,7 +86,7 @@ export function resolvePirateAbility(
     const bid = round.bids.get(actor);
     assert(bid != null, "Player has not bid");
     const adjusted = bid + input.amount;
-    assert(adjusted >= 0 && adjusted <= round.roundNumber, "Adjusted bid must fit the round");
+    assert(adjusted >= 0 && adjusted <= round.cardsPerPlayer, "Adjusted bid must fit the round");
     round.bids.set(actor, adjusted);
     complete();
   } else if (ability.kind === "bendt" && ability.stage === "choose" && input.action === "draw") {

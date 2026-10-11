@@ -64,6 +64,10 @@ export class Deck {
     return this.cardsInPlay.map((card) => ({ ...card }));
   }
 
+  public get size() {
+    return this.originalDeck.length;
+  }
+
   public getCard(id: string) {
     return this.cardMap.get(id);
   }

@@ -23,7 +23,9 @@ export class Scorecard {
 
   public scoreRound(
     round: Pick<Round, "tricksWon" | "bids" | "roundNumber"> &
-      Partial<Pick<Round, "hands">> & { pirateWagers?: Map<string, number> },
+      Partial<Pick<Round, "hands" | "cardsPerPlayer" | "cannonLoads">> & {
+        pirateWagers?: Map<string, number>;
+      },
   ) {
     const scoredRound: ScoredRound = new Map();
     const { tricksWon, bids, roundNumber } = round;
@@ -41,6 +43,8 @@ export class Scorecard {
       const { bidPoints, bonusPoints } = calculateRoundPoints({
         scoringMode: this.scoringMode,
         roundNumber,
+        cardsPerPlayer: round.cardsPerPlayer,
+        cannonLoad: round.cannonLoads?.get(playerName),
         tricksBid,
         tricksWon: numTricksWon,
         captureBonus: bonuses.captureBonus,

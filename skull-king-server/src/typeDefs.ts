@@ -22,10 +22,11 @@ const typeDefs = `#graphql
   }
 
   type Mutation {
-    newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode, pirateAbilities: Boolean): String!
+    newGame(deckConfig: DeckConfigInput, scoringMode: ScoringMode, pirateAbilities: Boolean, roundSchedule: [Int!], tieBreakers: Boolean, cannonball: Boolean): String!
     startGame(gameId: String!, playerToken: String!): Boolean!
     addPlayer(gameId: String!, name: String!): String!
     submitBid(gameId: String!, playerToken: String!, count: Int!): Boolean!
+    loadCannon(gameId: String!, playerToken: String!, load: CannonLoad!, expectedRoundNumber: Int!): Boolean!
     playColoredCard(
       gameId: String!
       playerToken: String!
@@ -52,12 +53,24 @@ const typeDefs = `#graphql
     deckConfig: DeckConfig!
     scoringMode: ScoringMode!
     pirateAbilities: Boolean!
+    roundSchedule: [Int!]!
+    tieBreakers: Boolean!
+    cannonball: Boolean!
+    maxPlayers: Int!
   }
 
   enum ScoringMode {
     classic
     rascal
   }
+
+  enum CannonLoad {
+    grapeshot
+    cannonball
+  }
+
+  type RevealedBid { playerId: String! count: Int! }
+  type RevealedCannonLoad { playerId: String! load: CannonLoad! }
 
   type Player {
     id: String!
@@ -82,6 +95,11 @@ const typeDefs = `#graphql
   type Round {
     id: Int!
     roundNumber: Int!
+    cardsPerPlayer: Int!
+    isTieBreaker: Boolean!
+    myCannonLoad: CannonLoad
+    revealedBids: [RevealedBid!]!
+    revealedCannonLoads: [RevealedCannonLoad!]!
     phase: String!
     leader: String!
     playerTurn: String
