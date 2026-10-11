@@ -1,5 +1,6 @@
 import { Round } from "./game";
 import { scoreRoundBonuses } from "./bonusPoints";
+import { calculateRoundPoints, ScoringMode } from "./scoring";
 
 type ScoredRound = Map<string, ScoreBlock>;
 
@@ -15,11 +16,14 @@ export interface ScoreBlock {
 export class Scorecard {
   private rounds: ScoredRound[] = [];
 
-  constructor(private playerNames: Set<string>) {}
+  constructor(
+    private playerNames: Set<string>,
+    private scoringMode: ScoringMode = "classic",
+  ) {}
 
   public scoreRound(
     round: Pick<Round, "tricksWon" | "bids" | "roundNumber"> &
-      Partial<Pick<Round, "hands">>,
+      Partial<Pick<Round, "hands">> & { pirateWagers?: Map<string, number> },
   ) {
     const scoredRound: ScoredRound = new Map();
     const { tricksWon, bids, roundNumber } = round;
@@ -34,47 +38,23 @@ export class Scorecard {
       const numTricksWon = playerTricks.length;
 
       const bonuses = scoreRoundBonuses(round, playerName);
-      let scoreBlock: ScoreBlock;
-      // 0 bid case
-      if (tricksBid === 0) {
-        const bidCorrectly = numTricksWon === 0;
-        const bidPoints = 10 * roundNumber * (bidCorrectly ? 1 : -1);
-        scoreBlock = {
-          playerName,
-          tricksBid,
-          tricksWon: numTricksWon,
-          bidPoints,
-          bonusPoints: bonuses.lootBonus,
-          totalPoints:
-            this.getPlayerScore(playerName) + bidPoints + bonuses.lootBonus,
-        };
-        // correct bid case
-      } else if (tricksBid === playerTricks.length) {
-        const bidPoints = numTricksWon * 20;
-        const bonusPoints = bonuses.captureBonus + bonuses.lootBonus;
-        // score hands
-        scoreBlock = {
-          playerName,
-          tricksBid,
-          tricksWon: numTricksWon,
-          bidPoints,
-          bonusPoints,
-          totalPoints:
-            this.getPlayerScore(playerName) + bidPoints + bonusPoints,
-        };
-        // incorrect bid case
-      } else {
-        const diff = Math.abs(tricksBid - numTricksWon);
-        const bidPoints = -10 * diff;
-        scoreBlock = {
-          playerName,
-          tricksBid,
-          tricksWon: numTricksWon,
-          bidPoints,
-          bonusPoints: 0,
-          totalPoints: this.getPlayerScore(playerName) + bidPoints,
-        };
-      }
+      const { bidPoints, bonusPoints } = calculateRoundPoints({
+        scoringMode: this.scoringMode,
+        roundNumber,
+        tricksBid,
+        tricksWon: numTricksWon,
+        captureBonus: bonuses.captureBonus,
+        exactBonus: bonuses.lootBonus,
+        wager: round.pirateWagers?.get(playerName),
+      });
+      const scoreBlock: ScoreBlock = {
+        playerName,
+        tricksBid,
+        tricksWon: numTricksWon,
+        bidPoints,
+        bonusPoints,
+        totalPoints: this.getPlayerScore(playerName) + bidPoints + bonusPoints,
+      };
       scoredRound.set(playerName, scoreBlock);
     }
     this.rounds.push(scoredRound);
