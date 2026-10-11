@@ -203,6 +203,10 @@ export class Game {
       "Programming error: `currentRound` is unexpectedly `null`"
     );
     const { trickColor, cardsPlayed } = this.currentRound;
+    if (isSpecialCard(card) && card.type === "kraken") {
+      this.currentRound.trickColor = null;
+      return;
+    }
     if (isSpecialCard(card)) return;
     if (trickColor != null) return;
     if (!cardsPlayed.every(({ card }) => isEscapeCard(card))) return;
