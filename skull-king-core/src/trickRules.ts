@@ -117,7 +117,9 @@ export function determineTrickWinner(
     // Davy Jones removes monsters before resolving the ordinary lead suit.
     const lead = cards.find(({ card }) => !defersLeadSuit(card));
     const color =
-      davy && lead && isColoredCard(lead.card) ? lead.card.color : trickColor;
+      (davy || removedCardIds.length > 0) && lead && isColoredCard(lead.card)
+        ? lead.card.color
+        : trickColor;
     const winner = normalWinner(cards, color);
     return { winner: winner ?? original[0], trickDiscarded: !winner };
   }

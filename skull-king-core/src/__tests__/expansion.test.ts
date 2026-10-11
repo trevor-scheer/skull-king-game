@@ -319,3 +319,10 @@ test("Davy Jones awards its player 20 per monster even if another player wins", 
     bonuses(["davyJones", "kraken", "stingray", "yellow-1"], 3).expansionBonus,
   ).toBe(0);
 });
+
+test("removing the leading Pirate lets the remaining numbered cards establish the winning suit", () => {
+  const cards = played(["pirate-1", "green-2", "yellow-14", "walkThePlank"]);
+  const result = determineTrickWinner(cards, null, ["pirate-1"]);
+  expect(result.trickDiscarded).toBe(false);
+  expect(result.winner.card.id).toBe("green-2");
+});
