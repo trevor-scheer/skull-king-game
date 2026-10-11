@@ -33,7 +33,7 @@ function trickGame(cards: Card[], extras: Card[][] = []) {
       selection:
         "selection" in cards[index] ? cards[index].selection : undefined,
     });
-  return { game, play };
+  return { game, play, tokens };
 }
 
 function finishTrick(cards: Card[]) {
@@ -80,6 +80,36 @@ function score(hands: Hand[], bids: number[]) {
 }
 
 describe("optional-card trick rules", () => {
+  it("playing a shared Tigress in another game cannot rewrite a completed capture", () => {
+    const sharedTigress = special("tigress", "tigress", "pirate");
+    const first = trickGame([sharedTigress, special("mermaid")]);
+    first.play(0);
+    first.play(1);
+    const completedHand =
+      first.game.getStateForPlayer().currentRound!.lastCompletedHand!;
+    const second = trickGame([sharedTigress, special("escape")]);
+    second.game.playCard({
+      playerToken: second.tokens[0],
+      cardId: "tigress",
+      selection: "escape",
+    });
+    expect(completedHand.winningCard!.card).toMatchObject({
+      selection: "pirate",
+    });
+    expect(sharedTigress).toMatchObject({ selection: "pirate" });
+    expect(score([completedHand], [1, 0])[0].bonusPoints).toBe(20);
+  });
+
+  it("Kraken after White Whale chooses the leader as if neither creature was played", () => {
+    const result = finishTrick([
+      special("whiteWhale"),
+      special("escape"),
+      special("kraken"),
+    ]);
+    expect(result.lastCompletedHand!.trickDiscarded).toBe(true);
+    expect(result.leader).toBe("P1");
+  });
+
   it("lets the first escape win ahead of later Loot", () => {
     const result = finishTrick([special("escape"), special("loot")]);
     expect(result.lastCompletedHand!.winningCard!.playerId).toBe("P0");
