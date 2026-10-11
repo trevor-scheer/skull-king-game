@@ -33,7 +33,6 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
       if (state.nextGameId) return state.nextGameId;
       const id = randomUUID();
       context.games.set(id, game.createRematch(id));
-      context.rooms?.save(id);
       return id;
     },
     startGame(_, { gameId, playerToken }, { games }) {
@@ -119,11 +118,9 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
 // Persist at the action boundary, including mutations that use literal GraphQL arguments.
 const mutations = resolvers!.Mutation as Record<string, (parent: unknown, args: any, context: Context, info: any) => unknown>;
 for (const [name, resolve] of Object.entries(mutations)) {
-  mutations[name] = async (parent, args, context, info) => {
-    const result = await resolve(parent, args, context, info);
-    const id = typeof args.gameId === "string" ? args.gameId : name === "newGame" ? result : undefined;
-    if (typeof id === "string") context.rooms?.save(id);
-    return result;
+  mutations[name] = (parent, args, context, info) => {
+    const action = () => resolve(parent, args, context, info);
+    return context.rooms ? context.rooms.mutate(typeof args.gameId === "string" ? args.gameId : undefined, action) : action();
   };
 }
 

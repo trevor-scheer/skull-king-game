@@ -63,7 +63,7 @@ export async function createApplication(dataDirectory = process.env.DATA_DIR ?? 
   });
   const timer = setInterval(() => { try { rooms.tick(); } catch (error) { console.error('Room maintenance failed', error instanceof Error ? error.message : 'unknown error'); } }, 500);
   timer.unref();
-  return { app, rooms, accounts, stop: async () => { clearInterval(timer); for (const id of rooms.games.keys()) rooms.save(id); await server.stop(); stopHistory(); accounts.close(); } };
+  return { app, rooms, accounts, stop: async () => { clearInterval(timer); for (const id of rooms.games.keys()) rooms.save(id, false); await server.stop(); stopHistory(); accounts.close(); } };
 }
 
 if (require.main === module) {

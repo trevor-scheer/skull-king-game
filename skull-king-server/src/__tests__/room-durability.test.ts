@@ -45,3 +45,27 @@ it('rolls back a rejected join when its checkpoint cannot be written', async () 
   expect(rooms.games.get('room')!.getStateForPlayer().players).toHaveLength(0);
   expect(readFileSync(join(directory, 'room.room'))).toEqual(checkpoint);
 });
+
+it('does not refresh room activity for ignored actions', () => {
+  let now = Date.now(); const rooms = new Rooms(directory, () => now);
+  rooms.games.set('idle', new Game('idle')); rooms.save('idle');
+  now += 25 * 3600_000;
+  expect(rooms.mutate('idle', () => false)).toBe(false);
+  rooms.tick(); expect(rooms.games.has('idle')).toBe(false);
+});
+
+it('removes newly created rooms when their first save fails', () => {
+  const rooms = new Rooms(directory);
+  jest.spyOn(rooms, 'save').mockImplementation(() => { throw Error('disk full'); });
+  expect(() => rooms.mutate(undefined, () => rooms.games.set('new', new Game('new')))).toThrow('disk full');
+  expect(rooms.games.size).toBe(0);
+});
+
+it('keeps committed moves when a derived history observer fails', () => {
+  const rooms = new Rooms(directory); rooms.games.set('room', new Game('room'));
+  rooms.saved.on('saved', () => { throw Error('history unavailable'); });
+  const log = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+  const token = rooms.mutate('room', () => rooms.games.get('room')!.addPlayer('Anne'));
+  expect(new Rooms(directory).games.get('room')!.getStateForPlayer(token).me?.name).toBe('Anne');
+  expect(log).toHaveBeenCalled(); log.mockRestore();
+});
