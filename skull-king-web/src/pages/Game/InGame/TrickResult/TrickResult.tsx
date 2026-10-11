@@ -10,7 +10,7 @@ import "./TrickResult.scss";
 
 const TRANSITION_DELAY_MS = 2500;
 
-export const TrickResult: React.FunctionComponent = function () {
+export const TrickResult: React.FunctionComponent<{ paused?: boolean }> = function ({ paused = false }) {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
   const retryAdvanceRef = useRef<(() => void) | null>(null);
@@ -34,7 +34,7 @@ export const TrickResult: React.FunctionComponent = function () {
   useEffect(() => {
     setAdvanceFailed(false);
     setAdvancing(false);
-    if (phase !== "trick_result" || !handId || !gameId) {
+    if (paused || phase !== "trick_result" || !handId || !gameId) {
       return;
     }
 
@@ -65,7 +65,7 @@ export const TrickResult: React.FunctionComponent = function () {
       clearTimeout(timer);
       retryAdvanceRef.current = null;
     };
-  }, [phase, handId, gameId, advanceTrick, refetch]);
+  }, [paused, phase, handId, gameId, advanceTrick, refetch]);
 
   if (error && !lastCompletedHand) {
     return (
@@ -133,7 +133,7 @@ export const TrickResult: React.FunctionComponent = function () {
         </div>
       ) : (
         <div className="TrickResult-countdown" role="status">
-          {advancing ? "Continuing the game..." : "Next trick starting soon..."}
+          {paused ? "Waiting for the pirate ability..." : advancing ? "Continuing the game..." : "Next trick starting soon..."}
         </div>
       )}
     </div>

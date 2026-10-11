@@ -5,6 +5,7 @@ query TrickResultData($gameId: String!, $playerToken: String!) {
     currentRound {
       id
       phase
+      pirateAbility { id }
       roundNumber
       leader
       playerTurn

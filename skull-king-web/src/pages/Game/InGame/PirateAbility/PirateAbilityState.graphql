@@ -1,0 +1,69 @@
+query PirateAbilityState($gameId: String!, $playerToken: String!) {
+  state(gameId: $gameId, playerToken: $playerToken) {
+    id
+    phase
+    players {
+      id
+      name
+    }
+    me {
+      id
+      hand {
+        __typename
+        ... on ColoredCard {
+          id
+          color
+          number
+        }
+        ... on SpecialCard {
+          id
+          type
+          selection
+        }
+      }
+    }
+    currentRound {
+      id
+      phase
+      roundNumber
+      myBid
+      leader
+      playerTurn
+      pirateAbility {
+        id
+        pirateId
+        name
+        kind
+        playerId
+        stage
+        privateCards {
+          __typename
+          ... on ColoredCard {
+            id
+            color
+            number
+          }
+          ... on SpecialCard {
+            id
+            type
+            selection
+          }
+        }
+      }
+    }
+  }
+}
+
+mutation ResolvePirateAbility(
+  $gameId: String!
+  $playerToken: String!
+  $expectedAbilityId: String!
+  $input: PirateAbilityInput!
+) {
+  usePirateAbility(
+    gameId: $gameId
+    playerToken: $playerToken
+    expectedAbilityId: $expectedAbilityId
+    input: $input
+  )
+}

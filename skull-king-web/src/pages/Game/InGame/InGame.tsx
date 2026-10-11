@@ -8,6 +8,7 @@ import { Hand } from "./Hand/Hand";
 import { PlayedCards } from "./PlayedCards/PlayedCards";
 import { Scorecard } from "./Scorecard/Scorecard";
 import { TrickResult } from "./TrickResult/TrickResult";
+import { PirateAbility } from "./PirateAbility/PirateAbility";
 import "./InGame.scss";
 
 // Extended type for currentRound with fields that may not be in generated types yet
@@ -50,7 +51,7 @@ export const InGame: React.FunctionComponent = function () {
       >
         {/* Center content based on game phase */}
         {phase === "play" && <PlayedCards />}
-        {phase === "trick_result" && <TrickResult />}
+        {phase === "trick_result" && <TrickResult paused={Boolean(currentRound?.pirateAbility)} />}
         {phase === "bid" && (
           <div className="InGame-bidPhase">
             <p className="InGame-leaderInfo">
@@ -66,6 +67,7 @@ export const InGame: React.FunctionComponent = function () {
           </div>
         )}
       </GameTable>
+      {currentRound?.pirateAbility && <PirateAbility />}
 
       {/* Player's hand at the bottom */}
       <Hand />

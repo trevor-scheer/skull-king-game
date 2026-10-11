@@ -18,6 +18,7 @@ test("caches a completed trick from the game-state polling query", () => {
         id: 1,
         roundNumber: 1,
         phase: "trick_result",
+        pirateAbility: null,
         leader: "Mary",
         playerTurn: null,
         myBid: 0,

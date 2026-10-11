@@ -1,0 +1,73 @@
+@use "../../../../styles/variables" as *;
+
+.PirateAbility {
+  width: min(100%, 44rem);
+  margin: var(--space-md) auto;
+  padding: var(--space-lg);
+  border: 1px solid $color-gold-medium;
+  border-radius: var(--radius-md);
+  background: $color-wood-dark;
+  color: $color-text-light;
+
+  h2 {
+    color: $color-gold-light;
+  }
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  legend {
+    font-weight: bold;
+  }
+
+  button {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid $color-gold-medium;
+    border-radius: var(--radius-sm);
+    background: $color-wood-dark;
+    color: $color-gold-light;
+    font: inherit;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    &:focus-visible {
+      outline: 2px solid $color-gold-light;
+      outline-offset: 3px;
+    }
+  }
+
+  &-actions,
+  &-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+  &-cards {
+    max-height: 18rem;
+    overflow: auto;
+    padding: var(--space-sm);
+    list-style: none;
+
+    label,
+    li {
+      padding: var(--space-sm);
+      border: 1px solid $color-gold-dark;
+      border-radius: var(--radius-sm);
+    }
+    input {
+      margin-right: var(--space-sm);
+    }
+  }
+  &-decline {
+    margin-top: var(--space-md);
+  }
+  &-waiting {
+    text-align: center;
+    color: $color-gold-light;
+  }
+}

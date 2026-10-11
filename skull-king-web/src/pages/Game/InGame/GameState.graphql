@@ -12,6 +12,7 @@ query GameState($gameId: String!, $playerToken: String!) {
     currentRound {
       id
       phase
+      pirateAbility { id }
       leader
       playerTurn
       myBid
