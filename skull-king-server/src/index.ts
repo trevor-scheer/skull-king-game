@@ -56,7 +56,7 @@ export async function createApplication(dataDirectory = process.env.DATA_DIR ?? 
   const staticPath = resolve(__dirname, '../../skull-king-web/dist');
   if (existsSync(staticPath)) {
     app.use(express.static(staticPath));
-    app.get('/{*path}', (_req, res) => res.sendFile(resolve(staticPath, 'index.html')));
+    app.get('/{*path}', (_req, res) => res.sendFile('index.html', { root: staticPath }));
   }
   app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(400).json({ error: error instanceof SyntaxError ? 'Invalid request.' : 'Request could not be completed.' });
