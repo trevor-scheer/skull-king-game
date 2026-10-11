@@ -20,9 +20,14 @@ function normalizedName(username: unknown) {
   if (typeof username !== 'string' || !/^[a-zA-Z0-9_-]{3,24}$/.test(username)) throw new AccountError('Use 3–24 letters, numbers, underscores, or hyphens for your username.');
   return username.toLowerCase();
 }
+let passwordJobs = 0;
 async function hashPassword(password: string, salt = randomBytes(16).toString('hex')) {
-  const key = await new Promise<Buffer>((resolve, reject) => scrypt(password, salt, 64, { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }, (error, key) => error ? reject(error) : resolve(key)));
-  return `${salt}:${key.toString('hex')}`;
+  if (passwordJobs >= 8) throw new AccountError('Sign-in is busy. Please try again shortly.', 429);
+  passwordJobs++;
+  try {
+    const key = await new Promise<Buffer>((resolve, reject) => scrypt(password, salt, 64, { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }, (error, key) => error ? reject(error) : resolve(key)));
+    return `${salt}:${key.toString('hex')}`;
+  } finally { passwordJobs--; }
 }
 async function verifyPassword(password: unknown, stored?: string) {
   if (typeof password !== 'string' || Buffer.byteLength(password) > 128) return false;

@@ -12,6 +12,8 @@ import { Accounts } from './accounts';
 import { accountRoutes } from './accountRoutes';
 import { observeAccountHistory } from './accountHistory';
 import type { Context } from './context';
+import { boundedOperation, guardGraphqlRequests, requestRateLimit } from './requestLimits';
+import { roomEvents } from './roomEvents';
 export type { Context } from './context';
 
 export async function createApplication(dataDirectory = process.env.DATA_DIR ?? './data') {
@@ -21,38 +23,23 @@ export async function createApplication(dataDirectory = process.env.DATA_DIR ?? 
   const server = new ApolloServer<Context>({
     typeDefs, resolvers,
     includeStacktraceInErrorResponses: false,
+    allowBatchedHttpRequests: true,
+    validationRules: [boundedOperation],
 
   });
   await server.start();
   const app = express();
   app.disable('x-powered-by');
+  if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY.split(',').map(value => value.trim()));
+  app.use(requestRateLimit());
   const origins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173').split(',').map(x => x.trim());
   app.use(cors({ origin(origin, done) { done(null, !origin || origins.includes(origin)); }, credentials: true }));
   app.use(express.json({ limit: '64kb' }));
-  const requests = new Map<string, { count: number; reset: number }>();
-  app.use((req, res, next) => {
-    const key = req.socket.remoteAddress ?? 'local';
-    const now = Date.now();
-    let bucket = requests.get(key);
-    if (!bucket || bucket.reset < now) { bucket = { count: 0, reset: now + 60_000 }; requests.set(key, bucket); }
-    if (++bucket.count > 1200) { res.status(429).json({ error: 'Please wait a moment before trying again.' }); return; }
-    if (requests.size > 10000) for (const [ip, entry] of requests) if (entry.reset < now) requests.delete(ip);
-    next();
-  });
   app.use('/api/account', accountRoutes(accounts, rooms, origins));
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-  app.get('/events/:gameId', (req, res) => {
-    const id = String(req.params.gameId);
-    if (!rooms.games.has(id)) { res.sendStatus(404); return; }
-    res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
-    res.flushHeaders();
-    const changed = () => res.write('data: changed\n\n');
-    changed();
-    rooms.updates.on(id, changed);
-    const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 20_000);
-    req.on('close', () => { clearInterval(heartbeat); rooms.updates.off(id, changed); });
-  });
-  app.use('/graphql', expressMiddleware(server, { context: async () => ({ games: rooms.games, rooms }) }));
+  const events = roomEvents(rooms);
+  app.get('/events/:gameId', events.handler);
+  app.use('/graphql', guardGraphqlRequests, expressMiddleware(server, { context: async () => ({ games: rooms.games, rooms }) }));
   const staticPath = resolve(__dirname, '../../skull-king-web/dist');
   if (existsSync(staticPath)) {
     app.use(express.static(staticPath));
@@ -63,7 +50,7 @@ export async function createApplication(dataDirectory = process.env.DATA_DIR ?? 
   });
   const timer = setInterval(() => { try { rooms.tick(); } catch (error) { console.error('Room maintenance failed', error instanceof Error ? error.message : 'unknown error'); } }, 500);
   timer.unref();
-  return { app, rooms, accounts, stop: async () => { clearInterval(timer); for (const id of rooms.games.keys()) rooms.save(id, false); await server.stop(); stopHistory(); accounts.close(); } };
+  return { app, rooms, accounts, stop: async () => { clearInterval(timer); events.close(); for (const id of rooms.games.keys()) rooms.save(id, false); await server.stop(); stopHistory(); accounts.close(); } };
 }
 
 if (require.main === module) {

@@ -93,3 +93,11 @@ it('releases an invalidated seat binding when its display name is reused', async
   expect(() => accounts.resumeSeat(alice, 'reused', current)).toThrow('No linked seat');
   expect(accounts.linkedGames(alice, new Map([['reused', current]]))).toEqual([]);
 });
+
+it('bounds simultaneous password work across otherwise independent accounts', async () => {
+  const attempts = await Promise.allSettled(Array.from({ length: 16 }, (_, index) => accounts.signup(`sailor${index}`, password)));
+  expect(attempts.filter(result => result.status === 'fulfilled')).toHaveLength(8);
+  const rejected = attempts.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
+  expect(rejected).toHaveLength(8); expect(rejected.every(result => result.reason.status === 429)).toBe(true);
+  await expect(accounts.signup('later', password)).resolves.toBeDefined();
+});

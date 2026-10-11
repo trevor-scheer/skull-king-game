@@ -14,7 +14,11 @@ docker compose up --build -d
 
 Open `http://localhost:4000` for a local game. For public hosting, put an HTTPS
 reverse proxy in front of port 4000. Allow long-lived responses and disable
-proxy buffering for `/events/` so room updates arrive promptly. Keep the API,
+proxy buffering for `/events/` so room updates arrive promptly. Set `TRUST_PROXY`
+to the exact proxy IP addresses or subnets that may supply forwarded headers;
+leave it empty for direct connections. The proxy must overwrite forwarded
+address/protocol headers. Production account endpoints require HTTPS, while
+local HTTP guest games remain available. Keep the API,
 event stream, and web app on the same origin.
 
 Compose stores rooms in the `game-data` volume. Normal restarts and image
@@ -71,3 +75,16 @@ round with shared victory enabled so completion does not depend on random ties.
 The test owns its random-port server and temporary data directory; it does not
 need an existing development server. Failure traces and screenshots are written
 to `test-results/` and uploaded by CI.
+
+Server boundaries allow at most ten read queries in a batch and one game action
+per request. Query depth, expanded fields, event-stream connections, and password
+work are bounded. Rate limits use the verified client address and allow multiple
+players sharing one household address. Proxy trust follows the
+[Express deployment guidance](https://expressjs.com/en/guide/behind-proxies.html).
+
+Room files carry versioned activity metadata, so maintenance saves and restarts
+do not extend inactive-room expiry. Older raw checkpoints remain readable. Each
+write flushes the file, renames it atomically, and flushes its directory. Failed
+pre-commit writes roll actions back; an uncertain directory-flush result removes
+the room from service until restart and storage recovery. Account history is
+derived from durable checkpoints and can be replayed on restart.

@@ -19,7 +19,10 @@ export function accountRoutes(accounts: Accounts, rooms: Rooms, origins: string[
     const entry = limits.get(key);
     const bucket = entry && entry.until > timestamp ? entry : { count: 0, until: timestamp + 15 * 60_000 };
     limits.set(key, bucket);
-    if (limits.size > 10000) for (const [name, entry] of limits) if (entry.until <= timestamp) limits.delete(name);
+    if (limits.size > 10000) {
+      for (const [name, entry] of limits) if (entry.until <= timestamp) limits.delete(name);
+      if (limits.size > 10000) { limits.delete(key); throw new AccountError('Please try again shortly.', 429); }
+    }
     if (++bucket.count > max) throw new AccountError('Too many attempts. Please try again in 15 minutes.', 429);
   }
   function signedIn(req: Request): Account {
@@ -34,6 +37,10 @@ export function accountRoutes(accounts: Accounts, rooms: Rooms, origins: string[
   }
   router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
+    if (process.env.NODE_ENV === 'production' && !req.secure) {
+      res.status(400).json({ error: 'Use HTTPS to access your account.' }); return;
+    }
+    if (req.secure) res.set('Strict-Transport-Security', 'max-age=31536000');
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       const origin = req.get('origin');
       const allowed = origin && (origins.includes(origin) || origin === `${req.protocol}://${req.get('host')}`);
@@ -53,7 +60,7 @@ export function accountRoutes(accounts: Accounts, rooms: Rooms, origins: string[
   // Password work is bounded by per-address and per-username attempts before scrypt starts.
   router.use(['/signup', '/login', '/recover', '/password', '/delete'], (req, _res, next) => {
     try {
-      limit(`ip:${req.socket.remoteAddress ?? 'local'}`, 30);
+      limit(`ip:${req.ip ?? req.socket.remoteAddress ?? 'local'}`, 30);
       const name = typeof req.body?.username === 'string' ? req.body.username.toLowerCase().slice(0, 24) : signedIn(req).id;
       limit(`account:${name}`, 10);
       next();
