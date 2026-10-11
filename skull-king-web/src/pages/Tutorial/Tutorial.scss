@@ -1,0 +1,51 @@
+.Tutorial {
+  max-width: 44rem;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  line-height: 1.6;
+  background: #17313b;
+  color: #fff6df;
+  border: 1px solid #c9ab72;
+  border-radius: 1rem;
+  a {
+    color: #ffe2a3;
+  }
+  button {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    margin: 0.35rem;
+    cursor: pointer;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    outline: 3px solid #ffd374;
+    outline-offset: 4px;
+  }
+  progress {
+    width: 100%;
+  }
+}
+.Tutorial-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.Tutorial button {
+  background: #e3c484;
+  color: #17313b;
+  border: 2px solid #e3c484;
+  border-radius: 0.4rem;
+  font-weight: 700;
+}
+.Tutorial button[aria-pressed="true"] {
+  background: #f4e9cc;
+  border-color: #78c4b4;
+}
+.Tutorial button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.Tutorial progress {
+  accent-color: #e3c484;
+}
