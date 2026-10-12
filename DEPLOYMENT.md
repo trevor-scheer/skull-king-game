@@ -21,11 +21,17 @@ address/protocol headers. Production account endpoints require HTTPS, while
 local HTTP guest games remain available. Keep the API,
 event stream, and web app on the same origin.
 
-Compose stores rooms in the `game-data` volume. Normal restarts and image
+Compose stores rooms and the account database in the `game-data` volume. Normal restarts and image
 rebuilds retain it; `docker compose down --volumes` deletes it. Back up the volume
 before upgrades. Checkpoints include private hands and player credentials, so
-restrict access to the data directory and its backups. Browser room identities
-are stored locally; use the same browser profile to resume a seat.
+restrict access to the data directory and its backups. Guest room identities are stored locally. A private seat recovery code or linked
+account also resumes a seat on another device.
+
+For a consistent backup, stop the server and copy the entire data directory or
+volume, including `accounts.sqlite` and any SQLite WAL files, then start it again.
+Restore that complete backup with the server stopped. Never copy only the main
+SQLite file while writes are active. Keep backups private and test restoration
+on a separate instance before relying on them.
 
 Run one server process per data directory. Room ownership and update delivery
 are process-local: multiple replicas behind a load balancer are not supported.

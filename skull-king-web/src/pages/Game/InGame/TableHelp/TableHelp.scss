@@ -322,3 +322,14 @@
   transform: none !important;
   margin: 0 !important;
 }
+
+.TableStatus { padding: .5rem; }
+.TableStatus h1 { margin: .25rem 0; }
+.GameTable-center { padding: .5rem; margin-top: .5rem; }
+.PlayedCards { min-width: 0; min-height: 180px; width: 100%; padding: .5rem; }
+.PlayedCards-title, .TrickResult-title { margin: .25rem 0; }
+.PlayedCards-count { color: #d6c7ad; }
+.PlayedCards-cards { margin: .5rem 0; padding: .5rem; }
+.PlayedCards-playerLabel { white-space: normal; overflow-wrap: anywhere; max-width: 130px; }
+.Hand-playerHand { justify-content: safe center; margin: 0; padding: 1rem; }
+.InGame-bidPhase .BidForm-title { color: #59401c; text-shadow: none; }

@@ -1,31 +1,18 @@
 import { createBrowserRouter } from "react-router-dom";
 import { Layout } from "./Layout";
-import { Game } from "./pages/Game/Game";
-import { Home } from './pages/Home/Home'
-
-import { AccountPage } from "./pages/Account/AccountPage";
-import { HistoryPage } from "./pages/Account/HistoryPage";
-import { LeaderboardPage } from "./pages/Account/LeaderboardPage";
-
-import { Tutorial } from "./pages/Tutorial/Tutorial";
+import { Home } from "./pages/Home/Home";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      { path: "learn", element: <Tutorial /> },
-      { path: "account", element: <AccountPage /> },
-      { path: "history", element: <HistoryPage /> },
-      { path: "leaderboard", element: <LeaderboardPage /> },
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: "game/:id",
-        element: <Game />,
-      },
+      { index: true, element: <Home /> },
+      { path: "learn", lazy: async () => ({ Component: (await import("./pages/Tutorial/Tutorial")).Tutorial }) },
+      { path: "account", lazy: async () => ({ Component: (await import("./pages/Account/AccountPage")).AccountPage }) },
+      { path: "history", lazy: async () => ({ Component: (await import("./pages/Account/HistoryPage")).HistoryPage }) },
+      { path: "leaderboard", lazy: async () => ({ Component: (await import("./pages/Account/LeaderboardPage")).LeaderboardPage }) },
+      { path: "game/:id", lazy: async () => ({ Component: (await import("./pages/Game/Game")).Game }) },
     ],
   },
 ]);

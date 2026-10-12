@@ -75,7 +75,10 @@ test("three friends finish a match after a disconnect and server restart", async
     await expect(pages[0].locator(".Lobby-playerList li")).toHaveCount(3);
     await expect(pages[1].getByRole("button", { name: "Set Sail!" })).toHaveCount(0);
     await pages[0].getByRole("button", { name: "Set Sail!" }).click();
-    for (const page of pages) await expect(page.getByRole("heading", { name: "Place Your Bid" })).toBeVisible();
+    for (const page of pages) {
+      await expect(page.getByRole("heading", { name: "Place Your Bid" })).toBeVisible();
+      await expect(page.locator(".Hand-playerHand > li")).toHaveCount(1);
+    }
 
     // Keep one browser's room identity across an actual offline interval and
     // restart the server against the same private checkpoint directory.
