@@ -80,9 +80,13 @@ export const Hand: React.FunctionComponent = function () {
 
   return (
     <div className={`Hand${myTurn ? " Hand--myTurn" : ""}`}>
-      {phase === "play" && (
-        <p className="Hand-label">
-          {myTurn ? "Your Turn!" : "My Hand"} (Bid: {currentRound?.myBid})
+      <p className="Hand-label">
+        {myTurn ? "Your Turn!" : "My Hand"}
+        {phase === "play" && ` · Bid: ${currentRound?.myBid}`}
+      </p>
+      {sortedHand.length > 3 && (
+        <p className="Hand-scrollHint">
+          Swipe to see all {sortedHand.length} cards →
         </p>
       )}
       {currentRound?.myForcedCardId && (
@@ -106,7 +110,14 @@ export const Hand: React.FunctionComponent = function () {
         </p>
       )}
       {actionError && <p role="alert">{actionError}</p>}
-      <ul className="Hand-playerHand">
+      <ul
+        className="Hand-playerHand"
+        style={
+          {
+            "--hand-card-count": Math.max(1, sortedHand.length),
+          } as React.CSSProperties
+        }
+      >
         {sortedHand.map((card, index) => {
           const commonProps = {
             disabled: !myTurn || !canPlayCard(card) || justClicked,
@@ -194,7 +205,9 @@ export const Hand: React.FunctionComponent = function () {
                       );
                     }}
                     aria-label="Play as Escape"
-                  />
+                  >
+                    Escape
+                  </button>
                   <button
                     className="Card-tigress-btn Card-tigress-btn--pirate"
                     disabled={!myTurn || !canPlayCard(card) || justClicked}
@@ -211,7 +224,9 @@ export const Hand: React.FunctionComponent = function () {
                       );
                     }}
                     aria-label="Play as Pirate"
-                  />
+                  >
+                    Pirate
+                  </button>
                   <img
                     className="Card-image"
                     src={`/cards/${card.id}.jpg`}

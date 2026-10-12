@@ -1,6 +1,7 @@
 import { Card as CardType } from "../../../../types/graphqlTypes";
 import { PIRATE_NAMES } from "../../../../utils/pirateNames";
 import "./Card.scss";
+import { CardEmblem } from "./CardEmblem";
 import { expansionCardDescription } from "../../../../utils/expansionCards";
 
 export const Card: React.FunctionComponent<{
@@ -75,14 +76,19 @@ export const Card: React.FunctionComponent<{
               className={`Card-expansion Card-expansion--${card.__typename === "ColoredCard" ? card.color.toLowerCase() : "special"}`}
             >
               <strong>{expansion.name}</strong>
-              <span aria-hidden="true">⚓</span>
+              <CardEmblem
+                id={card.id}
+                number={
+                  card.__typename === "ColoredCard" ? card.number : undefined
+                }
+              />
               <small>{expansion.rule}</small>
             </span>
           ) : card.__typename === "SpecialCard" && card.type === "loot" ? (
             <span className="Card-loot">
               <span className="Card-lootTitle">Loot</span>
               <span className="Card-lootCoin" aria-hidden="true">
-                ⚓
+                <CardEmblem id="loot" />
               </span>
               <span>Form an alliance</span>
               <span className="Card-lootBonus">+20 each</span>

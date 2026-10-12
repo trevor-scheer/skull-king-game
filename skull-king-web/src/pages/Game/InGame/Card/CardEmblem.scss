@@ -1,0 +1,38 @@
+.CardEmblem {
+  display: block;
+  width: 64px;
+  height: 64px;
+  max-width: 80%;
+  min-height: 28px;
+  flex: 0 1 64px;
+  color: #e4c689;
+  overflow: visible;
+  &-ring {
+    opacity: 0.35;
+    stroke-width: 1;
+  }
+  &-ornament {
+    opacity: 0.65;
+    stroke-width: 1;
+  }
+  &-number {
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 34px;
+    font-weight: 600;
+  }
+  &-number--wide {
+    font-size: 22px;
+    letter-spacing: -1.5px;
+  }
+}
+.Card-lootCoin:has(.CardEmblem) {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 28px;
+  flex: 0 1 54px;
+  .CardEmblem {
+    height: 54px;
+    width: 54px;
+  }
+}

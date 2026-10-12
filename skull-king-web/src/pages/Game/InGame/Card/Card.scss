@@ -1,224 +1,185 @@
-@use '../../../../styles/variables' as *;
-@use '../../../../styles/mixins' as *;
-
 .Card {
-  // Card dimensions - using CSS custom properties for flexibility
   --card-scale: 1;
-  width: calc(var(--card-width) * var(--card-scale));
-  height: calc(var(--card-height) * var(--card-scale));
-
-  // Card appearance
-  border-radius: var(--radius-card);
-  background: linear-gradient(
-    135deg,
-    $color-parchment-light 0%,
-    $color-parchment-medium 100%
-  );
-
-  // Weathered border effect
-  border: 3px solid $color-wood-medium;
-  box-shadow:
-    var(--shadow-card),
-    inset 0 0 0 1px rgba($color-gold-dark, 0.2);
-
-  // Smooth transitions
-  transition:
-    transform var(--transition-normal),
-    box-shadow var(--transition-normal),
-    filter var(--transition-normal);
-
-  // Prevent text selection during gameplay
-  user-select: none;
-
-  // Position for stacking
+  width: calc(var(--card-width, 120px) * var(--card-scale));
+  height: calc(var(--card-height, 194px) * var(--card-scale));
+  display: flex;
+  flex-direction: column;
   position: relative;
-  flex-shrink: 0;
-
-  // Disabled/grayed out state
+  flex: 0 0 auto;
+  border: 1px solid #829294;
+  border-radius: 0.5rem;
+  background: #10212a;
+  box-shadow: 0 4px 10px #00000030;
+  overflow: hidden;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease;
+  user-select: none;
   &-disabled {
-    filter: grayscale(40%) brightness(0.75);
-
-    .Card-content {
-      cursor: not-allowed;
+    border-color: #56636a;
+    .Card-image {
+      filter: saturate(0.7);
     }
   }
-
-  // Playable state (when it's your turn and card can be played)
-  &-playable {
-    cursor: pointer;
-
-    &::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: calc(var(--radius-card) + 4px);
-      background: linear-gradient(
-        135deg,
-        rgba($color-gold-light, 0.3),
-        rgba($color-gold-medium, 0.1)
-      );
-      opacity: 0;
-      animation: pulse 2s ease-in-out infinite;
-      pointer-events: none;
-    }
-  }
-
-  // Content container (button)
   &-content {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    border: none;
-    background: none;
-    border-radius: calc(var(--radius-card) - 2px);
-    overflow: hidden;
-    cursor: inherit;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: hidden;
+    color: inherit;
+    box-shadow: none;
   }
-
-  // Card image
+  button.Card-content {
+    cursor: pointer;
+  }
+  button.Card-content:disabled {
+    opacity: 1;
+    cursor: default;
+  }
   &-image {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: calc(var(--radius-card) - 4px);
   }
-
-  // Card back (for opponents)
+  &-name {
+    display: grid;
+    place-items: center;
+    min-height: 25px;
+    padding: 0.2rem 0.25rem;
+    text-align: center;
+    color: #f4efdf;
+    font-size: 0.6rem;
+    font-weight: 500;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+  &:focus-within {
+    outline: 3px solid #e6c98e;
+    outline-offset: 3px;
+  }
+  &-back {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    place-items: center;
+    background: #142731;
+    border: 4px double #9d865b;
+  }
+  &-back::before {
+    content: "♜";
+    font-size: 2rem;
+    color: #d9b876;
+  }
+  &-expansion,
   &-loot {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
-    gap: 4px;
-    width: 100%;
-    height: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-    background: linear-gradient(145deg, $color-ocean-dark, $color-ocean-medium);
-    color: $color-parchment-light;
-    font-family: $font-body;
-    font-size: 12px;
+    gap: 0.2rem;
+    padding: 0.45rem;
+    background: #203e48;
+    color: #f4efdf;
     text-align: center;
+    font-size: 0.65rem;
   }
-  &-lootTitle { font-family: $font-display; color: $color-gold-light; font-size: 22px; }
-  &-lootCoin { border: 2px solid $color-gold-light; border-radius: 50%; padding: 6px 10px; color: $color-gold-light; font-size: 28px; }
-  &-lootBonus { color: $color-gold-light; font-size: 18px; font-weight: bold; }
-  &-lootRule { font-size: 10px; }
-
-  &-back {
+  &-expansion strong {
+    font-size: 0.8rem;
+    line-height: 1.15;
+  }
+  &-expansion small {
+    font-size: 0.58rem;
+    line-height: 1.25;
+  }
+  &-expansion > span[aria-hidden] {
+    color: #d9b876;
+    font-size: 1.8rem;
+  }
+  &-expansion--yellow {
+    background: #756022;
+  }
+  &-expansion--green {
+    background: #285b49;
+  }
+  &-expansion--purple {
+    background: #5b416f;
+  }
+  &-expansion--black {
+    background: #25313b;
+  }
+  &-lootTitle {
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 1.1rem;
+    color: #d9b876;
+  }
+  &-lootCoin {
+    color: #d9b876;
+    font-size: 1.9rem;
+  }
+  &-lootBonus {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  &-lootRule {
+    font-size: 0.55rem;
+    line-height: 1.2;
+  }
+  &-declaration button {
     width: 100%;
-    height: 100%;
-    background:
-      // Decorative pattern
-      repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 10px,
-        rgba($color-gold-dark, 0.1) 10px,
-        rgba($color-gold-dark, 0.1) 20px
-      ),
-      linear-gradient(
-        180deg,
-        $color-ocean-dark 0%,
-        $color-ocean-medium 50%,
-        $color-ocean-dark 100%
-      );
-    border-radius: calc(var(--radius-card) - 4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-
-    // Skull icon placeholder (CSS-only)
-    &::before {
-      content: '☠';
-      font-size: calc(var(--card-width) * var(--card-scale) * 0.4);
-      color: $color-gold-medium;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-
-    // Gold border accent
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 8px;
-      border: 2px solid rgba($color-gold-dark, 0.4);
-      border-radius: calc(var(--radius-card) - 8px);
-      pointer-events: none;
-    }
+    min-height: 44px;
+    padding: 0.2rem;
+    border: 1px solid #d9b876;
+    background: #d9b876;
+    color: #10212a;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
   }
-
-  // Tigress special buttons
   &-tigress-btn {
     position: absolute;
-    background: rgba($color-gold-medium, 0.2);
-    border: 2px solid transparent;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition:
-      background-color var(--transition-fast),
-      border-color var(--transition-fast),
-      transform var(--transition-fast);
-
-    &:hover:not(:disabled) {
-      background: rgba($color-gold-medium, 0.5);
-      border-color: $color-gold-light;
-      transform: scale(1.05);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-
-    &--escape {
-      left: 5%;
-      top: 0;
-      height: 20%;
-      width: 12%;
-    }
-
-    &--pirate {
-      left: 18%;
-      top: 0;
-      height: 20%;
-      width: 12%;
-    }
+    bottom: 0;
+    z-index: 1;
+    width: 50%;
+    min-height: 44px;
+    padding: 0.2rem;
+    border: 1px solid #d9b876;
+    border-radius: 0;
+    background: #10212aee;
+    color: #f4efdf;
+    font-size: 0.6rem;
+    font-weight: 600;
+  }
+  &-tigress-btn--escape {
+    left: 0;
+  }
+  &-tigress-btn--pirate {
+    right: 0;
+  }
+  &-tigress-btn:hover:not(:disabled) {
+    background: #d9b876;
+    color: #10212a;
+  }
+  &-tigress-btn:disabled {
+    opacity: 0.7;
   }
 }
-
-// Small card variant
 .Card--small {
   --card-scale: 0.7;
 }
-
-// Large card variant
 .Card--large {
   --card-scale: 1.25;
-}
-
-// Animation for dealt cards
-.Card--dealing {
-  animation: card-deal 0.5s ease-out forwards;
-  opacity: 0;
-}
-
-// Winning card highlight
-.Card--winner {
-  animation: card-win 1s ease-in-out infinite;
-  z-index: 100 !important;
-}
-
-.Card-expansion {
-  width: 100%; height: 100%; min-height: 9rem; box-sizing: border-box;
-  display: flex; flex-direction: column; align-items: center; justify-content: space-around;
-  gap: .4rem; padding: .65rem; border: 3px double #e3c484; border-radius: .5rem;
-  background: #17313b; color: #fff6df; text-align: center;
-  strong { font-size: .9rem; } small { font-size: .65rem; line-height: 1.2; }
-  &--yellow { background: #785900; } &--green { background: #175337; }
-  &--purple { background: #50335f; } &--black { background: #20242b; }
-  button { padding: .35rem; min-height: 2rem; border-radius: .25rem; }
 }

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { RoomControls } from "./Practice/PracticeControls";
 import { AccountResume } from "../Account/AccountResume";
 import { SeatRecovery } from "./SeatRecovery/SeatRecovery";
@@ -12,7 +13,7 @@ import { PostGame } from "./PostGame/PostGame";
 import { Spectator } from "./Spectator/Spectator";
 
 export function Game() {
-  const gameId = useGameId() ?? ""; // TODO: hacky fallback
+  const gameId = useGameId() ?? "";
   const [playerToken] = usePlayerToken();
 
   const connected = useRoomConnection(gameId);
@@ -21,19 +22,60 @@ export function Game() {
     pollInterval: 10000,
   });
 
-  if (error && !data) return <p role="alert">Connection interrupted. Your seat is saved. <button onClick={() => void refetch().catch(() => undefined)}>Reconnect</button></p>;
-  if (loading && !data) return <div>Loading...</div>;
+  useEffect(() => {
+    if (data?.state?.phase)
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [data?.state?.phase]);
+
+  if (error && !data)
+    return (
+      <section className="Game-message" role="alert">
+        <h1>Connection interrupted</h1>
+        <p>Your seat is saved. Reconnect to return to the table.</p>
+        <button onClick={() => void refetch().catch(() => undefined)}>
+          Reconnect
+        </button>
+      </section>
+    );
+  if (loading && !data)
+    return (
+      <div className="Game-message" role="status">
+        Preparing your table…
+      </div>
+    );
 
   // No game found
   if (!data?.state) {
-    return <p>This room is no longer available. <Link to="/">Start a new voyage</Link></p>;
+    return (
+      <section className="Game-message">
+        <h1>This voyage has ended</h1>
+        <p>This room is no longer available.</p>
+        <Link to="/">Start a new voyage →</Link>
+      </section>
+    );
   }
 
-  return <>
-    <AccountResume gameId={gameId} phase={data.state.phase} />
-    <SeatRecovery gameId={gameId} />
-    {!connected && <p role="status">Reconnecting live updates… Your seat is saved; checking for changes.</p>}
-    {data.state.phase === "setup" ? <Lobby /> : data.state.phase === "postgame" ? <PostGame /> : playerToken ? <InGame /> : <Spectator />}
-    {data.state.phase === "play" && playerToken && <RoomControls />}
-  </>;
+  return (
+    <>
+      {!connected && (
+        <p className="Game-connection" role="status">
+          Reconnecting live updates… Your seat is saved; checking for changes.
+        </p>
+      )}
+      {data.state.phase === "setup" ? (
+        <Lobby />
+      ) : data.state.phase === "postgame" ? (
+        <PostGame />
+      ) : playerToken ? (
+        <InGame />
+      ) : (
+        <Spectator />
+      )}
+      <div className="Game-utilities">
+        {data.state.phase === "play" && playerToken && <RoomControls />}
+        <AccountResume gameId={gameId} phase={data.state.phase} />
+        <SeatRecovery gameId={gameId} />
+      </div>
+    </>
+  );
 }

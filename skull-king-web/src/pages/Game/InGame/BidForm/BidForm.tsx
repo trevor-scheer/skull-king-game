@@ -31,10 +31,16 @@ export const BidForm: React.FunctionComponent = function () {
     setPending(true);
     setActionError(null);
     try {
-      await submitBid({ variables: { gameId, playerToken: playerToken!, count } });
+      await submitBid({
+        variables: { gameId, playerToken: playerToken!, count },
+      });
       setSubmitted(true);
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Couldn’t place your bid. Try again.");
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "Couldn’t place your bid. Try again.",
+      );
     } finally {
       setPending(false);
     }
@@ -55,7 +61,7 @@ export const BidForm: React.FunctionComponent = function () {
     <div className="BidForm">
       <h3 className="BidForm-title">Place Your Bid</h3>
       <p className="BidForm-subtitle">
-        How many tricks will ye win this round?
+        How many tricks will you win this round?
       </p>
       <div className="BidForm-buttons">
         {bidOptions.map((count) => (

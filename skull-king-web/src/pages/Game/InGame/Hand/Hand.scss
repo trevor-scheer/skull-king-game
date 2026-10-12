@@ -1,71 +1,94 @@
-@use '../../../../styles/variables' as *;
-@use '../../../../styles/mixins' as *;
-
 .Hand {
-  // Hand container at bottom of screen
-  position: relative;
+  min-width: 0;
   width: 100%;
-
-  // Label styling
+  border-top: 1px solid #2c414b;
+  padding-top: 0.5rem;
   &-label {
-    font-family: $font-display;
-    font-size: $font-size-lg;
-    @include gold-text;
-    margin-bottom: var(--space-sm);
+    margin: 0;
+    color: #f4efdf;
+    font-weight: 600;
+    font-size: 0.95rem;
     text-align: center;
   }
-
-  &-playerHand {
-    // Fixed height to maintain layout when no cards
-    min-height: calc(var(--card-height) + var(--space-xl));
-    padding: var(--space-lg) var(--space-xl);
-
-    // Fan layout for cards
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: center;
-
-    // Card overlap
-    & .Card:not(:first-child) {
-      margin-left: calc(var(--card-width) * -0.55);
-    }
-
-    // Hover effects for playable cards
-    & .Card:not(.Card-disabled) {
-      cursor: pointer;
-
-      &:hover {
-        // Lift card up and increase shadow
-        transform: translateY(-20px) scale(1.05);
-        box-shadow: var(--shadow-card-hover);
-        z-index: 50 !important;
-
-        // Expand adjacent cards slightly on hover
-        & + .Card {
-          margin-left: calc(var(--card-width) * -0.45);
-        }
-      }
-
-      &:active {
-        transform: translateY(-15px) scale(1.02);
-      }
-    }
-
-    // Dealing animation - stagger cards
-    & .Card--dealing {
-      @for $i from 1 through 13 {
-        &:nth-child(#{$i}) {
-          animation-delay: #{$i * 0.08}s;
-        }
-      }
-    }
+  &--myTurn &-label {
+    color: #e6c98e;
   }
+  &-guidance {
+    color: #a5b5ba;
+    font-size: 0.75rem;
+    text-align: center;
+    line-height: 1.6;
+    margin: 0.35rem auto 0;
+    max-width: 650px;
+  }
+  &-playerHand {
+    display: flex;
+    align-items: flex-start;
+    justify-content: safe center;
+    gap: 0.65rem;
+    margin: 0;
+    list-style: none;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 0.6rem 0.4rem 0.85rem;
+    scroll-padding: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #627983 #10212b;
+  }
+  &-playerHand .Card {
+    --card-width: 120px;
+    --card-height: 194px;
+  }
+  &-playerHand .Card:not(.Card-disabled):has(button:enabled) {
+    border-color: #d9b876;
+  }
+  &-playerHand .Card:not(.Card-disabled):has(button:enabled):hover {
+    transform: translateY(-6px);
+  }
+}
+@media (max-width: 600px) {
+  .Hand-playerHand {
+    justify-content: flex-start;
+    gap: 0.55rem;
+  }
+  .Hand-playerHand .Card {
+    --card-width: 116px;
+    --card-height: 189px;
+  }
+}
 
-  // Turn indicator
-  &--myTurn {
-    .Hand-label {
-      animation: turn-pulse 2s ease-in-out infinite;
-    }
+.Hand-playerHand .Card:has(.Card-declaration) {
+  --card-height: 232px;
+}
+
+.Hand-scrollHint {
+  display: none;
+}
+@media (min-width: 1000px) {
+  .Hand {
+    container-type: inline-size;
+  }
+  .Hand-playerHand .Card {
+    --card-width: clamp(
+      96px,
+      calc(
+        (100cqw - 0.8rem - (var(--hand-card-count) - 1) * 0.65rem) /
+          var(--hand-card-count)
+      ),
+      120px
+    );
+    --card-height: calc(var(--card-width) * 1.4 + 26px);
+  }
+  .Hand-playerHand .Card:has(.Card-declaration) {
+    --card-height: 232px;
+  }
+}
+@media (max-width: 600px) {
+  .Hand-scrollHint {
+    display: block;
+    margin: 0.3rem 0 0;
+    color: #a5b5ba;
+    text-align: center;
+    font-size: 0.65rem;
   }
 }

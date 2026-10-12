@@ -1,16 +1,20 @@
-@use "../../../../styles/variables" as *;
-
 .PirateAbility {
-  width: min(100%, 44rem);
-  margin: var(--space-md) auto;
-  padding: var(--space-lg);
-  border: 1px solid $color-gold-medium;
-  border-radius: var(--radius-md);
-  background: $color-wood-dark;
-  color: $color-text-light;
-
+  width: min(100%, 700px);
+  margin: 0.25rem auto;
+  padding: 1.25rem;
+  border: 1px solid #d9b876;
+  border-radius: 0.8rem;
+  background: #142731;
+  color: #f4efdf;
   h2 {
-    color: $color-gold-light;
+    margin-top: 0;
+    color: #e6c98e;
+    font-size: 1.3rem;
+  }
+  p {
+    font-size: 0.85rem;
+    color: #c8d2d3;
+    line-height: 1.6;
   }
   fieldset {
     border: 0;
@@ -19,55 +23,58 @@
     min-width: 0;
   }
   legend {
-    font-weight: bold;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
   }
-
   button {
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid $color-gold-medium;
-    border-radius: var(--radius-sm);
-    background: $color-wood-dark;
-    color: $color-gold-light;
+    min-height: 44px;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid #778e95;
+    border-radius: 0.4rem;
+    background: #10212a;
+    color: #f4efdf;
     font: inherit;
+    font-size: 0.8rem;
     cursor: pointer;
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-    &:focus-visible {
-      outline: 2px solid $color-gold-light;
-      outline-offset: 3px;
-    }
   }
-
+  button:hover:not(:disabled) {
+    border-color: #d9b876;
+    background: #243c45;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
   &-actions,
   &-cards {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-sm);
+    gap: 0.6rem;
   }
   &-cards {
     max-height: 18rem;
     overflow: auto;
-    padding: var(--space-sm);
+    padding: 0.5rem;
     list-style: none;
-
-    label,
-    li {
-      padding: var(--space-sm);
-      border: 1px solid $color-gold-dark;
-      border-radius: var(--radius-sm);
-    }
-    input {
-      margin-right: var(--space-sm);
-    }
+  }
+  &-cards label,
+  &-cards li {
+    padding: 0.6rem;
+    border: 1px solid #526973;
+    border-radius: 0.4rem;
+  }
+  &-cards input {
+    margin-right: 0.4rem;
+    accent-color: #d9b876;
   }
   &-decline {
-    margin-top: var(--space-md);
+    margin-top: 1rem;
   }
   &-waiting {
     text-align: center;
-    color: $color-gold-light;
   }
+}
+
+.PirateAbility > button {
+  margin: 0.3rem 0.3rem 0.3rem 0;
 }

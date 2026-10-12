@@ -1,188 +1,97 @@
-@use '../../../../styles/variables' as *;
-@use '../../../../styles/mixins' as *;
-
 .TrickResult {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--space-lg);
-  min-width: 400px;
-  min-height: 280px;
-  animation: trick-result-appear 0.3s ease-out;
-
-  // Glowing background for winner reveal
-  background: radial-gradient(
-    ellipse at center,
-    rgba($color-gold-medium, 0.15) 0%,
-    rgba($color-ocean-dark, 0.3) 40%,
-    transparent 70%
-  );
-  border-radius: 50%;
-
+  width: 100%;
+  text-align: center;
   &-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-md);
+    gap: 0.3rem;
+    margin-bottom: 1rem;
   }
-
   &-title {
-    font-family: $font-display;
-    font-size: $font-size-xl;
-    @include gold-text;
-    animation: winner-glow 1.5s ease-in-out infinite;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #a5b5ba;
   }
-
   &-winner {
-    font-family: $font-display;
-    font-size: $font-size-2xl;
-    color: $color-gold-medium;
-    text-shadow: 0 0 10px rgba($color-gold-medium, 0.5);
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 1.4rem;
+    color: #e6c98e;
   }
-
-  // Card list container
   &-cards {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: flex-end;
-    gap: 0;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
     list-style: none;
-    padding: var(--space-md);
-    position: relative;
   }
-
   &-cardWrapper {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform var(--transition-normal);
-
-    &:not(:first-child) {
-      margin-left: calc(var(--card-width) * -0.35);
-    }
-
-    // Stagger rotation for visual interest
-    @for $i from 1 through 8 {
-      &:nth-child(#{$i}) {
-        $rotation: ($i - 4.5) * 5deg;
-        transform: rotate($rotation);
-        z-index: $i;
-      }
-    }
-
-    // Winner highlight
-    &--winner {
-      z-index: 20 !important;
-      transform: translateY(-15px) scale(1.1) !important;
-
-      .Card {
-        box-shadow:
-          0 0 20px rgba($color-gold-medium, 0.8),
-          0 0 40px rgba($color-gold-medium, 0.4),
-          var(--shadow-card);
-        border: 2px solid $color-gold-medium;
-      }
-
-      .TrickResult-playerLabel {
-        background: rgba($color-gold-medium, 0.9);
-        color: $color-wood-dark;
-        font-weight: bold;
-        border-color: $color-gold-light;
-      }
-    }
-
-    .Card {
-      box-shadow:
-        var(--shadow-card),
-        0 0 20px rgba(0, 0, 0, 0.3);
-    }
+    gap: 0.4rem;
+    width: 105px;
   }
-
-  // Player label under each card
+  .Card {
+    --card-width: 105px;
+    --card-height: 172px;
+  }
+  &-cardWrapper--winner .Card {
+    border: 2px solid #e6c98e;
+  }
+  &-cardWrapper--winner &-playerLabel {
+    color: #e6c98e;
+    font-weight: 700;
+  }
   &-playerLabel {
-    margin-top: var(--space-sm);
-    padding: var(--space-xs) var(--space-sm);
-    background: rgba($color-wood-dark, 0.85);
-    border: 1px solid rgba($color-gold-dark, 0.3);
-    border-radius: var(--radius-sm);
-    font-family: $font-body;
-    font-size: $font-size-sm;
-    color: $color-text-light;
-    white-space: nowrap;
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
+    color: #c8d2d3;
+    font-size: 0.65rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
-
-  // Loading state
-  &--loading {
-    @include flex-center;
-    min-height: 200px;
+  &-explanation {
+    max-width: 650px;
+    margin: 0.85rem auto 1rem;
+    color: #c8d2d3;
+    font-size: 0.8rem;
+    line-height: 1.6;
   }
-
+  &-countdown,
   &-loadingText {
-    font-family: $font-display;
-    font-size: $font-size-lg;
-    @include gold-text;
-    animation: pulse 2s ease-in-out infinite;
+    color: #a5b5ba;
+    font-size: 0.75rem;
   }
-
-  // Countdown indicator
-  &-countdown {
-    margin-top: var(--space-md);
-    font-family: $font-body;
-    font-size: $font-size-sm;
-    color: $color-text-muted;
-  }
-
   &-recovery {
-    margin-top: var(--space-md);
-    color: $color-text-light;
-    text-align: center;
+    margin-top: 0.75rem;
   }
-
   &-retry {
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid $color-gold-medium;
-    border-radius: var(--radius-sm);
-    background: $color-wood-dark;
-    color: $color-gold-light;
-    font: inherit;
+    min-height: 44px;
+    border: 1px solid #d9b876;
+    border-radius: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: #d9b876;
+    color: #10212a;
     cursor: pointer;
-
-    &:focus-visible {
-      outline: 2px solid $color-gold-light;
-      outline-offset: 3px;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: wait;
-    }
   }
 }
-
-@keyframes trick-result-appear {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
+@media (max-width: 600px) {
+  .TrickResult-cards {
+    gap: 0.6rem;
   }
-  100% {
-    opacity: 1;
-    transform: scale(1);
+  .TrickResult-cardWrapper {
+    width: 80px;
   }
-}
-
-@keyframes winner-glow {
-  0%, 100% {
-    text-shadow: 0 0 5px rgba($color-gold-medium, 0.5);
+  .TrickResult .Card {
+    --card-width: 80px;
+    --card-height: 136px;
   }
-  50% {
-    text-shadow: 0 0 20px rgba($color-gold-medium, 0.8),
-                 0 0 30px rgba($color-gold-medium, 0.5);
+  .TrickResult .Card-expansion strong {
+    font-size: 0.65rem;
+  }
+  .TrickResult .Card-expansion small {
+    font-size: 0.48rem;
   }
 }

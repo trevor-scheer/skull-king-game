@@ -48,7 +48,7 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
 
     const { phase, myBid, leader, playerTurn } = currentRound ?? {};
     return (
-      <div className="InGame">
+      <div className={`InGame${phase === "bid" ? " InGame--bidding" : ""}`}>
         <header className="TableStatus">
           <h1>{spectator ? "Watching the table" : "Your table"}</h1>
           <p>
@@ -57,6 +57,7 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
             {(currentRound?.hands.length ?? 0) +
               (phase === "trick_result" ? 0 : 1)}
             {currentRound?.isTieBreaker ? " · Tie-breaker" : ""}
+            {me ? ` · You’ve won ${me.tricksWon}` : ""}
           </p>
           <p role="status">
             {phase === "bid"
@@ -85,15 +86,6 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
             </p>
           )}
         </header>
-        <div className="TableHelp-row">
-          {data?.state && <RulesReference settings={data.state} />}
-          {!spectator && (
-            <TableFeedback
-              yourTurn={playerTurn === me?.id}
-              trickId={currentRound?.lastCompletedHand?.id}
-            />
-          )}
-        </div>
         <GameTable
           players={players}
           currentPlayerId={me?.id ?? ""}
@@ -129,15 +121,18 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
         {!spectator && currentRound?.pirateAbility && <PirateAbility />}
         {!spectator && <PlankChoice />}
 
-        {me && (
-          <p className="InGame-myStats">
-            {me.bid == null ? "Your bid is hidden" : `Your bid: ${me.bid}`} ·
-            Won {me.tricksWon}
-          </p>
-        )}
-
         {/* Player's hand at the bottom */}
         {!spectator && <Hand />}
+
+        <div className="TableHelp-row">
+          {data?.state && <RulesReference settings={data.state} />}
+          {!spectator && (
+            <TableFeedback
+              yourTurn={playerTurn === me?.id}
+              trickId={currentRound?.lastCompletedHand?.id}
+            />
+          )}
+        </div>
 
         {/* Scorecard */}
         <Scorecard />
