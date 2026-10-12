@@ -1,20 +1,310 @@
-.AccountNav, .AccountActions { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; }
-.AccountNav { margin-left: auto; font-size: .95rem; }
-.AccountPage { max-width: 760px; margin: 0 auto; padding: 1.5rem; line-height: 1.6; }
-.AccountPage h1 { margin-top: 0; }
-.AccountPage form { display: grid; gap: 1rem; max-width: 420px; padding: 1rem 0; }
-.AccountPage label { display: grid; gap: .3rem; }
-.AccountPage input:not([type=checkbox]) { min-width: 0; padding: .7rem; border: 1px solid currentColor; border-radius: 6px; font: inherit; }
-.AccountPage button, .AccountResume button { min-height: 44px; padding: .55rem .85rem; cursor: pointer; font: inherit; }
-.AccountPage button:disabled { opacity: .65; cursor: wait; }
-.AccountPage details { margin: 1.2rem 0; }
-.AccountPage summary { cursor: pointer; padding: .5rem 0; }
-.AccountPage [role=alert] { border-left: 4px solid #d87b65; padding: .5rem 1rem; }
-.RecoveryCode { border: 2px solid #b49656; padding: 1rem; margin: 1rem 0; border-radius: 8px; }
-.RecoveryCode code { display: block; overflow-wrap: anywhere; user-select: all; margin: 1rem 0; }
-.AccountTable { overflow-x: auto; }
-.AccountTable table { width: 100%; border-collapse: collapse; }
-.AccountTable th, .AccountTable td { text-align: left; padding: .7rem; border-bottom: 1px solid #8885; }
-.AccountResume { font-size: .9rem; padding: .4rem 0; }
-.AccountResume p:empty { display: none; }
-@media(max-width: 540px) { .AccountNav { margin-left: 0; font-size: .85rem; } .AccountPage { padding: 1rem; } }
+.AccountNav,
+.AccountActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.AccountNav {
+  margin-left: auto;
+  font-size: 0.82rem;
+  font-weight: 500;
+  a {
+    color: #a5b5ba;
+    text-decoration: none;
+    padding: 0.65rem 0.35rem;
+  }
+  a:hover,
+  a[aria-current="page"] {
+    color: #f4efdf;
+  }
+  a:last-child {
+    border: 1px solid #d9b87655;
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    color: #d9b876;
+  }
+}
+.AccountPage {
+  max-width: 880px;
+  margin: clamp(1rem, 4vw, 3rem) auto;
+  padding: clamp(1.25rem, 4vw, 3rem);
+  background: #142731;
+  border: 1px solid #a5b5ba25;
+  border-radius: 12px;
+  color: #f4efdf;
+  line-height: 1.65;
+  h1 {
+    font-family: "Cinzel", Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    line-height: 1.2;
+    margin: 0.35rem 0 1rem;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+  }
+  h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 2rem 0 0.65rem;
+  }
+  > p {
+    color: #a5b5ba;
+    max-width: 65ch;
+  }
+  a {
+    color: #d9b876;
+    text-underline-offset: 0.2em;
+  }
+  form {
+    display: grid;
+    gap: 1.15rem;
+    max-width: 460px;
+    padding: 1.75rem 0 0.5rem;
+  }
+  form p {
+    color: #a5b5ba;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  label {
+    display: grid;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 400;
+  }
+  input:not([type="checkbox"]) {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #a5b5ba45;
+    border-radius: 6px;
+    background: #0b1720;
+    color: #f4efdf;
+    font: inherit;
+  }
+  input[type="checkbox"] {
+    accent-color: #d9b876;
+    width: 1rem;
+    height: 1rem;
+  }
+  button {
+    min-height: 44px;
+    padding: 0.7rem 1rem;
+    border: 1px solid #a5b5ba45;
+    border-radius: 6px;
+    background: transparent;
+    color: #f4efdf;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  button:hover:not(:disabled) {
+    border-color: #d9b876;
+    background: #d9b8760d;
+  }
+  form > button,
+  button[aria-pressed="true"] {
+    background: #d9b876;
+    color: #0b1720;
+    border-color: #d9b876;
+  }
+  form > button:hover:not(:disabled),
+  button[aria-pressed="true"]:hover {
+    background: #e6c993;
+    color: #0b1720;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  :is(button, input, a, summary):focus-visible {
+    outline: 2px solid #d9b876;
+    outline-offset: 4px;
+  }
+  details {
+    margin: 1.25rem 0 0;
+    border-top: 1px solid #a5b5ba25;
+    padding-top: 1rem;
+  }
+  summary {
+    cursor: pointer;
+    padding: 0.35rem 0;
+    color: #a5b5ba;
+    font-size: 0.9rem;
+  }
+  details p {
+    color: #a5b5ba;
+    font-size: 0.9rem;
+  }
+  [role="alert"] {
+    border: 1px solid #ce8e7955;
+    background: #ce8e790d;
+    color: #edb9a8;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+  }
+  [role="status"] {
+    color: #a8c7b6;
+  }
+}
+.AccountPage-eyebrow {
+  color: #d9b876 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+.AccountActions {
+  margin-top: 1.5rem;
+  gap: 0.5rem;
+}
+.AccountActions--tabs {
+  display: inline-flex;
+  padding: 0.3rem;
+  background: #0b1720;
+  border: 1px solid #a5b5ba20;
+  border-radius: 8px;
+  gap: 0.25rem;
+}
+.AccountActions--tabs button {
+  border-color: transparent;
+}
+.AccountSavedGames {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.AccountSavedGames li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #a5b5ba25;
+  font-size: 0.9rem;
+}
+.RecoveryCode {
+  background: #d9b8760a;
+  border: 1px solid #d9b87665;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 8px;
+}
+.RecoveryCode h2 {
+  margin-top: 0;
+  color: #d9b876;
+}
+.RecoveryCode p {
+  color: #a5b5ba;
+  font-size: 0.9rem;
+}
+.RecoveryCode code {
+  display: block;
+  overflow-wrap: anywhere;
+  user-select: all;
+  margin: 1.2rem 0;
+  background: #0b1720;
+  padding: 1rem;
+  border-radius: 6px;
+}
+.AccountTable {
+  overflow-x: auto;
+  margin-top: 2rem;
+}
+.AccountTable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+.AccountTable th,
+.AccountTable td {
+  text-align: left;
+  padding: 1rem 0.85rem;
+  border-bottom: 1px solid #a5b5ba25;
+}
+.AccountTable th {
+  color: #a5b5ba;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.AccountTable td:first-child {
+  color: #f4efdf;
+  font-weight: 500;
+}
+.AccountTable td {
+  color: #a5b5ba;
+}
+.AccountTable td:last-child {
+  color: #d9b876;
+}
+.AccountResume {
+  font-size: 0.8rem;
+  color: #a5b5ba;
+  padding: 0.9rem 0;
+  line-height: 1.6;
+}
+.AccountResume a {
+  color: #d9b876;
+  text-underline-offset: 0.2em;
+}
+.AccountResume button {
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #a5b5ba40;
+  border-radius: 5px;
+  background: transparent;
+  color: #f4efdf;
+  font: inherit;
+  cursor: pointer;
+}
+.AccountResume button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.AccountResume p:empty {
+  display: none;
+}
+.AccountResume [role="status"] {
+  color: #a8c7b6;
+}
+@media (max-width: 540px) {
+  .AccountNav {
+    margin-left: 0;
+    font-size: 0.75rem;
+    gap: 0.6rem;
+  }
+  .AccountPage {
+    margin: 1rem 0;
+  }
+  .AccountPage h1 {
+    overflow-wrap: anywhere;
+  }
+  .AccountActions--tabs {
+    display: flex;
+  }
+  .AccountActions--tabs button {
+    flex: 1 1 90px;
+    padding: 0.6rem 0.4rem;
+    font-size: 0.75rem;
+  }
+  .AccountSavedGames li {
+    flex-wrap: wrap;
+  }
+  .AccountTable th,
+  .AccountTable td {
+    padding: 0.8rem 0.5rem;
+  }
+}

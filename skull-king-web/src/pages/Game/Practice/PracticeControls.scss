@@ -1,4 +1,67 @@
-.PracticeControls { margin: 1rem auto; max-width: 760px; padding: 1rem; border: 1px solid #8885; border-radius: 8px; line-height: 1.5; }
-.PracticeControls h3 { margin-top: 0; }
-.PracticeControls button { font: inherit; padding: .6rem .8rem; min-height: 44px; margin: .3rem; cursor: pointer; }
-.PracticeControls button:disabled { opacity: .6; cursor: wait; }
+.PracticeControls {
+  width: 100%;
+  max-width: 1000px;
+  margin: 1rem auto;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid #a5b5ba25;
+  background: #142731;
+  border-radius: 8px;
+  color: #a5b5ba;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  h3 {
+    color: #f4efdf;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+  }
+  p {
+    max-width: 80ch;
+  }
+  button {
+    font: inherit;
+    font-weight: 500;
+    padding: 0.65rem 0.9rem;
+    min-height: 44px;
+    margin: 0.35rem 0.5rem 0.35rem 0;
+    cursor: pointer;
+    border: 1px solid #a5b5ba45;
+    border-radius: 5px;
+    background: transparent;
+    color: #f4efdf;
+  }
+  button:hover:not(:disabled) {
+    border-color: #d9b876;
+    background: #d9b8760a;
+  }
+  button:focus-visible {
+    outline: 2px solid #d9b876;
+    outline-offset: 4px;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .PracticeControls-notice {
+    color: #d9b876;
+    border-bottom: 1px solid #a5b5ba25;
+    padding-bottom: 1rem;
+    margin-top: 0;
+    font-size: 0.75rem;
+  }
+  .PracticeControls-leave {
+    color: #a5b5ba;
+    border-color: transparent;
+  }
+  [role="status"] {
+    color: #a8c7b6;
+    border-left: 2px solid #a8c7b6;
+    padding-left: 0.75rem;
+  }
+}
+@media (max-width: 540px) {
+  .PracticeControls button {
+    margin-right: 0.25rem;
+    max-width: 100%;
+  }
+}

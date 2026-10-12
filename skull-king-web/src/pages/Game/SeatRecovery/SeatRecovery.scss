@@ -1,0 +1,78 @@
+.SeatRecovery {
+  color: #a5b5ba;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  padding: 0.9rem 0;
+  border-top: 1px solid #a5b5ba25;
+  summary {
+    cursor: pointer;
+    color: #a5b5ba;
+    font-weight: 500;
+    min-height: 32px;
+  }
+  summary:hover {
+    color: #f4efdf;
+  }
+  p {
+    max-width: 65ch;
+  }
+  input {
+    min-height: 44px;
+    min-width: 0;
+    max-width: 100%;
+    width: min(100%, 400px);
+    padding: 0.65rem 0.8rem;
+    background: #0b1720;
+    color: #f4efdf;
+    border: 1px solid #a5b5ba45;
+    border-radius: 5px;
+    font: inherit;
+  }
+  > input {
+    display: block;
+    font-family: ui-monospace, monospace;
+    margin-bottom: 0.5rem;
+  }
+  button {
+    min-height: 44px;
+    padding: 0.6rem 0.8rem;
+    background: transparent;
+    color: #f4efdf;
+    border: 1px solid #a5b5ba45;
+    border-radius: 5px;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 0.4rem 0.5rem 0.4rem 0;
+  }
+  button:hover:not(:disabled) {
+    border-color: #d9b876;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  :is(button, input, summary):focus-visible {
+    outline: 2px solid #d9b876;
+    outline-offset: 4px;
+  }
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  form label {
+    display: grid;
+    gap: 0.35rem;
+    min-width: 0;
+    width: min(100%, 400px);
+  }
+  form button {
+    margin: 0;
+  }
+  [role="status"] {
+    color: #a8c7b6;
+  }
+}

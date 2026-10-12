@@ -47,12 +47,19 @@ export function Tutorial() {
   const lesson = lessons[step];
   const correct = choice === lesson?.answer;
   return (
-    <main className="Tutorial">
-      <Link to="/">← Back to rooms</Link>
-      <h1>Learn Skull King by playing</h1>
+    <section className="Tutorial" aria-labelledby="tutorial-title">
+      <Link className="Tutorial-back" to="/">
+        ← Back to rooms
+      </Link>
+      <p className="Tutorial-eyebrow">The essentials · Five short lessons</p>
+      <h1 id="tutorial-title">Learn Skull King by playing</h1>
+      <p className="Tutorial-intro">
+        A little strategy. A little mischief. Learn the rhythm of the game, one
+        choice at a time.
+      </p>
       {lesson ? (
-        <>
-          <p>
+        <section className="Tutorial-lesson">
+          <p className="Tutorial-step">
             Lesson {step + 1} of {lessons.length}
           </p>
           <progress
@@ -61,7 +68,7 @@ export function Tutorial() {
             aria-label="Tutorial progress"
           />
           <h2>{lesson.title}</h2>
-          <p>{lesson.prompt}</p>
+          <p className="Tutorial-prompt">{lesson.prompt}</p>
           <div className="Tutorial-choices">
             {lesson.choices.map((label, index) => (
               <button
@@ -74,12 +81,16 @@ export function Tutorial() {
             ))}
           </div>
           {choice != null && (
-            <p role="status">
+            <p
+              className={`Tutorial-feedback${correct ? " Tutorial-feedback--correct" : ""}`}
+              role="status"
+            >
               {correct ? "Correct. " : "Try again. "}
               {lesson.why}
             </p>
           )}
           <button
+            className="Tutorial-next"
             disabled={!correct}
             onClick={() => {
               setStep(step + 1);
@@ -88,15 +99,18 @@ export function Tutorial() {
           >
             Next lesson
           </button>
-        </>
+        </section>
       ) : (
-        <>
+        <section className="Tutorial-lesson Tutorial-complete">
+          <p className="Tutorial-step">Five lessons complete</p>
           <h2>You’re ready for the table.</h2>
           <p>
             Bid exactly, follow suit, and watch the special cards. Each room’s
             rules panel explains its optional cards and scoring.
           </p>
-          <Link to="/">Join or create a room</Link>
+          <Link className="Tutorial-start" to="/">
+            Join or create a room
+          </Link>
           <button
             onClick={() => {
               setStep(0);
@@ -105,8 +119,8 @@ export function Tutorial() {
           >
             Practice again
           </button>
-        </>
+        </section>
       )}
-    </main>
+    </section>
   );
 }

@@ -11,19 +11,36 @@ let directory: string;
 
 async function startServer(port = 0) {
   server = spawn(process.execPath, ["e2e/server.cjs"], {
-    env: { ...process.env, NODE_ENV: "test", DATA_DIR: directory, PORT: String(port), ALLOWED_ORIGINS: baseURL ?? "" },
+    env: {
+      ...process.env,
+      NODE_ENV: "test",
+      DATA_DIR: directory,
+      PORT: String(port),
+      ALLOWED_ORIGINS: baseURL ?? "",
+    },
     stdio: ["ignore", "pipe", "pipe"],
   });
   return new Promise<string>((resolve, reject) => {
     let output = "";
-    const timeout = setTimeout(() => reject(new Error(`Server did not start: ${output}`)), 15_000);
-    server.stderr!.on("data", chunk => { output += chunk; });
-    server.stdout!.on("data", chunk => {
+    const timeout = setTimeout(
+      () => reject(new Error(`Server did not start: ${output}`)),
+      15_000,
+    );
+    server.stderr!.on("data", (chunk) => {
+      output += chunk;
+    });
+    server.stdout!.on("data", (chunk) => {
       output += chunk;
       const match = output.match(/E2E_URL=(http:\/\/127\.0\.0\.1:\d+)/);
-      if (match) { clearTimeout(timeout); resolve(match[1]); }
+      if (match) {
+        clearTimeout(timeout);
+        resolve(match[1]);
+      }
     });
-    server.once("exit", code => { clearTimeout(timeout); reject(new Error(`Server exited ${code}: ${output}`)); });
+    server.once("exit", (code) => {
+      clearTimeout(timeout);
+      reject(new Error(`Server exited ${code}: ${output}`));
+    });
   });
 }
 
@@ -32,7 +49,11 @@ async function stopServer() {
   const exited = once(server, "exit");
   server.kill("SIGTERM");
   const timeout = setTimeout(() => server.kill("SIGKILL"), 10_000);
-  try { await exited; } finally { clearTimeout(timeout); }
+  try {
+    await exited;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 test.beforeAll(async () => {
@@ -45,7 +66,10 @@ test.afterAll(async () => {
   if (directory) rmSync(directory, { recursive: true, force: true });
 });
 
-test("three friends finish a match after a disconnect and server restart", async ({ browser, request }) => {
+test("three friends finish a match after a disconnect and server restart", async ({
+  browser,
+  request,
+}) => {
   const response = await request.post(`${baseURL}/graphql`, {
     data: {
       query: `mutation { newGame(roundSchedule:[1],tieBreakers:false) }`,
@@ -55,8 +79,10 @@ test("three friends finish a match after a disconnect and server restart", async
   const created = await response.json();
   expect(created.errors).toBeUndefined();
   const gameId = created.data.newGame;
-  const contexts = await Promise.all(Array.from({ length: 3 }, () => browser.newContext()));
-  const pages = await Promise.all(contexts.map(context => context.newPage()));
+  const contexts = await Promise.all(
+    Array.from({ length: 3 }, () => browser.newContext()),
+  );
+  const pages = await Promise.all(contexts.map((context) => context.newPage()));
   const names = ["Captain Ada", "Captain Grace", "Captain Linus"];
   try {
     const lobby = await pages[0].goto(`${baseURL}/game/${gameId}`);
@@ -64,19 +90,29 @@ test("three friends finish a match after a disconnect and server restart", async
     await pages[0].getByLabel(/Enter yer name/).fill(names[0]);
     await pages[0].getByRole("button", { name: "Board the Ship" }).click();
     await expect(pages[0].locator(".Lobby-playerList")).toContainText(names[0]);
-    const invite = await pages[0].getByRole("textbox", { name: "Invite link" }).inputValue();
+    const invite = await pages[0]
+      .getByRole("textbox", { name: "Invite link" })
+      .inputValue();
     expect(invite).toBe(`${baseURL}/game/${gameId}`);
     for (let index = 1; index < pages.length; index++) {
       await pages[index].goto(invite);
       await pages[index].getByLabel(/Enter yer name/).fill(names[index]);
-      await pages[index].getByRole("button", { name: "Board the Ship" }).click();
-      await expect(pages[index].locator(".Lobby-playerList")).toContainText(names[index]);
+      await pages[index]
+        .getByRole("button", { name: "Board the Ship" })
+        .click();
+      await expect(pages[index].locator(".Lobby-playerList")).toContainText(
+        names[index],
+      );
     }
     await expect(pages[0].locator(".Lobby-playerList li")).toHaveCount(3);
-    await expect(pages[1].getByRole("button", { name: "Set Sail!" })).toHaveCount(0);
+    await expect(
+      pages[1].getByRole("button", { name: "Set Sail!" }),
+    ).toHaveCount(0);
     await pages[0].getByRole("button", { name: "Set Sail!" }).click();
     for (const page of pages) {
-      await expect(page.getByRole("heading", { name: "Place Your Bid" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Place Your Bid" }),
+      ).toBeVisible();
       await expect(page.locator(".Hand-playerHand > li")).toHaveCount(1);
     }
 
@@ -88,87 +124,241 @@ test("three friends finish a match after a disconnect and server restart", async
     expect(await startServer(port)).toBe(baseURL);
     await contexts[1].setOffline(false);
     await pages[1].reload();
-    await expect(pages[1].getByRole("heading", { name: "Place Your Bid" })).toBeVisible();
-    await expect(pages[1].getByRole("button", { name: "Board the Ship" })).toHaveCount(0);
+    await expect(
+      pages[1].getByRole("heading", { name: "Place Your Bid" }),
+    ).toBeVisible();
+    await expect(
+      pages[1].getByRole("button", { name: "Board the Ship" }),
+    ).toHaveCount(0);
 
-    for (const page of pages) await page.getByRole("button", { name: "0", exact: true }).click();
+    for (const page of pages)
+      await page.getByRole("button", { name: "0", exact: true }).click();
     for (let turn = 0; turn < 3; turn++) {
       let active = -1;
-      await expect.poll(async () => {
-        const enabled = await Promise.all(pages.map(page => page.locator(".Hand-playerHand button:enabled").count()));
-        active = enabled.findIndex(count => count > 0);
-        return active;
-      }).toBeGreaterThanOrEqual(0);
-      await pages[active].locator(".Hand-playerHand button:enabled").first().click();
-      await expect(pages[active].locator(".Hand-playerHand button")).toHaveCount(0);
+      await expect
+        .poll(async () => {
+          const enabled = await Promise.all(
+            pages.map((page) =>
+              page.locator(".Hand-playerHand button:enabled").count(),
+            ),
+          );
+          active = enabled.findIndex((count) => count > 0);
+          return active;
+        })
+        .toBeGreaterThanOrEqual(0);
+      await pages[active]
+        .locator(".Hand-playerHand button:enabled")
+        .first()
+        .click();
+      await expect(
+        pages[active].locator(".Hand-playerHand button"),
+      ).toHaveCount(0);
     }
     for (const page of pages) {
-      await expect(page.getByRole("heading", { name: "Game Over!" })).toBeVisible();
-      for (const name of names) await expect(page.locator(".Scorecard")).toContainText(name);
+      await expect(
+        page.getByRole("heading", { name: "Game Over!" }),
+      ).toBeVisible();
+      for (const name of names)
+        await expect(page.locator(".Scorecard")).toContainText(name);
     }
     await pages[2].reload();
-    await expect(pages[2].getByRole("heading", { name: "Game Over!" })).toBeVisible();
-    await pages[0].getByRole("button", { name: "Rematch with this crew" }).click();
+    await expect(
+      pages[2].getByRole("heading", { name: "Game Over!" }),
+    ).toBeVisible();
+    await pages[0]
+      .getByRole("button", { name: "Rematch with this crew" })
+      .click();
     await expect(pages[0].locator(".Lobby-playerList li")).toHaveCount(3);
     await pages[1].getByRole("button", { name: "Join the rematch" }).click();
     await expect(pages[1].locator(".Lobby-playerList li")).toHaveCount(3);
     expect(pages[1].url()).toBe(pages[0].url());
-    await expect(pages[1].getByRole("button", { name: "Board the Ship" })).toHaveCount(0);
+    await expect(
+      pages[1].getByRole("button", { name: "Board the Ship" }),
+    ).toHaveCount(0);
   } finally {
-    await Promise.allSettled(contexts.map(context => context.close()));
+    await Promise.allSettled(contexts.map((context) => context.close()));
   }
 });
 
-test("an account resumes on another device and records practice without ranking it", async ({ browser, request }) => {
+test("an account resumes on another device and records practice without ranking it", async ({
+  browser,
+  request,
+}) => {
   const first = await browser.newContext();
-  const second = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const second = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
   const username = `crew_${Date.now()}`;
-  const password = 'A long test passphrase 42';
+  const password = "A long test passphrase 42";
   try {
     const page = await first.newPage();
     await page.goto(`${baseURL}/account`);
-    await page.getByRole('button', { name: 'Create account', exact: true }).click();
-    await page.getByLabel('Username', { exact: true }).fill(username);
-    await page.getByLabel('Password', { exact: true }).fill(password);
-    await page.locator('form').getByRole('button', { name: 'Create account', exact: true }).click();
-    await expect(page.getByRole('heading', { name: `Ahoy, ${username}` })).toBeVisible();
-    await expect(page.locator('.RecoveryCode code')).not.toBeEmpty();
-    const created = await (await request.post(`${baseURL}/graphql`, { data: { query: 'mutation { newGame(roundSchedule:[1],tieBreakers:false) }' } })).json();
+    await page
+      .getByRole("button", { name: "Create account", exact: true })
+      .click();
+    await page.getByLabel("Username", { exact: true }).fill(username);
+    await page.getByLabel("Password", { exact: true }).fill(password);
+    await page
+      .locator("form")
+      .getByRole("button", { name: "Create account", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: `Welcome, ${username}` }),
+    ).toBeVisible();
+    await expect(page.locator(".RecoveryCode code")).not.toBeEmpty();
+    const created = await (
+      await request.post(`${baseURL}/graphql`, {
+        data: {
+          query: "mutation { newGame(roundSchedule:[1],tieBreakers:false) }",
+        },
+      })
+    ).json();
     const gameId = created.data.newGame;
     await page.goto(`${baseURL}/game/${gameId}`);
-    await page.getByLabel(/Enter yer name/).fill('Practice Captain');
-    await page.getByRole('button', { name: 'Board the Ship' }).click();
-    await expect(page.locator('.AccountResume')).toContainText(`Seat saved to ${username}`);
-    await page.getByRole('button', { name: 'Add practice pirate' }).click();
-    await expect(page.locator('.Lobby-playerList li')).toHaveCount(2);
-    await page.getByRole('button', { name: 'Set Sail!' }).click();
-    await expect(page.getByRole('heading', { name: 'Place Your Bid' })).toBeVisible();
+    await page.getByLabel(/Enter yer name/).fill("Practice Captain");
+    await page.getByRole("button", { name: "Board the Ship" }).click();
+    await expect(page.locator(".AccountResume")).toContainText(
+      `Seat saved to ${username}`,
+    );
+    await page.getByRole("button", { name: "Add practice pirate" }).click();
+    await expect(page.locator(".Lobby-playerList li")).toHaveCount(2);
+    await page.getByRole("button", { name: "Set Sail!" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Place Your Bid" }),
+    ).toBeVisible();
     await first.close();
 
     const mobile = await second.newPage();
     await mobile.goto(`${baseURL}/account`);
-    await mobile.getByLabel('Username', { exact: true }).fill(username);
-    await mobile.getByLabel('Password', { exact: true }).fill(password);
-    await mobile.locator('form').getByRole('button', { name: 'Sign in', exact: true }).click();
-    await mobile.getByRole('button', { name: 'Resume game', exact: true }).click();
-    await expect(mobile.getByRole('heading', { name: 'Place Your Bid' })).toBeVisible();
-    await mobile.getByRole('button', { name: 'Let autoplay take my turns' }).click();
-    await expect(mobile.getByRole('heading', { name: 'Game Over!' })).toBeVisible({ timeout: 30_000 });
-    await mobile.getByRole('link', { name: 'History', exact: true }).click();
-    await expect(mobile.locator('tbody tr')).toHaveCount(1);
-    await expect(mobile.locator('tbody')).toContainText('Practice');
-    await mobile.getByRole('link', { name: 'Leaderboard', exact: true }).click();
-    await expect(mobile.locator('.AccountPage')).toContainText('Finish a human match');
-    await expect(mobile.locator('tbody')).toHaveCount(0);
-    await mobile.getByRole('link', { name: 'Learn to play', exact: true }).click();
-    for (const answer of ['GREEN 3', 'BLACK 2', 'Mermaid', 'Avoid winning another trick', '40']) {
-      await mobile.getByRole('button', { name: answer, exact: true }).click();
-      await expect(mobile.getByRole('status')).toContainText('Correct.');
-      await mobile.getByRole('button', { name: 'Next lesson' }).click();
+    await mobile.getByLabel("Username", { exact: true }).fill(username);
+    await mobile.getByLabel("Password", { exact: true }).fill(password);
+    await mobile
+      .locator("form")
+      .getByRole("button", { name: "Sign in", exact: true })
+      .click();
+    await mobile
+      .getByRole("button", { name: "Resume game", exact: true })
+      .click();
+    await expect(
+      mobile.getByRole("heading", { name: "Place Your Bid" }),
+    ).toBeVisible();
+    await mobile
+      .getByRole("button", { name: "Let autoplay take my turns" })
+      .click();
+    await expect(
+      mobile.getByRole("heading", { name: "Game Over!" }),
+    ).toBeVisible({ timeout: 30_000 });
+    await mobile.getByRole("link", { name: "History", exact: true }).click();
+    await expect(mobile.locator("tbody tr")).toHaveCount(1);
+    await expect(mobile.locator("tbody")).toContainText("Practice");
+    await mobile
+      .getByRole("link", { name: "Leaderboard", exact: true })
+      .click();
+    await expect(mobile.locator(".AccountPage")).toContainText(
+      "Finish a human match",
+    );
+    await expect(mobile.locator("tbody")).toHaveCount(0);
+    await mobile
+      .getByRole("link", { name: "Learn to play", exact: true })
+      .click();
+    for (const answer of [
+      "GREEN 3",
+      "BLACK 2",
+      "Mermaid",
+      "Avoid winning another trick",
+      "40",
+    ]) {
+      await mobile.getByRole("button", { name: answer, exact: true }).click();
+      await expect(mobile.getByRole("status")).toContainText("Correct.");
+      await mobile.getByRole("button", { name: "Next lesson" }).click();
     }
-    await expect(mobile.getByRole('heading', { name: 'You’re ready for the table.' })).toBeVisible();
-    expect(await mobile.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expect(
+      mobile.getByRole("heading", { name: "You’re ready for the table." }),
+    ).toBeVisible();
+    expect(
+      await mobile.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
   } finally {
     await Promise.allSettled([first.close(), second.close()]);
   }
+});
+
+test("custom setup supports a full crew and readable responsive hands", async ({
+  page,
+  request,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(baseURL);
+  await page
+    .getByRole("button", { name: /Everything, including the expansion/ })
+    .click();
+  await page.getByText("Customize individual cards", { exact: false }).click();
+  await expect(
+    page.getByRole("checkbox", { name: /^White Whale/ }),
+  ).toBeChecked();
+  await page
+    .getByLabel("Round schedule", { exact: true })
+    .selectOption("custom");
+  await page.getByLabel("Cards per round, separated by commas").fill("10");
+  await page.getByText("Scoring & special rules", { exact: false }).click();
+  await page.getByRole("checkbox", { name: /^Pirate abilities/ }).check();
+  await page
+    .getByRole("button", { name: "Start New Voyage", exact: true })
+    .click();
+  await page.getByLabel(/Enter yer name/).fill("Captain Longname");
+  await page.getByRole("button", { name: "Board the Ship" }).click();
+  await expect(page.locator(".Lobby-playerList li")).toHaveCount(1);
+  const gameId = page.url().split("/").pop();
+  for (let index = 1; index <= 8; index++) {
+    const result = await (
+      await request.post(`${baseURL}/graphql`, {
+        data: {
+          query:
+            "mutation($gameId:String!,$name:String!) { addPlayer(gameId:$gameId,name:$name) }",
+          variables: { gameId, name: `Captain of the Seas ${index}` },
+        },
+      })
+    ).json();
+    expect(result.errors).toBeUndefined();
+  }
+  await expect(page.locator(".Lobby-playerList li")).toHaveCount(9);
+  await page.getByRole("button", { name: "Set Sail!" }).click();
+  await expect(page.locator(".Hand-playerHand > li")).toHaveCount(10);
+  await expect(page.locator(".GameTable-opponent")).toHaveCount(8);
+  await expect(
+    page.getByRole("heading", { name: "Place Your Bid" }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  expect(
+    await page
+      .locator(".Hand-playerHand")
+      .evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
+  ).toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  expect(
+    await page
+      .locator(".Hand-playerHand")
+      .evaluate((element) => element.scrollWidth > element.clientWidth),
+  ).toBe(true);
+  const hand = await page.locator(".Hand").boundingBox();
+  const bids = await page.locator(".BidForm").boundingBox();
+  expect(hand!.y).toBeLessThan(bids!.y);
+  await page
+    .locator(".BidForm")
+    .getByRole("button", { name: "0", exact: true })
+    .click();
+  await expect(page.locator(".AwaitingBids")).toBeVisible();
 });

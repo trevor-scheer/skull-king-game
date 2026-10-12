@@ -1,55 +1,115 @@
-@use '../../../styles/variables' as *;
-@use '../../../styles/mixins' as *;
-
 .PostGame {
-  @include flex-column-center;
-  gap: var(--space-xl);
-  padding: var(--space-xl);
-  animation: fade-in-up 0.5s ease-out;
-
+  width: min(100%, 1000px);
+  margin: 1.5rem auto 3rem;
+  color: #f4efdf;
   &-header {
     text-align: center;
-    animation: scale-in 0.6s ease-out 0.2s backwards;
+    padding: clamp(1.5rem, 5vw, 3.5rem) 1rem 2rem;
   }
-
+  &-eyebrow {
+    color: #d9b876;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+  }
   &-title {
-    font-family: $font-display;
-    font-size: $font-size-4xl;
-    @include gold-text;
+    font-family: "Cinzel", Georgia, serif;
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
     margin: 0;
-
-    // Celebration effect
-    animation: float 3s ease-in-out infinite;
-
-    &::before {
-      content: '🏴‍☠️ ';
-    }
-    &::after {
-      content: ' 🏴‍☠️';
-    }
+    color: #f4efdf;
   }
-
   &-subtitle {
-    font-family: $font-body;
-    font-size: $font-size-xl;
-    color: $color-text-light;
-    margin: var(--space-sm) 0 0;
-    font-style: italic;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: #a5b5ba;
+    line-height: 1.6;
+    margin: 1rem auto 0;
+    max-width: 48ch;
   }
-
+  &-stats {
+    display: flex;
+    justify-content: center;
+    gap: clamp(1rem, 5vw, 4rem);
+    margin: 2rem 0 0;
+  }
+  &-stats div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.35rem;
+    min-width: 70px;
+  }
+  &-stats dt {
+    color: #a5b5ba;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  &-stats dd {
+    color: #d9b876;
+    font-size: 1.75rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
   &-footer {
-    margin-top: var(--space-lg);
-    animation: fade-in-up 0.5s ease-out 0.4s backwards;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
   }
-
   &-button {
-    @include button-secondary;
-    padding: var(--space-md) var(--space-xl);
-    font-size: $font-size-lg;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.85rem 1.4rem;
+    border: 1px solid #a5b5ba45;
+    border-radius: 6px;
+    background: transparent;
+    color: #f4efdf;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
     text-decoration: none;
-
-    &::before {
-      content: '⚓ ';
-    }
+    cursor: pointer;
+  }
+  button.PostGame-button {
+    background: #d9b876;
+    color: #0b1720;
+    border-color: #d9b876;
+  }
+  &-button:hover:not(:disabled) {
+    border-color: #d9b876;
+  }
+  button.PostGame-button:hover:not(:disabled) {
+    background: #e6c993;
+  }
+  &-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  &-button:focus-visible {
+    outline: 2px solid #d9b876;
+    outline-offset: 4px;
+  }
+  [role="alert"] {
+    text-align: center;
+    color: #edb9a8;
+  }
+  > .Scorecard {
+    width: 100%;
+  }
+}
+@media (max-width: 540px) {
+  .PostGame-footer {
+    flex-direction: column;
+  }
+  .PostGame-stats {
+    gap: 1.5rem;
   }
 }
