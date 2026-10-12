@@ -89,3 +89,51 @@ test('a repeated card ID in a later round does not inherit its earlier card face
   expect(state.currentRound).toEqual({ __typename: 'Round', id: 3,
     cardsPlayed: [{ __typename: 'PlayedCard', id: played.id, playerId: 'anne' }] });
 });
+
+const playerTable = gql`query PlayerTable($gameId:String!,$playerToken:String) {
+  state(gameId:$gameId,playerToken:$playerToken) {
+    id players { id name isAutomated handCount bid tricksWon }
+  }
+}`;
+const practiceState = gql`query PracticeState($gameId:String!,$playerToken:String) {
+  state(gameId:$gameId,playerToken:$playerToken) {
+    phase practice maxPlayers me { id isAutoplay }
+    players { id name isBot isAutomated isAutoplay lastSeenAt }
+  }
+}`;
+const seats = [
+  { __typename:'Player', id:'anne', name:'Anne', isAutomated:false, handCount:3, bid:1, tricksWon:0 },
+  { __typename:'Player', id:'mary', name:'Mary', isAutomated:false, handCount:2, bid:2, tricksWon:1 },
+];
+const seatState = (players = seats) => ({ state:{__typename:'GameState',id:'room',players} });
+function writePractice(players = seats, viewer = variables) {
+  client.cache.writeQuery({ query:practiceState, variables:viewer, data:{ state:{
+    __typename:'GameState', phase:'play', practice:true, maxPlayers:8,
+    me:{__typename:'Player',id:'anne',isAutoplay:false},
+    players:players.map(({id,name,isAutomated}) => ({__typename:'Player',id,name,isAutomated,
+      isBot:false,isAutoplay:false,lastSeenAt:12345})),
+  } } });
+}
+
+test('practice seat updates preserve hand counts, bids, and tricks for matching players', () => {
+  client.cache.writeQuery({query:playerTable,variables,data:seatState()});
+  writePractice();
+  expect(client.cache.readQuery({query:playerTable,variables})).toEqual(seatState());
+});
+
+test('incoming player membership and order stay authoritative without copying another seat', () => {
+  client.cache.writeQuery({query:playerTable,variables,data:seatState()});
+  writePractice([seats[1], {...seats[0],id:'new-seat',name:'New pirate'}]);
+  const result = client.cache.readQuery<any>({query:playerTable,variables,returnPartialData:true});
+  expect(result!.state.players).toEqual([
+    seats[1], {__typename:'Player',id:'new-seat',name:'New pirate',isAutomated:false},
+  ]);
+  writePractice([]);
+  expect(client.cache.readQuery({query:playerTable,variables})).toEqual(seatState([]));
+});
+
+test('practice player updates remain scoped to their viewer', () => {
+  client.cache.writeQuery({query:playerTable,variables,data:seatState()});
+  writePractice([{...seats[0],name:'Other viewer'}], {...variables,playerToken:''});
+  expect(client.cache.readQuery({query:playerTable,variables})).toEqual(seatState());
+});
