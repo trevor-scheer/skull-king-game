@@ -6,6 +6,12 @@ retired; frontend development belongs in `skull-king-web/`.
 
 ## Play
 
+Open [skullking.t11r.dev](https://skullking.t11r.dev). Choose **Past Your Bedtime**
+for a one-round trial, select **Start New Voyage**, and enter your name. Add a
+practice pirate to try it solo, or send the room's invite link to friends. Select
+**Set Sail!** when the crew is ready. **Learn to play** covers the basics.
+
+
 Create a room, share its invite link, and join with a name. Accounts are optional.
 The first human player hosts the lobby. Add practice pirates to play on your own,
 or invite friends and let spectators watch the public table.

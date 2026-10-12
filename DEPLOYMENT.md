@@ -3,6 +3,19 @@
 The server serves the built web app and API from one origin. Use Node 24 and the
 Yarn version pinned in `package.json`.
 
+## Hosted instance
+
+The game is hosted at [skullking.t11r.dev](https://skullking.t11r.dev) on the
+existing `server` Docker host. The `skull-king` service belongs to the
+`~/media-docker` Compose project; source is in `~/skull-king-game` on `main`.
+SWAG handles HTTPS and live event streams. No application port is published on
+the host. Persistent state lives in the `media-docker_skull_king_data` volume.
+
+For updates, first verify source CI, fast-forward the clean source checkout,
+then run `docker compose up -d --build skull-king` from `~/media-docker`.
+Follow that repository's `skull-king/AGENTS.md` for proxy trust and data backups.
+Deployment is manual; a source push does not automatically replace the live image.
+
 ## Docker
 
 Copy `.env.example` to `.env`, set `ALLOWED_ORIGINS` to the public origin players
