@@ -14,11 +14,11 @@ pushes, and publishing. Do not assume this file authorizes future external actio
 
 ## Architecture
 
-| Workspace | Main files | Responsibility |
-| --- | --- | --- |
-| `skull-king-core` | `game.ts`, `cards.ts`, `deck.ts`, `trickRules.ts`, `bonusPoints.ts`, `scoring.ts`, `pirateAbilities.ts`, `botPolicy.ts` | Authoritative rules and match transitions |
-| `skull-king-server` | `index.ts`, `typeDefs.ts`, `resolvers.ts`, `rooms.ts`, `accounts.ts` | API validation, persistence, account identity, and live updates |
-| `skull-king-web` | `router.tsx`, `client.ts`, `hooks/`, `pages/` | Presentation, room identity, accounts, and generated operations |
+| Workspace           | Main files                                                                                                              | Responsibility                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `skull-king-core`   | `game.ts`, `cards.ts`, `deck.ts`, `trickRules.ts`, `bonusPoints.ts`, `scoring.ts`, `pirateAbilities.ts`, `botPolicy.ts` | Authoritative rules and match transitions                       |
+| `skull-king-server` | `index.ts`, `typeDefs.ts`, `resolvers.ts`, `rooms.ts`, `accounts.ts`                                                    | API validation, persistence, account identity, and live updates |
+| `skull-king-web`    | `router.tsx`, `client.ts`, `hooks/`, `pages/`                                                                           | Presentation, room identity, accounts, and generated operations |
 
 The core uses Node crypto and binary serialization; it is not a browser library.
 Do not put authoritative rules in React or transport details in the engine.
@@ -101,6 +101,13 @@ The latter is an explicit interpretation, not quoted publisher wording. Mermaid
 capturing Skull King scores 40 in the selected edition. Rascal halves ordinary
 capture bonuses when off by one; Loot and Pirate wagers still require exact bids.
 Preserve tests for these decisions.
+
+## Presentation
+
+Follow [visual design](docs/visual-design.md) for UI changes. Keep the ink, ivory,
+and brass palette, locally served fonts, scoped component styles, readable cards,
+and visible keyboard focus. Verify desktop and phone layouts in the browser;
+passing unit tests does not establish visual quality.
 
 ## Build and validate
 
