@@ -5,5 +5,8 @@
   "description": "Skull King core game logic",
   "main": "dist/index.js",
   "author": "Trevor Scheer <trevor.scheer@gmail.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "engines": {
+    "node": ">=24"
+  }
 }

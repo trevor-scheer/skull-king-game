@@ -1,277 +1,42 @@
-# Skull King Game - Improvement Roadmap
+# Implemented game roadmap
 
-A comprehensive list of improvements organized by category, from critical fixes to polish items.
+The game-night roadmap is implemented across the engine, server, and browser.
+This replaces the old brainstorming list, which contained stale rules and claims
+about missing code. Use tests and the rules documents to assess behavior.
 
-> Historical brainstorming list from January 2026. Several claims below are
-> stale or incorrect, including Mermaid behavior and opponent-hand exposure.
-> Use [AGENTS.md](AGENTS.md) for the current implementation, validated fixes,
-> and remaining priorities. The October reliability pass adds full-game API
-> tests, action validation, safe trick advancement, and a client-cache regression.
+| Area | Delivered |
+| --- | --- |
+| Rules | Configurable base cards and powers, all expansion cards, Graybeard, Classic/Rascal, Cannonball, schedules, tiebreakers |
+| Reliability | Authorized actions, stale-request protection, retry feedback, durable rooms, preserved random state, automatic trick transitions |
+| Recovery | Saved guest seats, portable recovery codes, account-linked seats, restart recovery, leave/autoplay and absent-player handling |
+| Table | Legal-card guidance, visible bid/trick counts, suit cues, result explanations, scores, public spectators, invites, rematches |
+| Learning | Interactive tutorial, in-room rules reference, private-information practice bots |
+| Accessibility | Keyboard/touch controls, readable suit labels, responsive table, reduced motion, optional audio and haptics |
+| Accounts | Optional credentials, recovery codes, device/session controls, data export/deletion, match history, casual leaderboard |
+| Operations | Same-origin serving, bounded HTTP/SSE work, durable storage, Docker, health check, CI, real multi-browser restart test |
 
----
+## Product and architecture decisions
 
-## Critical Issues
+Guest play remains the default. Accounts add continuity and recorded results;
+they are not required to join. Practice and autoplay matches stay out of casual
+rankings. There is no competitive rating or claim of cheat-proof play.
 
-### Missing Game Rules
+The deployment target is one persistent server process. SSE invalidation plus
+bounded polling supplies live updates and recovery. Redis, multiple replicas,
+and a second subscription transport are unnecessary for that target; adding
+replicas requires a separate ownership and transaction design.
 
-**Mermaid Cards Not Implemented**
-The Skull King rules specify 2 Mermaid cards with unique mechanics:
-- Mermaids beat Skull King (captures him for bonus points)
-- Mermaids lose to Pirates and all numbered cards
-- Mermaids lose to Escapes (both have no value)
+Room results and account match history are available. A downloadable replay of
+every historical card is not implemented. Offline multiplayer, public chat,
+ratings, achievements, and custom artwork were speculative additions in the old
+brainstorm, not requirements for the rules-complete game. They are not represented
+as delivered features.
 
-This affects:
-- `skull-king-core/src/cards.ts` - Add Mermaid card type
-- `skull-king-core/src/deck.ts` - Include 2 Mermaids in deck (68→70 cards)
-- `skull-king-core/src/game.ts` - Update `determineWinningCard()` logic
-- `skull-king-server/src/typeDefs.ts` - Add Mermaid to GraphQL schema
-- `skull-king-web/` - Add Mermaid card rendering and assets
+## Release checks
 
-### Security Vulnerabilities
-
-**Card Data Privacy**
-Currently, the server sends complete hand data for all players in the game state response. Opponents should not be able to see each other's cards.
-
-Fix: Filter hand data in resolvers to only return the requesting player's cards.
-
-**Deck Shuffle Bug**
-In `deck.ts`, the seeded shuffle uses a decimal seed (0.3, 0.4) with `Math.floor()`, which always produces 0 for small seeds, resulting in predictable shuffles.
-
----
-
-## Architecture Improvements
-
-### Real-time Updates
-**Replace Polling with GraphQL Subscriptions**
-Currently 10+ components poll at 2000ms intervals. This creates unnecessary server load and latency in updates.
-
-Implement:
-- WebSocket transport via `graphql-ws`
-- Subscription resolvers for game state changes
-- PubSub mechanism for broadcasting updates
-- Client subscription hooks replacing polling
-
-### API Hardening
-- Add input validation layer (before hitting game logic)
-- Implement rate limiting
-- Add request logging and monitoring
-- Disable GraphQL introspection in production
-- Add proper authentication/authorization flow
-
-### Code Organization
-- Extract inline GraphQL queries to `.graphql` files
-- Add GraphQL schema documentation with descriptions
-- Create shared types package for server/web GraphQL types
-- Consider tRPC for end-to-end type safety (alternative to codegen)
-
----
-
-## Code Quality
-
-### Developer Tooling
-- Configure ESLint with TypeScript rules
-- Set up Prettier with consistent formatting
-- Add pre-commit hooks (husky + lint-staged)
-- CI pipeline for lint/test/build
-
-### Refactoring Needed
-- **DRY up `determineWinningCard()`** - Two TODO comments note duplicated logic (lines 279 & 297 in game.ts)
-- Remove stale TODO comments (line 408 says "implement endGame" but it's implemented)
-- Address all `useGameId() ?? ""` fallback patterns with proper null handling
-- Extract card type guards to shared utilities
-
-### Type Safety
-- Use GraphQL enums instead of strings for phases, card types
-- Stricter typing for player tokens
-- Remove `any` types from codebase
-
----
-
-## Testing
-
-### Current State
-- Core logic: ~60% coverage (good)
-- Server: 0% coverage
-- Web: 0% coverage
-- E2E: None
-
-### Improvements Needed
-- Add server resolver unit tests
-- Add React component tests (React Testing Library)
-- Add E2E tests (Playwright or Cypress)
-- Integration tests for core + server interaction
-- Add negative path / edge case testing
-- Set up test coverage reporting
-
----
-
-## Error Handling
-
-### Current Problems
-- 10+ `// TODO: error handling` comments in web components
-- Most errors just `console.error()` with no UI feedback
-- No React error boundaries
-- Network errors cause infinite "Loading..." states
-- Invalid tokens fail silently
-
-### Improvements
-- Add global error boundary component
-- Create error UI components (toast notifications, error states)
-- Implement retry logic for transient failures
-- Add offline detection and messaging
-- Structured error responses from server
-- Client-side error tracking (Sentry or similar)
-
----
-
-## UX / Gameplay
-
-### Game Flow
-- **Reconnection handling** - Allow players to rejoin if they refresh or lose connection
-- **Spectator mode** - Watch games without playing
-- **Game history** - Review previous rounds/tricks
-- **Undo/replay** - See animation of what just happened
-- **Turn timer** - Optional time limit per turn
-- **Game settings** - Configurable options (deck variants, scoring rules)
-
-### Player Experience
-- **Better onboarding** - Tutorial or rule explanations
-- **Card tooltips** - Explain what each special card does
-- **Sound effects** - Card plays, trick wins, round transitions
-- **Animations** - Card dealing, playing, trick collection
-- **Mobile optimization** - Touch-friendly card selection
-- **Keyboard shortcuts** - Quick card play for power users
-
-### Multiplayer
-- **Player avatars** - Visual distinction between players
-- **In-game chat** - Communication between players
-- **Emotes/reactions** - Quick non-verbal communication
-- **Private games** - Password-protected rooms
-- **Game invites** - Shareable links with player names
-
-### Feedback & Information
-- **Bid summary** - Show all bids during play phase
-- **Trick count** - Running count of tricks won per player
-- **Round summary** - Animated scoring at round end
-- **Game log** - Scrollable history of plays
-- **Win probability** - Optional stats/analytics
-
----
-
-## Appearance / UI
-
-### Visual Polish
-- **Card artwork** - Custom illustrated cards vs. text-based
-- **Card animations** - Smooth transitions for play/collect
-- **Table felt texture** - More realistic game surface
-- **Player positions** - Better visual arrangement for 2-6 players
-- **Responsive cards** - Scale appropriately on all screen sizes
-
-### Theme & Branding
-- **Logo/branding** - Custom Skull King logo
-- **Loading states** - Themed spinners/skeletons
-- **Empty states** - Illustrated empty game list, waiting room
-- **Favicon** - Custom icon
-- **Dark/light mode** - Theme toggle (foundation exists in CSS vars)
-
-### Accessibility
-- **Color blind mode** - Alternative color indicators
-- **Screen reader support** - ARIA labels for game state
-- **Keyboard navigation** - Full keyboard accessibility
-- **Font size options** - Scalable text
-- **High contrast mode** - For visibility
-
-### Mobile
-- **Touch gestures** - Swipe to play cards
-- **Portrait layout** - Optimized for phone orientation
-- **PWA support** - Installable web app
-- **Offline mode** - At least view past games
-
----
-
-## Infrastructure
-
-### Deployment
-- **Environment configs** - Dev/staging/production
-- **Docker setup** - Containerized deployment
-- **CI/CD pipeline** - Automated testing and deployment
-- **Health checks** - Server monitoring endpoints
-
-### Persistence
-- **Database integration** - Replace in-memory storage
-- **Game persistence** - Resume games after server restart
-- **Player accounts** - Optional registration for stats
-- **Leaderboards** - Track win rates and achievements
-
-### Scalability
-- **Horizontal scaling** - Multiple server instances
-- **Redis for pub/sub** - Distributed game state updates
-- **CDN for static assets** - Faster load times
-- **Connection pooling** - Efficient resource usage
-
----
-
-## Documentation
-
-- **API documentation** - GraphQL schema docs
-- **Contributing guide** - How to set up and contribute
-- **Architecture decision records** - Document key choices
-- **Deployment guide** - How to deploy to production
-- **Game rules reference** - In-app rules documentation
-
----
-
-## Improvement Checklist
-
-Track progress by checking items as completed.
-
-### Critical (P0)
-- [ ] Implement Mermaid cards (deck, game logic, UI)
-- [ ] Fix card data privacy (don't expose opponent hands)
-- [ ] Fix deck shuffle seed bug
-
-### High Priority (P1)
-- [ ] Add React error boundaries
-- [ ] Create error UI components (toasts, error states)
-- [ ] Set up ESLint + Prettier
-- [ ] Add server resolver tests
-- [ ] Implement GraphQL subscriptions (replace polling)
-- [ ] Add input validation to server
-
-### Medium Priority (P2)
-- [ ] Add E2E tests (Playwright)
-- [ ] Add React component tests
-- [ ] Refactor `determineWinningCard()` (DRY)
-- [ ] Clean up stale TODO comments
-- [ ] Add pre-commit hooks (husky)
-- [ ] Use GraphQL enums for string fields
-- [ ] Add reconnection handling
-- [ ] Improve mobile responsiveness
-
-### Lower Priority (P3)
-- [ ] Add card tooltips
-- [ ] Implement sound effects
-- [ ] Add card animations
-- [ ] Create spectator mode
-- [ ] Add in-game chat
-- [ ] Implement game history view
-- [ ] Add player avatars
-- [ ] Create dark/light theme toggle
-- [ ] Add keyboard shortcuts
-
-### Future Enhancements (P4)
-- [ ] Database persistence (replace in-memory)
-- [ ] Player accounts and authentication
-- [ ] Leaderboards and statistics
-- [ ] PWA support
-- [ ] Tutorial/onboarding flow
-- [ ] Custom card artwork
-- [ ] Private games with passwords
-- [ ] Turn timer option
-- [ ] Accessibility improvements (a11y audit)
-- [ ] Docker deployment setup
-- [ ] CI/CD pipeline
-
----
-
-*Last updated: January 2026*
+Run the commands in [AGENTS.md](AGENTS.md). Verify the browser match across a real
+server restart, account seat recovery from another browser, practice exclusion
+from rankings, tutorial use on a narrow viewport, and rematch seat continuity.
+Use [DEPLOYMENT.md](DEPLOYMENT.md) to configure HTTPS, trusted proxies, persistent
+storage, and backups before public hosting. A successful local build does not
+publish the game or provision a production host.
