@@ -24,6 +24,16 @@ export const client = new ApolloClient({
         keyFields: false,
         merge: true,
         fields: {
+          players: {
+            merge(existing: StoreObject[] = [], incoming: StoreObject[], { readField, mergeObjects }) {
+              const previous = new Map(existing.map(player => [readField("id", player), player]));
+              // Seat summaries omit table stats; incoming seats and order remain authoritative.
+              return incoming.map(player => {
+                const match = previous.get(readField("id", player));
+                return match ? mergeObjects(match, player) : player;
+              });
+            },
+          },
           me: {
             merge(existing, incoming, { readField, mergeObjects }) {
               return existing && incoming && readField("id", existing) === readField("id", incoming)
