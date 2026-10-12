@@ -25,6 +25,7 @@ jobs:
         run: git diff --exit-code -- skull-king-web/src/types/graphqlTypes.ts
       - run: corepack yarn test --runInBand
       - run: corepack yarn build
+      - run: node scripts/rules-matrix.cjs
       - run: corepack yarn build:web
       - run: corepack yarn playwright install --with-deps chromium
       - run: corepack yarn test:e2e
