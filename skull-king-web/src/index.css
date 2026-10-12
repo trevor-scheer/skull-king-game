@@ -63,7 +63,7 @@ button {
     border-color 0.16s,
     color 0.16s;
 }
-button:hover:not(:disabled) {
+:where(button:hover:not(:disabled)) {
   background: #24434e;
   border-color: #d9b876;
 }
