@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -68,4 +69,29 @@ it('keeps committed moves when a derived history observer fails', () => {
   const token = rooms.mutate('room', () => rooms.games.get('room')!.addPlayer('Anne'));
   expect(new Rooms(directory).games.get('room')!.getStateForPlayer(token).me?.name).toBe('Anne');
   expect(log).toHaveBeenCalled(); log.mockRestore();
+});
+
+
+it('retains quarantined checkpoints when an unrelated later action fails', () => {
+  const rooms = new Rooms(directory);
+  const game = new Game('quarantined');
+  rooms.games.set('quarantined', game); rooms.save('quarantined');
+  const flush = fs.fsyncSync.bind(fs);
+  const failure = jest.spyOn(fs, 'fsyncSync').mockImplementation(fd => {
+    if (fs.fstatSync(fd).isDirectory()) throw Error('directory flush failed');
+    flush(fd);
+  });
+  try {
+    expect(() => rooms.mutate('quarantined', () => game.addPlayer('Anne'))).toThrow('directory flush failed');
+  } finally { failure.mockRestore(); }
+  expect(rooms.games.has('quarantined')).toBe(false);
+  const path = join(directory, 'quarantined.room');
+  const checkpoint = readFileSync(path);
+
+  rooms.games.set('other', new Game('other')); rooms.save('other');
+  expect(() => rooms.mutate('other', () => { throw Error('unrelated action failed'); })).toThrow('unrelated action failed');
+
+  expect(readFileSync(path)).toEqual(checkpoint);
+  const restored = new Rooms(directory).games.get('quarantined')!;
+  expect(restored.getStateForPlayer().players.map(player => player.name)).toEqual(['Anne']);
 });
