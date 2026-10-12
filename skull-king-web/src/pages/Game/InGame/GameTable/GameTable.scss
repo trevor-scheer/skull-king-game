@@ -1,3 +1,4 @@
+@use "sass:color";
 @use '../../../../styles/variables' as *;
 @use '../../../../styles/mixins' as *;
 
@@ -31,8 +32,8 @@
       // Base green felt color
       linear-gradient(
         180deg,
-        darken($color-ocean-medium, 10%) 0%,
-        darken($color-ocean-dark, 5%) 100%
+        color.adjust($color-ocean-medium, $lightness: -10%) 0%,
+        color.adjust($color-ocean-dark, $lightness: -5%) 100%
       );
     border-radius: 50%;
     border: 8px solid $color-wood-medium;

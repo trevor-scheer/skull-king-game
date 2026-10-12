@@ -12,6 +12,7 @@ export function Layout() {
         <header className="Header">
           <nav>
             <Link to="/">Skull King</Link>
+            <Link to="/learn">Learn to play</Link>
             <AccountNav />
           </nav>
         </header>

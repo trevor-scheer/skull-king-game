@@ -416,7 +416,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, legalCardIds: Array<string>, players: Array<{ __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number }>, me?: { __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, scoringMode: ScoringMode, pirateAbilities: boolean, cannonball: boolean, legalCardIds: Array<string>, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean, includeExpansion: boolean, includeFirstMate: boolean, includeStingray: boolean, includeDavyJones: boolean, includeWalkThePlank: boolean, includeLastVolley: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number }>, me?: { __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPerPlayer: number, isTieBreaker: boolean, trickColor?: Color | null, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string, name: string, playerId: string } | null, plankChoice?: { __typename?: 'PlankChoice', id: string, playerId: string } | null, hands: Array<{ __typename?: 'Hand', id: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
 
 export type MyHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -424,7 +424,7 @@ export type MyHandQueryVariables = Exact<{
 }>;
 
 
-export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, choice?: boolean | null, wild?: boolean | null, expansion?: boolean | null, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, playerTurn?: string | null, trickColor?: Color | null, myForcedCardId?: string | null, myBid?: number | null } | null } | null };
+export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, legalCardIds: Array<string>, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, choice?: boolean | null, wild?: boolean | null, expansion?: boolean | null, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, playerTurn?: string | null, trickColor?: Color | null, myForcedCardId?: string | null, myBid?: number | null } | null } | null };
 
 export type PlayColoredCardMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -453,7 +453,7 @@ export type PirateAbilityStateQueryVariables = Exact<{
 }>;
 
 
-export type PirateAbilityStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, hand: Array<{ __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, myBid?: number | null, leader: string, playerTurn?: string | null, pirateAbility?: { __typename?: 'PirateAbility', id: string, pirateId: string, name: string, kind: string, playerId: string, canDecline: boolean, stage: string, privateCards: Array<{ __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null }> } | null } | null } | null };
+export type PirateAbilityStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, players: Array<{ __typename?: 'Player', id: string, name: string }>, me?: { __typename?: 'Player', id: string, hand: Array<{ __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPerPlayer: number, roundNumber: number, myBid?: number | null, leader: string, playerTurn?: string | null, pirateAbility?: { __typename?: 'PirateAbility', id: string, pirateId: string, name: string, kind: string, playerId: string, canDecline: boolean, stage: string, privateCards: Array<{ __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null }> } | null } | null } | null };
 
 export type ResolvePirateAbilityMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -528,7 +528,7 @@ export type TrickResultDataQueryVariables = Exact<{
 }>;
 
 
-export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, leader: string, playerTurn?: string | null, myBid?: number | null, trickColor?: Color | null, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } | null } | null };
+export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, leader: string, playerTurn?: string | null, myBid?: number | null, trickColor?: Color | null, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string, trickColor?: Color | null, trickDiscarded?: boolean | null, removedCardIds?: Array<string> | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } | null } | null };
 
 export type AddPlayerMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -888,6 +888,21 @@ export const GameStateDocument = gql`
     query GameState($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    scoringMode
+    pirateAbilities
+    cannonball
+    deckConfig {
+      includeMermaids
+      includeKraken
+      includeWhiteWhale
+      includeLoot
+      includeExpansion
+      includeFirstMate
+      includeStingray
+      includeDavyJones
+      includeWalkThePlank
+      includeLastVolley
+    }
     legalCardIds
     players {
       id
@@ -909,6 +924,21 @@ export const GameStateDocument = gql`
       id
       phase
       pirateAbility {
+        id
+        name
+        playerId
+      }
+      plankChoice {
+        id
+        playerId
+      }
+      cardsPerPlayer
+      isTieBreaker
+      trickColor
+      hands {
+        id
+      }
+      lastCompletedHand {
         id
       }
       leader
@@ -964,6 +994,7 @@ export const MyHandDocument = gql`
     query MyHand($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    legalCardIds
     me {
       id
       name
@@ -1138,6 +1169,7 @@ export const PirateAbilityStateDocument = gql`
     currentRound {
       id
       phase
+      cardsPerPlayer
       roundNumber
       myBid
       leader
@@ -1583,6 +1615,9 @@ export const TrickResultDataDocument = gql`
       }
       lastCompletedHand {
         id
+        trickColor
+        trickDiscarded
+        removedCardIds
         cardsPlayed {
           id
           playerId

@@ -105,7 +105,67 @@ test("three friends finish a match after a disconnect and server restart", async
     }
     await pages[2].reload();
     await expect(pages[2].getByRole("heading", { name: "Game Over!" })).toBeVisible();
+    await pages[0].getByRole("button", { name: "Rematch with this crew" }).click();
+    await expect(pages[0].locator(".Lobby-playerList li")).toHaveCount(3);
+    await pages[1].getByRole("button", { name: "Join the rematch" }).click();
+    await expect(pages[1].locator(".Lobby-playerList li")).toHaveCount(3);
+    expect(pages[1].url()).toBe(pages[0].url());
+    await expect(pages[1].getByRole("button", { name: "Board the Ship" })).toHaveCount(0);
   } finally {
     await Promise.allSettled(contexts.map(context => context.close()));
+  }
+});
+
+test("an account resumes on another device and records practice without ranking it", async ({ browser, request }) => {
+  const first = await browser.newContext();
+  const second = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const username = `crew_${Date.now()}`;
+  const password = 'A long test passphrase 42';
+  try {
+    const page = await first.newPage();
+    await page.goto(`${baseURL}/account`);
+    await page.getByRole('button', { name: 'Create account', exact: true }).click();
+    await page.getByLabel('Username', { exact: true }).fill(username);
+    await page.getByLabel('Password', { exact: true }).fill(password);
+    await page.locator('form').getByRole('button', { name: 'Create account', exact: true }).click();
+    await expect(page.getByRole('heading', { name: `Ahoy, ${username}` })).toBeVisible();
+    await expect(page.locator('.RecoveryCode code')).not.toBeEmpty();
+    const created = await (await request.post(`${baseURL}/graphql`, { data: { query: 'mutation { newGame(roundSchedule:[1],tieBreakers:false) }' } })).json();
+    const gameId = created.data.newGame;
+    await page.goto(`${baseURL}/game/${gameId}`);
+    await page.getByLabel(/Enter yer name/).fill('Practice Captain');
+    await page.getByRole('button', { name: 'Board the Ship' }).click();
+    await expect(page.locator('.AccountResume')).toContainText(`Seat saved to ${username}`);
+    await page.getByRole('button', { name: 'Add practice pirate' }).click();
+    await expect(page.locator('.Lobby-playerList li')).toHaveCount(2);
+    await page.getByRole('button', { name: 'Set Sail!' }).click();
+    await expect(page.getByRole('heading', { name: 'Place Your Bid' })).toBeVisible();
+    await first.close();
+
+    const mobile = await second.newPage();
+    await mobile.goto(`${baseURL}/account`);
+    await mobile.getByLabel('Username', { exact: true }).fill(username);
+    await mobile.getByLabel('Password', { exact: true }).fill(password);
+    await mobile.locator('form').getByRole('button', { name: 'Sign in', exact: true }).click();
+    await mobile.getByRole('button', { name: 'Resume game', exact: true }).click();
+    await expect(mobile.getByRole('heading', { name: 'Place Your Bid' })).toBeVisible();
+    await mobile.getByRole('button', { name: 'Let autoplay take my turns' }).click();
+    await expect(mobile.getByRole('heading', { name: 'Game Over!' })).toBeVisible({ timeout: 30_000 });
+    await mobile.getByRole('link', { name: 'History', exact: true }).click();
+    await expect(mobile.locator('tbody tr')).toHaveCount(1);
+    await expect(mobile.locator('tbody')).toContainText('Practice');
+    await mobile.getByRole('link', { name: 'Leaderboard', exact: true }).click();
+    await expect(mobile.locator('.AccountPage')).toContainText('Finish a human match');
+    await expect(mobile.locator('tbody')).toHaveCount(0);
+    await mobile.getByRole('link', { name: 'Learn to play', exact: true }).click();
+    for (const answer of ['GREEN 3', 'BLACK 2', 'Mermaid', 'Avoid winning another trick', '40']) {
+      await mobile.getByRole('button', { name: answer, exact: true }).click();
+      await expect(mobile.getByRole('status')).toContainText('Correct.');
+      await mobile.getByRole('button', { name: 'Next lesson' }).click();
+    }
+    await expect(mobile.getByRole('heading', { name: 'You’re ready for the table.' })).toBeVisible();
+    expect(await mobile.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  } finally {
+    await Promise.allSettled([first.close(), second.close()]);
   }
 });

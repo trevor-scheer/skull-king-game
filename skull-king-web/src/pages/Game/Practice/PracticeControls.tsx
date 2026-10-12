@@ -26,7 +26,7 @@ function Controls({ lobby }: { lobby:boolean }) {
       const result=await client.mutate({mutation,variables:{gameId,playerToken,...extras}});
       if (result.data?.enableAwayAutoplay===false) setMessage('That player reconnected or is already on autoplay.');
       await refetch();
-      if(leaving) { if(lobby) setToken('',gameId); navigate('/'); }
+      if(leaving) { if(lobby) setToken(null,gameId); navigate('/'); }
     } catch(error) { setMessage(error instanceof Error?error.message:'Please try again.'); }
     finally { setBusy(false); }
   }
