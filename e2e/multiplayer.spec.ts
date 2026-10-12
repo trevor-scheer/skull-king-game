@@ -362,3 +362,23 @@ test("custom setup supports a full crew and readable responsive hands", async ({
     .click();
   await expect(page.locator(".AwaitingBids")).toBeVisible();
 });
+
+test("an unavailable page file offers recovery instead of a developer error", async ({
+  page,
+}) => {
+  await page.goto(baseURL);
+  await page.route("**/assets/Tutorial-*.js", (route) => route.abort());
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Learn to play", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "The table needs a refresh" }),
+  ).toBeVisible();
+  await expect(page.getByText("Unexpected Application Error!")).toHaveCount(0);
+  await page.unroute("**/assets/Tutorial-*.js");
+  await page.getByRole("button", { name: "Reload game", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Learn Skull King by playing" }),
+  ).toBeVisible();
+});
