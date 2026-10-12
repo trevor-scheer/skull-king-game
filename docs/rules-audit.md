@@ -1,8 +1,8 @@
 # Rules audit
 
 On October 11, 2026, the deterministic matrix completed all 1,024 combinations of
-the ten deck switches: 158,243 actions, 93 distinct cards, and 1,024 complete
-scorecards. Seed `20261011` took about 1.2 seconds on the development machine.
+the ten deck switches: 158,234 actions, 93 distinct cards, and 1,024 complete
+scorecards. Seed `20261011` took about one second on the development machine.
 
 Reproduce the audit from the repository root:
 
@@ -23,8 +23,8 @@ among Classic, ordinary Rascal, and Rascal with Cannonball. Powers are enabled;
 one human seat delegates to autoplay and the remaining seats are practice
 opponents. Two seats also exercise Graybeard. The runner rejects stalled choices,
 missing rounds, wrong scorecard sizes, nonfinite scores, or incomplete card-ID
-coverage. It replaces randomness only within its own process and restores it on
-exit. It does not run as part of the default Jest suite.
+coverage. It seeds the deck explicitly and replaces Mary’s card-selection randomness
+only within its own process, restoring it on exit. It does not run as part of the default Jest suite.
 
 This is broad completion coverage, not exhaustive strategy or scoring proof.
 Bots normally decline optional powers and choose Grapeshot; dedicated unit/API

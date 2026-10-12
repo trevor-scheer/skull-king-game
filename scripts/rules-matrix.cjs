@@ -1,5 +1,6 @@
 // Run `corepack yarn build` first. This is a deterministic, bounded rules smoke audit.
 const { Game } = require('../skull-king-core/dist/game');
+const { Deck } = require('../skull-king-core/dist/deck');
 const flags = [
   'includeMermaids', 'includeKraken', 'includeWhiteWhale', 'includeLoot',
   'includeExpansion', 'includeFirstMate', 'includeStingray', 'includeDavyJones',
@@ -26,6 +27,7 @@ try {
     const count = 2 + (mask % (deckConfig.includeExpansion ? 8 : 7));
     const mode = mask % 3;
     const game = new Game(`audit-${mask}`, {
+      deck: new Deck({ deckConfig, shuffleSeed: (seed + mask) >>> 0 }),
       deckConfig, roundSchedule: [1, 3, 6, 10], tieBreakers: false,
       pirateAbilities: true, scoringMode: mode ? 'rascal' : 'classic', cannonball: mode === 2,
     });
