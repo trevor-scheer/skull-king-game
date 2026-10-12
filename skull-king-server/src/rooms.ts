@@ -68,7 +68,7 @@ export class Rooms {
   /** Actions stay synchronous so another request cannot observe an unsaved move. */
   mutate<T>(id: string | undefined, work: () => T): T {
     const before = id ? this.games.get(id)?.checkpoint() : undefined;
-    const existing = new Set(this.games.keys());
+    const existing = new Set([...this.games.keys(), ...this.unavailable]);
     try {
       const result = work();
       for (const created of this.games.keys()) if (!existing.has(created)) this.save(created);
