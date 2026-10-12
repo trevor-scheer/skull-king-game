@@ -11,7 +11,7 @@ let directory: string;
 
 async function startServer(port = 0) {
   server = spawn(process.execPath, ["e2e/server.cjs"], {
-    env: { ...process.env, DATA_DIR: directory, PORT: String(port), ALLOWED_ORIGINS: baseURL ?? "" },
+    env: { ...process.env, NODE_ENV: "test", DATA_DIR: directory, PORT: String(port), ALLOWED_ORIGINS: baseURL ?? "" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   return new Promise<string>((resolve, reject) => {

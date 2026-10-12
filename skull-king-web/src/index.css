@@ -3,6 +3,8 @@
 
 body {
   margin: 0;
+  color: #f5f0e1;
+  background: #2c1810;
   font-family: 'Crimson Text', Georgia, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -11,4 +13,38 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+* { box-sizing: border-box; }
+a { color: #ffe2a3; }
+button, input, select { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 3px solid #ffd374;
+  outline-offset: 3px;
+}
+.AccountPage, .PracticeControls, .SeatRecovery[open] {
+  color: #fff6df;
+  background: #17313b;
+  border: 1px solid #c9ab72;
+  border-radius: 12px;
+}
+.AccountPage button, .AccountResume button, .PracticeControls button, .SeatRecovery button {
+  color: #17313b;
+  background: #e3c484;
+  border: 1px solid #e3c484;
+  border-radius: 6px;
+  min-height: 44px;
+  padding: .6rem .8rem;
+  cursor: pointer;
+}
+.AccountPage input, .SeatRecovery input { color: #172731; background: #fff6df; }
+.SeatRecovery { margin: .5rem 0 1rem; max-width: 760px; }
+.SeatRecovery[open] { padding: 1rem; }
+.SeatRecovery summary { min-height: 44px; padding: .5rem 0; cursor: pointer; }
+.SeatRecovery form, .SeatRecovery label { display: grid; gap: .5rem; margin: .5rem 0; }
+.SeatRecovery input { max-width: 100%; min-width: 0; padding: .6rem; }
+@media (max-width: 540px) {
+  .Layout { padding: 1rem; }
+  .Header { padding: .75rem 1rem; }
+  .Header a { font-size: 1.15rem; }
 }
