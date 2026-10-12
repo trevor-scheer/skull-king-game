@@ -1,5 +1,5 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
-
+import type { StoreObject } from "@apollo/client";
 import { BatchHttpLink } from "@apollo/client/link/batch-http";
 import { getMainDefinition } from "@apollo/client/utilities";
 
@@ -19,6 +19,44 @@ export const client = new ApolloClient({
   link,
   cache: new InMemoryCache({
     typePolicies: {
+      GameState: {
+        // State includes private fields, so each query's room/token pair owns its snapshot.
+        keyFields: false,
+        merge: true,
+        fields: {
+          me: {
+            merge(existing, incoming, { readField, mergeObjects }) {
+              return existing && incoming && readField("id", existing) === readField("id", incoming)
+                ? mergeObjects(existing, incoming)
+                : incoming;
+            },
+          },
+          currentRound: {
+            merge(existing, incoming, { readField, mergeObjects }) {
+              if (!existing || !incoming) return incoming;
+              const previousId = readField<number>("id", existing);
+              const nextId = readField<number>("id", incoming);
+              // Round IDs increase for a room, including tie-breaker rounds.
+              if (previousId !== undefined && nextId !== undefined && nextId < previousId) return existing;
+              if (previousId === undefined || previousId !== nextId) return incoming;
+              const cards = readField<StoreObject[]>("cardsPlayed", incoming);
+              if (!cards) return mergeObjects(existing, incoming);
+              const previous = new Map(
+                (readField<StoreObject[]>("cardsPlayed", existing) ?? [])
+                  .map(card => [readField("id", card), card]),
+              );
+              // Only preserve faces within this round; a later Tigress can choose again.
+              return mergeObjects(existing, {
+                ...incoming,
+                cardsPlayed: cards.map(card => {
+                  const match = previous.get(readField("id", card));
+                  return match ? mergeObjects(match, card) : card;
+                }),
+              });
+            },
+          },
+        },
+      },
       PlayedCard: {
         // Played cards are trick snapshots; summary queries omit their card details.
         keyFields: false,

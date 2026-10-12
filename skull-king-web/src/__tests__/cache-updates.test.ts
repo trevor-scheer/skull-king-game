@@ -81,3 +81,11 @@ test('null lifecycle fields replace previous snapshots', () => {
   } } });
   expect(read()).toEqual({ state: { __typename: 'GameState', id: 'room', me: null, currentRound: null } });
 });
+
+test('a repeated card ID in a later round does not inherit its earlier card face', () => {
+  writeFull();
+  writeSummary(status(3));
+  const state = client.cache.readQuery<any>({ query: full, variables, returnPartialData: true })!.state;
+  expect(state.currentRound).toEqual({ __typename: 'Round', id: 3,
+    cardsPlayed: [{ __typename: 'PlayedCard', id: played.id, playerId: 'anne' }] });
+});
