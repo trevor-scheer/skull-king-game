@@ -1,54 +1,49 @@
-@use '../../../styles/variables' as *;
-@use '../../../styles/mixins' as *;
-
 .JoinGame {
-  @include flex-column-center;
-  gap: var(--space-lg);
+  display: grid;
+  gap: 17px;
   width: 100%;
-
   &-label {
-    @include flex-column-center;
-    gap: var(--space-sm);
-    font-family: $font-body;
-    font-size: $font-size-base;
-    color: $color-text-dark;
-    width: 100%;
+    display: grid;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: #c2ced0;
   }
-
   &-input {
     width: 100%;
-    padding: var(--space-md);
-    font-family: $font-body;
-    font-size: $font-size-lg;
-    color: $color-text-dark;
-    background: rgba($color-parchment-light, 0.9);
-    border: 2px solid $color-wood-medium;
-    border-radius: var(--radius-md);
-    transition:
-      border-color var(--transition-fast),
-      box-shadow var(--transition-fast);
-
-    &::placeholder {
-      color: $color-text-muted;
-      font-style: italic;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: $color-gold-medium;
-      box-shadow: 0 0 0 3px rgba($color-gold-medium, 0.2);
-    }
+    padding: 13px 15px;
+    min-height: 48px;
+    border: 1px solid #38505a;
+    border-radius: 4px;
+    background: #0b1d26;
+    color: #f4efdf;
+    font-size: 0.9rem;
   }
-
+  &-input::placeholder {
+    color: #839aa3;
+  }
   &-button {
-    @include button-primary;
     width: 100%;
-    padding: var(--space-md) var(--space-xl);
-    font-size: $font-size-lg;
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    min-height: 48px;
+    padding: 13px 20px;
+    background: #d9b876;
+    color: #0b1720;
+    border: 1px solid #d9b876;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  &-button:hover {
+    background: #edce91;
+  }
+  &-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  [role="alert"] {
+    color: #ffc1b8;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin: 0;
   }
 }

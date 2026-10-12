@@ -1,46 +1,35 @@
-@use '../../../styles/variables' as *;
-@use '../../../styles/mixins' as *;
-
 .StartGame {
-  @include flex-column-center;
-  gap: var(--space-md);
+  display: grid;
+  gap: 15px;
   width: 100%;
-
   &-hint {
-    font-family: $font-body;
-    font-size: $font-size-base;
-    color: $color-text-dark;
+    font-size: 0.77rem;
+    color: #a5b5ba;
+    text-align: center;
     margin: 0;
   }
-
   &-button {
-    @include button-primary;
     width: 100%;
-    padding: var(--space-md) var(--space-xl);
-    font-size: $font-size-lg;
-    position: relative;
-    overflow: hidden;
-
-    // Shimmer effect when ready
-    &:not(:disabled)::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-      );
-      animation: shimmer 2s ease-in-out infinite;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    padding: 14px 20px;
+    min-height: 48px;
+    border: 1px solid #d9b876;
+    border-radius: 4px;
+    background: #d9b876;
+    color: #0b1720;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  &-button:hover {
+    background: #edce91;
+  }
+  &-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  [role="alert"] {
+    font-size: 0.8rem;
+    color: #ffc1b8;
+    line-height: 1.6;
   }
 }
