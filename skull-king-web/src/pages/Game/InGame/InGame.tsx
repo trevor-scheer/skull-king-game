@@ -2,13 +2,13 @@ import { CannonLoad } from "./CannonLoad/CannonLoad";
 import { usePlayerToken } from "../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../hooks/useGameId";
 import { useGameStateQuery } from "../../../types/graphqlTypes";
+import { BidRitual } from "./BidRitual/BidRitual";
 import { AwaitingBids } from "./AwaitingBids";
 import { BidForm } from "./BidForm/BidForm";
 import { GameTable } from "./GameTable/GameTable";
 import { Hand } from "./Hand/Hand";
 import { PlayedCards } from "./PlayedCards/PlayedCards";
 import { Scorecard } from "./Scorecard/Scorecard";
-import { TrickResult } from "./TrickResult/TrickResult";
 import { PirateAbility } from "./PirateAbility/PirateAbility";
 import "./InGame.scss";
 import { RulesReference } from "./TableHelp/RulesReference";
@@ -61,7 +61,9 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
           </p>
           <p role="status">
             {phase === "bid"
-              ? "Players are choosing secret bids."
+              ? currentRound?.bidRevealEndsAt
+                ? "Bids locked. All together now!"
+                : "Players are choosing secret bids."
               : phase === "load"
                 ? "Players are choosing secret cannon loads."
                 : currentRound?.plankChoice
@@ -94,13 +96,10 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
           {phase === "load" &&
             (spectator ? <p>Waiting for cannon loads.</p> : <CannonLoad />)}
           {/* Center content based on game phase */}
-          {phase === "play" && <PlayedCards />}
-          {phase === "trick_result" && (
-            <TrickResult
-              readOnly={spectator}
-              paused={Boolean(currentRound?.pirateAbility)}
-            />
-          )}
+          <PlayedCards
+            readOnly={spectator}
+            paused={Boolean(currentRound?.pirateAbility)}
+          />
           {phase === "bid" && (
             <div className="InGame-bidPhase">
               <p className="InGame-leaderInfo">
@@ -108,7 +107,9 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
                   ? "You lead this round"
                   : `${leader} leads this round`}
               </p>
-              {spectator ? (
+              {currentRound?.bidRevealEndsAt ? (
+                <BidRitual endsAt={currentRound.bidRevealEndsAt} />
+              ) : spectator ? (
                 <p>Waiting for bids to be revealed.</p>
               ) : myBid !== null && myBid !== undefined ? (
                 <AwaitingBids bid={myBid} />
@@ -130,6 +131,14 @@ export const InGame: React.FunctionComponent<{ spectator?: boolean }> =
             <TableFeedback
               yourTurn={playerTurn === me?.id}
               trickId={currentRound?.lastCompletedHand?.id}
+              roundKey={
+                currentRound ? `${gameId}:${currentRound.id}` : undefined
+              }
+              playedCardEvent={
+                currentRound?.cardsPlayed.length
+                  ? `${currentRound.id}:${currentRound.cardsPlayed.map((card) => card.id).join(",")}`
+                  : undefined
+              }
             />
           )}
         </div>

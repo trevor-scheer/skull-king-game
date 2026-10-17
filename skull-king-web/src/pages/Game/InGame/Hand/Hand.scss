@@ -1,8 +1,8 @@
 .Hand {
   min-width: 0;
   width: 100%;
-  border-top: 1px solid #2c414b;
   padding-top: 0.5rem;
+  container-type: inline-size;
   &-label {
     margin: 0;
     color: #f4efdf;
@@ -22,73 +22,165 @@
     max-width: 650px;
   }
   &-playerHand {
+    position: relative;
     display: flex;
     align-items: flex-start;
     justify-content: safe center;
-    gap: 0.65rem;
-    margin: 0;
     list-style: none;
+    margin: 0;
     max-width: 100%;
     overflow-x: auto;
-    padding: 0.6rem 0.4rem 0.85rem;
-    scroll-padding: 0.5rem;
+    padding: 2.2rem 1.2rem 1.6rem;
+    scroll-padding: 1.2rem;
     scrollbar-width: thin;
     scrollbar-color: #627983 #10212b;
+    .Card {
+      --card-width: 120px;
+      --card-height: 194px;
+      transform: translateY(var(--fan-offset)) rotate(var(--fan-angle));
+      transform-origin: 50% 110%;
+      transition:
+        transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        margin 200ms ease,
+        box-shadow 200ms ease,
+        border-color 160ms ease;
+      box-shadow: -3px 5px 10px #0006;
+      &:not(:first-child) {
+        margin-left: -30px;
+      }
+      &:has(.Card-declaration) {
+        --card-height: 232px;
+      }
+      &:not(.Card-disabled):has(button:enabled) {
+        border-color: #d9b876;
+      }
+      &:hover,
+      &:focus-within,
+      &.Hand-card--selected {
+        transform: translateY(-19px) rotate(0) scale(1.035);
+        z-index: 30 !important;
+        box-shadow: 0 14px 20px #0008;
+      }
+      &:hover + .Card,
+      &:focus-within + .Card {
+        margin-left: -8px;
+      }
+    }
   }
-  &-playerHand .Card {
-    --card-width: 120px;
-    --card-height: 194px;
+  &-scrollHint {
+    display: none;
   }
-  &-playerHand .Card:not(.Card-disabled):has(button:enabled) {
-    border-color: #d9b876;
+  &-inspection {
+    max-width: 360px;
+    margin: 0.4rem auto;
+    padding: 0.7rem;
+    border: 1px solid #8d7953;
+    border-radius: 1rem;
+    background: #142731;
+    box-shadow: 0 12px 25px #0004;
+    > ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+    }
+    .Card {
+      --card-width: 156px;
+      --card-height: 252px;
+    }
+    .Card-declaration {
+      font-size: 0.8rem;
+    }
   }
-  &-playerHand .Card:not(.Card-disabled):has(button:enabled):hover {
-    transform: translateY(-6px);
+  &-inspectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    p {
+      margin: 0;
+      color: #f4efdf;
+      font-size: 0.85rem;
+    }
+    button {
+      min-height: 44px;
+    }
   }
 }
 @media (max-width: 600px) {
   .Hand-playerHand {
-    justify-content: flex-start;
-    gap: 0.55rem;
+    justify-content: safe center;
+    padding: 1.6rem 0.8rem 1.2rem;
+    .Card {
+      --card-width: 108px;
+      --card-height: 174px;
+      &:not(:first-child) {
+        margin-left: -36px;
+      }
+      &:hover + .Card,
+      &:focus-within + .Card {
+        margin-left: -36px;
+      }
+      &:hover {
+        transform: translateY(var(--fan-offset)) rotate(var(--fan-angle));
+      }
+      &:focus-within,
+      &.Hand-card--selected {
+        transform: translateY(-12px) rotate(0);
+      }
+    }
   }
-  .Hand-playerHand .Card {
-    --card-width: 116px;
-    --card-height: 189px;
-  }
-}
-
-.Hand-playerHand .Card:has(.Card-declaration) {
-  --card-height: 232px;
-}
-
-.Hand-scrollHint {
-  display: none;
-}
-@media (min-width: 1000px) {
-  .Hand {
-    container-type: inline-size;
-  }
-  .Hand-playerHand .Card {
-    --card-width: clamp(
-      96px,
-      calc(
-        (100cqw - 0.8rem - (var(--hand-card-count) - 1) * 0.65rem) /
-          var(--hand-card-count)
-      ),
-      120px
-    );
-    --card-height: calc(var(--card-width) * 1.4 + 26px);
-  }
-  .Hand-playerHand .Card:has(.Card-declaration) {
-    --card-height: 232px;
-  }
-}
-@media (max-width: 600px) {
   .Hand-scrollHint {
     display: block;
     margin: 0.3rem 0 0;
     color: #a5b5ba;
     text-align: center;
     font-size: 0.65rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .Hand-playerHand .Card {
+    transition: none;
+  }
+}
+
+@media (min-width: 851px) and (max-height: 800px) {
+  .Hand {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 1rem;
+    padding-top: 0.25rem;
+    margin-top: -0.3rem;
+  }
+  .Hand-label {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: left;
+  }
+  .Hand-guidance {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    max-width: none;
+    text-align: right;
+  }
+  .Hand > p:not(.Hand-label):not(.Hand-guidance) {
+    grid-column: 1 / -1;
+  }
+  .Hand-playerHand {
+    grid-column: 1 / -1;
+  }
+  .Hand-playerHand {
+    padding: 1.75rem 1.2rem 1rem;
+    .Card {
+      --card-width: 106px;
+      --card-height: 168px;
+    }
+    .Card:has(.Card-declaration) {
+      --card-height: 218px;
+    }
   }
 }

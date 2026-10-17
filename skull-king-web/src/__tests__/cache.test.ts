@@ -22,6 +22,7 @@ test("caches a completed trick from the game-state polling query", () => {
         roundNumber: 1,
         cardsPerPlayer: 1, isTieBreaker:false, trickColor:null, hands:[], lastCompletedHand:null, plankChoice:null,
         phase: "trick_result",
+        bidRevealEndsAt: null,
         pirateAbility: null,
         leader: "Mary",
         playerTurn: null,

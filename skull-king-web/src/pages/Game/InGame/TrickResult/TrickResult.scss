@@ -19,39 +19,6 @@
     font-size: 1.4rem;
     color: #e6c98e;
   }
-  &-cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-  &-cardWrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    width: 105px;
-  }
-  .Card {
-    --card-width: 105px;
-    --card-height: 172px;
-  }
-  &-cardWrapper--winner .Card {
-    border: 2px solid #e6c98e;
-  }
-  &-cardWrapper--winner &-playerLabel {
-    color: #e6c98e;
-    font-weight: 700;
-  }
-  &-playerLabel {
-    color: #c8d2d3;
-    font-size: 0.65rem;
-    max-width: 100%;
-    overflow-wrap: anywhere;
-  }
   &-explanation {
     max-width: 650px;
     margin: 0.85rem auto 1rem;
@@ -75,23 +42,5 @@
     background: #d9b876;
     color: #10212a;
     cursor: pointer;
-  }
-}
-@media (max-width: 600px) {
-  .TrickResult-cards {
-    gap: 0.6rem;
-  }
-  .TrickResult-cardWrapper {
-    width: 80px;
-  }
-  .TrickResult .Card {
-    --card-width: 80px;
-    --card-height: 136px;
-  }
-  .TrickResult .Card-expansion strong {
-    font-size: 0.65rem;
-  }
-  .TrickResult .Card-expansion small {
-    font-size: 0.48rem;
   }
 }

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { TableAudio } from "./tableAudio";
+
 function stored(key: string) {
   try {
     return localStorage.getItem(key) === "true";
@@ -6,62 +8,97 @@ function stored(key: string) {
     return false;
   }
 }
+function save(key: string, value: boolean) {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    /* Preferences still work for this visit. */
+  }
+}
+
 export function TableFeedback({
   yourTurn,
   trickId,
+  playedCardEvent,
+  roundKey,
 }: {
   yourTurn: boolean;
   trickId?: string;
+  playedCardEvent?: string;
+  roundKey?: string;
 }) {
   const [sound, setSound] = useState(() => stored("sk-sound"));
   const [haptics, setHaptics] = useState(() => stored("sk-haptics"));
+  const [audioMessage, setAudioMessage] = useState("");
   const supportsHaptics = typeof navigator.vibrate === "function";
-  const audio = useRef<AudioContext | null>(null);
-  const previous = useRef({ yourTurn, trickId });
-  function tone() {
-    if (!audio.current || audio.current.state !== "running") return;
-    const oscillator = audio.current.createOscillator();
-    const gain = audio.current.createGain();
-    oscillator.connect(gain);
-    gain.connect(audio.current.destination);
-    oscillator.frequency.value = yourTurn ? 640 : 440;
-    gain.gain.setValueAtTime(0.035, audio.current.currentTime);
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      audio.current.currentTime + 0.15,
-    );
-    oscillator.start();
-    oscillator.stop(audio.current.currentTime + 0.15);
-  }
+  const audio = useRef(new TableAudio());
+  const previous = useRef({
+    yourTurn,
+    trickId,
+    playedCardEvent,
+    roundKey,
+  });
+
   useEffect(() => {
-    const changed =
-      (yourTurn && !previous.current.yourTurn) ||
-      (trickId && trickId !== previous.current.trickId);
-    previous.current = { yourTurn, trickId };
-    if (changed) {
-      if (sound) tone();
-      if (haptics && supportsHaptics) navigator.vibrate(40);
+    const bus = audio.current;
+    bus.setEnabled(sound);
+    if (!sound) return;
+    // A saved preference still needs a fresh trusted gesture after a reload.
+    const unlock = (event: Event) => {
+      if (event.isTrusted) void bus.unlock();
+    };
+    window.addEventListener("pointerdown", unlock);
+    window.addEventListener("keydown", unlock);
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [sound]);
+
+  useEffect(() => {
+    const last = previous.current;
+    previous.current = {
+      yourTurn,
+      trickId,
+      playedCardEvent,
+      roundKey,
+    };
+    if (document.visibilityState === "hidden") return;
+    const turnStarted = yourTurn && !last.yourTurn;
+    const collected = !!trickId && trickId !== last.trickId;
+    const played =
+      !!playedCardEvent &&
+      playedCardEvent !== last.playedCardEvent &&
+      roundKey === last.roundKey;
+    if (collected) {
+      audio.current.cue("collect");
+    } else if (played) {
+      audio.current.cue("play");
+    } else if (turnStarted) {
+      audio.current.cue("turn");
     }
-  }, [yourTurn, trickId, sound, haptics]);
-  useEffect(
-    () => () => {
-      void audio.current?.close();
-    },
-    [],
-  );
-  function save(key: string, value: boolean) {
-    try {
-      localStorage.setItem(key, String(value));
-    } catch {
-      /* Preferences still work for this visit. */
-    }
-  }
+    if ((turnStarted || collected) && haptics && supportsHaptics)
+      navigator.vibrate(40);
+  }, [yourTurn, trickId, playedCardEvent, roundKey, haptics, supportsHaptics]);
+
+  useEffect(() => {
+    const bus = audio.current;
+    const silenceHiddenTab = () => {
+      if (document.visibilityState === "hidden") bus.stop();
+    };
+    document.addEventListener("visibilitychange", silenceHiddenTab);
+    return () => {
+      document.removeEventListener("visibilitychange", silenceHiddenTab);
+      bus.dispose();
+    };
+  }, []);
+
   return (
     <details className="TableHelp">
       <summary>Sound and vibration</summary>
       <p>
-        Optional cues for your turn and completed tricks. Your choice stays on
-        this device.
+        Hear cards land, tricks finish, and your turn begin. Optional sound and
+        vibration stay on this device.
       </p>
       <label>
         <input
@@ -69,17 +106,23 @@ export function TableFeedback({
           checked={sound}
           onChange={async (e) => {
             const enabled = e.target.checked;
+            audio.current.setEnabled(enabled);
             setSound(enabled);
             save("sk-sound", enabled);
-            if (enabled && window.AudioContext) {
-              audio.current ??= new AudioContext();
-              await audio.current.resume();
-              tone();
+            setAudioMessage("");
+            if (enabled) {
+              const ready = await audio.current.unlock();
+              if (ready) audio.current.cue("play");
+              else
+                setAudioMessage(
+                  "Audio is unavailable right now. Try turning sound off and on again.",
+                );
             }
           }}
         />{" "}
         Sound cues
       </label>
+      {audioMessage && <p role="status">{audioMessage}</p>}
       <label>
         <input
           type="checkbox"

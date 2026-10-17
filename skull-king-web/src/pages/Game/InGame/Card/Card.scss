@@ -183,3 +183,23 @@
 .Card--large {
   --card-scale: 1.25;
 }
+
+.Card-playLabel {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 0.5rem;
+  background: #d9b876;
+  color: #13242b;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .Card {
+    transition: none;
+  }
+}

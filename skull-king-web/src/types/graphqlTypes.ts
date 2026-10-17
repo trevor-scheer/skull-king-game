@@ -326,6 +326,7 @@ export type RevealedCannonLoad = {
 
 export type Round = {
   __typename?: 'Round';
+  bidRevealEndsAt?: Maybe<Scalars['Float']['output']>;
   cardsPerPlayer: Scalars['Int']['output'];
   cardsPlayed: Array<PlayedCard>;
   hands: Array<Hand>;
@@ -416,7 +417,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, scoringMode: ScoringMode, pirateAbilities: boolean, cannonball: boolean, legalCardIds: Array<string>, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean, includeExpansion: boolean, includeFirstMate: boolean, includeStingray: boolean, includeDavyJones: boolean, includeWalkThePlank: boolean, includeLastVolley: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number }>, me?: { __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPerPlayer: number, isTieBreaker: boolean, trickColor?: Color | null, leader: string, playerTurn?: string | null, myBid?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string, name: string, playerId: string } | null, plankChoice?: { __typename?: 'PlankChoice', id: string, playerId: string } | null, hands: Array<{ __typename?: 'Hand', id: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, scoringMode: ScoringMode, pirateAbilities: boolean, cannonball: boolean, legalCardIds: Array<string>, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean, includeExpansion: boolean, includeFirstMate: boolean, includeStingray: boolean, includeDavyJones: boolean, includeWalkThePlank: boolean, includeLastVolley: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number }>, me?: { __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPerPlayer: number, isTieBreaker: boolean, trickColor?: Color | null, leader: string, playerTurn?: string | null, myBid?: number | null, bidRevealEndsAt?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string, name: string, playerId: string } | null, plankChoice?: { __typename?: 'PlankChoice', id: string, playerId: string } | null, hands: Array<{ __typename?: 'Hand', id: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
 
 export type MyHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -424,7 +425,7 @@ export type MyHandQueryVariables = Exact<{
 }>;
 
 
-export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, legalCardIds: Array<string>, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, choice?: boolean | null, wild?: boolean | null, expansion?: boolean | null, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, playerTurn?: string | null, trickColor?: Color | null, myForcedCardId?: string | null, myBid?: number | null } | null } | null };
+export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, legalCardIds: Array<string>, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, choice?: boolean | null, wild?: boolean | null, expansion?: boolean | null, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, playerTurn?: string | null, trickColor?: Color | null, myForcedCardId?: string | null, myBid?: number | null, bidRevealEndsAt?: number | null } | null } | null };
 
 export type PlayColoredCardMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -489,7 +490,9 @@ export type CardsPlayedQueryVariables = Exact<{
 }>;
 
 
-export type CardsPlayedQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }> } | null } | null };
+export type CardsPlayedQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, me?: { __typename?: 'Player', name: string } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, lastCompletedHand?: { __typename?: 'Hand', id: string, trickColor?: Color | null, trickDiscarded?: boolean | null, removedCardIds?: Array<string> | null, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }> } | null } | null } | null };
+
+export type TablePlayFragment = { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } };
 
 export type PreviousHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -521,14 +524,6 @@ export type AdvanceTrickMutationVariables = Exact<{
 
 
 export type AdvanceTrickMutation = { __typename?: 'Mutation', advanceTrick: boolean };
-
-export type TrickResultDataQueryVariables = Exact<{
-  gameId: Scalars['String']['input'];
-  playerToken: Scalars['String']['input'];
-}>;
-
-
-export type TrickResultDataQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, phase: string, currentRound?: { __typename?: 'Round', id: number, phase: string, roundNumber: number, leader: string, playerTurn?: string | null, myBid?: number | null, trickColor?: Color | null, pirateAbility?: { __typename?: 'PirateAbility', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string, trickColor?: Color | null, trickDiscarded?: boolean | null, removedCardIds?: Array<string> | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } }>, winningCard?: { __typename?: 'PlayedCard', id: string, playerId: string, card: { __typename: 'ColoredCard', id: string, color: string, number: number } | { __typename: 'SpecialCard', id: string, type: string, selection?: string | null } } | null } | null } | null } | null };
 
 export type AddPlayerMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -654,6 +649,25 @@ export type NewGameMutationVariables = Exact<{
 
 export type NewGameMutation = { __typename?: 'Mutation', newGame: string };
 
+export const TablePlayFragmentDoc = gql`
+    fragment TablePlay on PlayedCard {
+  id
+  playerId
+  card {
+    __typename
+    ... on SpecialCard {
+      id
+      type
+      selection
+    }
+    ... on ColoredCard {
+      id
+      color
+      number
+    }
+  }
+}
+    `;
 export const CardFragmentFragmentDoc = gql`
     fragment CardFragment on Card {
   __typename
@@ -944,6 +958,7 @@ export const GameStateDocument = gql`
       leader
       playerTurn
       myBid
+      bidRevealEndsAt
       roundNumber
       cardsPlayed {
         id
@@ -1020,6 +1035,7 @@ export const MyHandDocument = gql`
       trickColor
       myForcedCardId
       myBid
+      bidRevealEndsAt
     }
   }
 }
@@ -1375,30 +1391,31 @@ export const CardsPlayedDocument = gql`
     query CardsPlayed($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    me {
+      name
+    }
     currentRound {
       id
       phase
       cardsPlayed {
+        ...TablePlay
+      }
+      lastCompletedHand {
         id
-        playerId
-        card {
-          __typename
-          ... on SpecialCard {
-            id
-            type
-            selection
-          }
-          ... on ColoredCard {
-            id
-            color
-            number
-          }
+        trickColor
+        trickDiscarded
+        winningCard {
+          ...TablePlay
+        }
+        removedCardIds
+        cardsPlayed {
+          ...TablePlay
         }
       }
     }
   }
 }
-    `;
+    ${TablePlayFragmentDoc}`;
 
 /**
  * __useCardsPlayedQuery__
@@ -1593,107 +1610,6 @@ export function useAdvanceTrickMutation(baseOptions?: Apollo.MutationHookOptions
 export type AdvanceTrickMutationHookResult = ReturnType<typeof useAdvanceTrickMutation>;
 export type AdvanceTrickMutationResult = Apollo.MutationResult<AdvanceTrickMutation>;
 export type AdvanceTrickMutationOptions = Apollo.BaseMutationOptions<AdvanceTrickMutation, AdvanceTrickMutationVariables>;
-export const TrickResultDataDocument = gql`
-    query TrickResultData($gameId: String!, $playerToken: String!) {
-  state(gameId: $gameId, playerToken: $playerToken) {
-    id
-    phase
-    currentRound {
-      id
-      phase
-      pirateAbility {
-        id
-      }
-      roundNumber
-      leader
-      playerTurn
-      myBid
-      trickColor
-      cardsPlayed {
-        id
-        playerId
-      }
-      lastCompletedHand {
-        id
-        trickColor
-        trickDiscarded
-        removedCardIds
-        cardsPlayed {
-          id
-          playerId
-          card {
-            __typename
-            ... on SpecialCard {
-              id
-              type
-              selection
-            }
-            ... on ColoredCard {
-              id
-              color
-              number
-            }
-          }
-        }
-        winningCard {
-          id
-          playerId
-          card {
-            __typename
-            ... on SpecialCard {
-              id
-              type
-              selection
-            }
-            ... on ColoredCard {
-              id
-              color
-              number
-            }
-          }
-        }
-      }
-    }
-  }
-}
-    `;
-
-/**
- * __useTrickResultDataQuery__
- *
- * To run a query within a React component, call `useTrickResultDataQuery` and pass it any options that fit your needs.
- * When your component renders, `useTrickResultDataQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useTrickResultDataQuery({
- *   variables: {
- *      gameId: // value for 'gameId'
- *      playerToken: // value for 'playerToken'
- *   },
- * });
- */
-export function useTrickResultDataQuery(baseOptions: Apollo.QueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables> & ({ variables: TrickResultDataQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<TrickResultDataQuery, TrickResultDataQueryVariables>(TrickResultDataDocument, options);
-      }
-export function useTrickResultDataLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<TrickResultDataQuery, TrickResultDataQueryVariables>(TrickResultDataDocument, options);
-        }
-// @ts-ignore
-export function useTrickResultDataSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>): Apollo.UseSuspenseQueryResult<TrickResultDataQuery, TrickResultDataQueryVariables>;
-export function useTrickResultDataSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>): Apollo.UseSuspenseQueryResult<TrickResultDataQuery | undefined, TrickResultDataQueryVariables>;
-export function useTrickResultDataSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TrickResultDataQuery, TrickResultDataQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<TrickResultDataQuery, TrickResultDataQueryVariables>(TrickResultDataDocument, options);
-        }
-export type TrickResultDataQueryHookResult = ReturnType<typeof useTrickResultDataQuery>;
-export type TrickResultDataLazyQueryHookResult = ReturnType<typeof useTrickResultDataLazyQuery>;
-export type TrickResultDataSuspenseQueryHookResult = ReturnType<typeof useTrickResultDataSuspenseQuery>;
-export type TrickResultDataQueryResult = Apollo.QueryResult<TrickResultDataQuery, TrickResultDataQueryVariables>;
 export const AddPlayerDocument = gql`
     mutation AddPlayer($gameId: String!, $name: String!) {
   addPlayer(gameId: $gameId, name: $name)

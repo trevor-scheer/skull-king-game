@@ -1,0 +1,51 @@
+.BidRitual {
+  padding: 1rem 0.5rem;
+  text-align: center;
+  &-eyebrow {
+    color: #a5b5ba;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  &-chant {
+    max-width: 24rem;
+    margin: 1rem auto;
+    font-family: "Cinzel", Georgia, serif;
+    font-size: clamp(1.1rem, 2.6vw, 1.7rem);
+    line-height: 1.6;
+    color: #a5b5ba;
+  }
+  &-chant span {
+    transition: color 200ms;
+  }
+  &-chant .BidRitual-word--spoken {
+    color: #f4dfb3;
+  }
+  &-beats {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    color: #62777b;
+  }
+  &-beats span {
+    display: inline-block;
+    transition:
+      transform 180ms,
+      color 180ms;
+  }
+  &-beats .BidRitual-beat--active {
+    color: #d9b876;
+    transform: translateY(-5px) scale(1.25);
+  }
+  &-caption {
+    color: #a5b5ba;
+    font-size: 0.75rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .BidRitual-chant span,
+  .BidRitual-beats span {
+    transition: none;
+    transform: none;
+  }
+}

@@ -35,6 +35,7 @@ query GameState($gameId: String!, $playerToken: String!) {
       leader
       playerTurn
       myBid
+      bidRevealEndsAt
       roundNumber
       cardsPlayed {
         id

@@ -13,9 +13,20 @@ first action below the fold. The redesign replaces those patterns:
   path to setup. Deck presets come before individual card and scoring options.
 - The lobby prioritizes joining, crew members, invitations, and starting. Detailed
   rules remain available in a disclosure.
-- The table prioritizes round status, opponents, the current action, and the hand.
-  During mobile bidding, the hand appears before the bid controls. Wide hands and
-  scorecards scroll within their own containers.
+- The table uses perimeter seats, decorative opponent card fans, and a fanned
+  player hand. The ink, ivory, and brass theme also applies to the table rail.
+  Cards lift on hover or keyboard focus; phones use tap-to-inspect followed by an
+  explicit play or special-card choice. During mobile bidding, the hand appears
+  before the bid controls. Wide hands and scorecards scroll within their containers.
+- Accepted plays travel from the player's seat or selected card to a persistent
+  trick area. The final card lands before the winner is highlighted; completed
+  tricks gather toward the winner as play advances. Rejected actions keep the
+  player's card in hand. Initial loads do not replay historical card motion.
+- New games share a 4.5-second visual count-in after the last secret bid is locked.
+  The server holds play until the deadline, then reveals bids together; Cannonball
+  games proceed to loading. This deadline persists across restarts. Card and turn sounds are
+  optional and off by default, controlled in Sound and vibration. The bidding
+  ritual is silent.
 - Account, recovery, and autoplay tools sit below play. Tutorials, accounts,
   rankings, and results use the same type, spacing, and control treatments.
 

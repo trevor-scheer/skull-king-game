@@ -2,50 +2,45 @@ import { useEffect, useRef, useState } from "react";
 import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../../hooks/useGameId";
 import {
-  useTrickResultDataQuery,
+  CardsPlayedQuery,
   useAdvanceTrickMutation,
 } from "../../../../types/graphqlTypes";
-import { Card } from "../Card/Card";
 import "./TrickResult.scss";
 import { explainTrick } from "../../../../utils/trickExplanation";
 
 const TRANSITION_DELAY_MS = 2500;
 
+type CompletedTrick = NonNullable<
+  NonNullable<
+    NonNullable<CardsPlayedQuery["state"]>["currentRound"]
+  >["lastCompletedHand"]
+>;
+
 export const TrickResult: React.FunctionComponent<{
   paused?: boolean;
   readOnly?: boolean;
-}> = function ({ paused = false, readOnly = false }) {
+  hand: CompletedTrick;
+  refetch: () => Promise<unknown>;
+}> = function ({
+  paused = false,
+  readOnly = false,
+  hand: lastCompletedHand,
+  refetch,
+}) {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
   const retryAdvanceRef = useRef<(() => void) | null>(null);
   const [advanceFailed, setAdvanceFailed] = useState(false);
   const [advancing, setAdvancing] = useState(false);
 
-  const { data, loading, error, refetch } = useTrickResultDataQuery({
-    variables: { gameId: gameId!, playerToken: playerToken ?? "" },
-    pollInterval: 10000,
-    skip: !gameId,
-  });
-
   const [advanceTrick] = useAdvanceTrickMutation();
-
-  const lastCompletedHand = data?.state?.currentRound?.lastCompletedHand;
-  const handId = lastCompletedHand?.id;
-  const phase = data?.state?.currentRound?.phase;
-  const cardsPlayed = lastCompletedHand?.cardsPlayed ?? [];
-  const winningCard = lastCompletedHand?.winningCard;
+  const handId = lastCompletedHand.id;
+  const winningCard = lastCompletedHand.winningCard;
 
   useEffect(() => {
     setAdvanceFailed(false);
     setAdvancing(false);
-    if (
-      readOnly ||
-      paused ||
-      phase !== "trick_result" ||
-      !handId ||
-      !gameId ||
-      !playerToken
-    ) {
+    if (readOnly || paused || !handId || !gameId || !playerToken) {
       return;
     }
 
@@ -82,39 +77,7 @@ export const TrickResult: React.FunctionComponent<{
       clearTimeout(timer);
       retryAdvanceRef.current = null;
     };
-  }, [
-    readOnly,
-    paused,
-    phase,
-    handId,
-    gameId,
-    playerToken,
-    advanceTrick,
-    refetch,
-  ]);
-
-  if (error && !lastCompletedHand) {
-    return (
-      <div className="TrickResult TrickResult--loading">
-        <p role="alert">Couldn’t load the trick result.</p>
-        <button
-          className="TrickResult-retry"
-          onClick={() => void refetch().catch(() => undefined)}
-          disabled={loading}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  if (!lastCompletedHand) {
-    return (
-      <div className="TrickResult TrickResult--loading">
-        <div className="TrickResult-loadingText">Revealing winner...</div>
-      </div>
-    );
-  }
+  }, [readOnly, paused, handId, gameId, playerToken, advanceTrick, refetch]);
 
   return (
     <div className="TrickResult">
@@ -129,32 +92,6 @@ export const TrickResult: React.FunctionComponent<{
       <p className="TrickResult-explanation">
         {explainTrick(lastCompletedHand)}
       </p>
-      <ol className="TrickResult-cards">
-        {cardsPlayed.map((playedCard, index: number) => {
-          const { playerId, card } = playedCard;
-          const isWinner = winningCard?.id === `${playerId}-${card.id}`;
-          return (
-            <li
-              key={`${playerId}-${card.id}`}
-              className={`TrickResult-cardWrapper${isWinner ? " TrickResult-cardWrapper--winner" : ""}`}
-            >
-              <Card
-                as="div"
-                card={card}
-                disabled={true}
-                grayOut={false}
-                index={index}
-              />
-              <span className="TrickResult-playerLabel">
-                {playerId}
-                {lastCompletedHand.removedCardIds?.includes(card.id)
-                  ? " · Removed"
-                  : ""}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
       {advanceFailed ? (
         <div className="TrickResult-recovery">
           <p role="alert">Couldn’t continue the game. Please try again.</p>

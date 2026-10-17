@@ -1,26 +1,45 @@
 query CardsPlayed($gameId: String!, $playerToken: String!) {
   state(gameId: $gameId, playerToken: $playerToken) {
     id
+    me {
+      name
+    }
     currentRound {
       id
       phase
       cardsPlayed {
+        ...TablePlay
+      }
+      lastCompletedHand {
         id
-        playerId
-        card {
-          __typename
-          ... on SpecialCard {
-            id
-            type
-            selection
-          }
-          ... on ColoredCard {
-            id
-            color
-            number
-          }
+        trickColor
+        trickDiscarded
+        winningCard {
+          ...TablePlay
+        }
+        removedCardIds
+        cardsPlayed {
+          ...TablePlay
         }
       }
+    }
+  }
+}
+
+fragment TablePlay on PlayedCard {
+  id
+  playerId
+  card {
+    __typename
+    ... on SpecialCard {
+      id
+      type
+      selection
+    }
+    ... on ColoredCard {
+      id
+      color
+      number
     }
   }
 }

@@ -27,6 +27,7 @@ query MyHand($gameId: String!, $playerToken: String!) {
       trickColor
       myForcedCardId
       myBid
+      bidRevealEndsAt
     }
   }
 }

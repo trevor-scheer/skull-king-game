@@ -13,6 +13,10 @@ export const Card: React.FunctionComponent<{
   grayOut: boolean;
   index: number;
   children?: React.ReactNode;
+  onInspect?: () => void;
+  actionLabel?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }> = function ({
   disabled,
   disabledReason,
@@ -22,6 +26,10 @@ export const Card: React.FunctionComponent<{
   grayOut,
   index,
   children,
+  onInspect,
+  actionLabel,
+  className = "",
+  style,
 }) {
   const expansion = expansionCardDescription(
     card.id,
@@ -58,17 +66,26 @@ export const Card: React.FunctionComponent<{
 
   return (
     <Tag
-      className={`Card${grayOut ? " Card-disabled" : ""}`}
-      style={{ zIndex: index }}
+      className={`Card${grayOut ? " Card-disabled" : ""} ${className}`}
+      data-card-id={card.id}
+      style={{ zIndex: index, ...style }}
       title={disabledReason ? `${altText}: ${disabledReason}` : altText}
     >
-      {children ?? (
+      {children && !onInspect ? (
+        children
+      ) : (
         <button
           className="Card-content"
-          disabled={disabled}
-          onClick={() => onClick?.()}
+          disabled={disabled && !onInspect}
+          onClick={() => (onInspect ? onInspect() : onClick?.())}
           aria-label={
-            disabledReason ? `${altText}. ${disabledReason}` : altText
+            onInspect
+              ? `Inspect ${altText}`
+              : disabledReason
+                ? `${altText}. ${disabledReason}`
+                : actionLabel
+                  ? `${actionLabel}: ${altText}`
+                  : altText
           }
         >
           {expansion ? (
@@ -107,6 +124,7 @@ export const Card: React.FunctionComponent<{
               alt={altText}
             />
           )}
+          {actionLabel && <span className="Card-playLabel">{actionLabel}</span>}
         </button>
       )}
       <span className="Card-name">{altText}</span>

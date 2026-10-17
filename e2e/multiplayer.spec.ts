@@ -1,13 +1,14 @@
 import { test, expect } from "@playwright/test";
 import { spawn, ChildProcess } from "node:child_process";
 import { once } from "node:events";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 let server: ChildProcess;
 let baseURL: string;
 let directory: string;
+const qaDirectory = "/tmp/skull-king-table-qa";
 
 async function startServer(port = 0) {
   server = spawn(process.execPath, ["e2e/server.cjs"], {
@@ -57,6 +58,7 @@ async function stopServer() {
 }
 
 test.beforeAll(async () => {
+  mkdirSync(qaDirectory, { recursive: true });
   directory = mkdtempSync(join(tmpdir(), "skull-king-browser-"));
   baseURL = await startServer();
 });
@@ -342,6 +344,10 @@ test("custom setup supports a full crew and readable responsive hands", async ({
       .locator(".Hand-playerHand")
       .evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
   ).toBe(true);
+  await page.screenshot({
+    path: join(qaDirectory, "desktop-full-crew.png"),
+    fullPage: true,
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(
@@ -353,6 +359,10 @@ test("custom setup supports a full crew and readable responsive hands", async ({
       .locator(".Hand-playerHand")
       .evaluate((element) => element.scrollWidth > element.clientWidth),
   ).toBe(true);
+  await page.screenshot({
+    path: join(qaDirectory, "phone-full-crew.png"),
+    fullPage: true,
+  });
   const hand = await page.locator(".Hand").boundingBox();
   const bids = await page.locator(".BidForm").boundingBox();
   expect(hand!.y).toBeLessThan(bids!.y);
@@ -381,4 +391,163 @@ test("an unavailable page file offers recovery instead of a developer error", as
   await expect(
     page.getByRole("heading", { name: "Learn Skull King by playing" }),
   ).toBeVisible();
+});
+
+test("the crew shares a bid reveal and a phone player inspects before a keyboard-confirmed play", async ({
+  browser,
+  request,
+}) => {
+  const created = await (
+    await request.post(`${baseURL}/graphql`, {
+      data: {
+        query: "mutation { newGame(roundSchedule:[3],tieBreakers:false) }",
+      },
+    })
+  ).json();
+  expect(created.errors).toBeUndefined();
+  const gameId = created.data.newGame;
+  const names = ["Captain Ada", "Captain Anne", "Captain Grace"];
+  const contexts = await Promise.all([
+    browser.newContext({ viewport: { width: 1280, height: 720 } }),
+    browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    }),
+    browser.newContext({ viewport: { width: 1280, height: 720 } }),
+  ]);
+  const pages = await Promise.all(contexts.map((context) => context.newPage()));
+  try {
+    for (let index = 0; index < pages.length; index++) {
+      await pages[index].goto(`${baseURL}/game/${gameId}`);
+      await pages[index].getByLabel(/Enter yer name/).fill(names[index]);
+      await pages[index]
+        .getByRole("button", { name: "Board the Ship" })
+        .click();
+      await expect(pages[index].locator(".Lobby-playerList")).toContainText(
+        names[index],
+      );
+    }
+    await pages[0].getByRole("button", { name: "Set Sail!" }).click();
+    for (const page of pages) {
+      await expect(
+        page.getByRole("heading", { name: "Place Your Bid" }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "0", exact: true }).click();
+    }
+    await Promise.all(
+      pages.map((page) =>
+        expect(
+          page.getByRole("status", {
+            name: "Bids locked. The crew is chanting before the reveal.",
+          }),
+        ).toBeVisible(),
+      ),
+    );
+    for (const page of pages) {
+      const table = page.getByRole("region", { name: "Game table" });
+      await expect(table.getByText("Bid hidden", { exact: true })).toHaveCount(
+        2,
+      );
+      await expect(table.getByText("Bid 0", { exact: true })).toHaveCount(0);
+    }
+    await pages[0].screenshot({
+      path: join(qaDirectory, "desktop-bid-ritual.png"),
+      fullPage: true,
+    });
+    await pages[1].screenshot({
+      path: join(qaDirectory, "phone-bid-ritual.png"),
+      fullPage: true,
+    });
+    await Promise.all(
+      pages.map((page) =>
+        expect(
+          page
+            .getByRole("region", { name: "Game table" })
+            .getByText("Bid 0", { exact: true }),
+        ).toHaveCount(2),
+      ),
+    );
+    for (const page of pages) {
+      await expect(
+        page.getByRole("status", {
+          name: "Bids locked. The crew is chanting before the reveal.",
+        }),
+      ).toHaveCount(0);
+    }
+
+    const phone = pages[1];
+    await expect(phone.getByText(/Your Turn!/)).toBeVisible();
+    const cards = phone.locator(".Hand-playerHand > li");
+    await expect(cards).toHaveCount(3);
+    const inspect = cards.first().getByRole("button", { name: /^Inspect / });
+    const inspectedName = (await inspect.getAttribute("aria-label"))!.replace(
+      /^Inspect /,
+      "",
+    );
+    const preview = phone.getByRole("region", { name: "Selected card" });
+    await inspect.tap();
+    await expect(preview).toBeVisible();
+    await expect(cards).toHaveCount(3);
+    await preview.getByRole("button", { name: "Close card preview" }).tap();
+    await expect(preview).toHaveCount(0);
+    await inspect.focus();
+    await phone.keyboard.press("Enter");
+    await expect(preview).toBeVisible();
+    await expect(preview).toContainText("Ready to play?");
+    await expect(cards).toHaveCount(3);
+    await expect(
+      phone
+        .getByRole("list", { name: "Cards on the table" })
+        .getByRole("listitem"),
+    ).toHaveCount(0);
+    await phone.screenshot({
+      path: join(qaDirectory, "phone-card-inspection.png"),
+      fullPage: true,
+    });
+    expect(
+      await phone.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    const play = preview.getByRole("button", { name: /^Play/ }).first();
+    await expect(play).toBeEnabled();
+    await play.focus();
+    await phone.keyboard.press("Enter");
+    await expect(cards).toHaveCount(2);
+    await expect(preview).toHaveCount(0);
+    for (const page of pages) {
+      const tableCards = page.getByRole("list", { name: "Cards on the table" });
+      await expect(tableCards.getByRole("listitem")).toHaveCount(1);
+      await expect(tableCards).toContainText("Captain Anne");
+      if (inspectedName !== "Tigress")
+        await expect(tableCards).toContainText(inspectedName);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    await pages[0].evaluate(() => window.scrollTo(0, 0));
+    const desktopHand = await pages[0]
+      .locator(".Hand-playerHand")
+      .boundingBox();
+    expect(desktopHand!.y + desktopHand!.height).toBeLessThanOrEqual(720);
+    await pages[0].screenshot({
+      path: join(qaDirectory, "desktop-preview.png"),
+      animations: "disabled",
+    });
+    await pages[0].screenshot({
+      path: join(qaDirectory, "desktop-card-played.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+    await phone.screenshot({
+      path: join(qaDirectory, "phone-card-played.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+  } finally {
+    await Promise.allSettled(contexts.map((context) => context.close()));
+  }
 });
