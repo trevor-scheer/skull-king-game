@@ -22,7 +22,7 @@ const resolvers: ApolloServerOptions<Context>["resolvers"] = {
   Mutation: {
     newGame(_, { deckConfig, scoringMode, pirateAbilities, roundSchedule, tieBreakers, cannonball }: { deckConfig?: DeckConfiguration; scoringMode?: ScoringMode; pirateAbilities?: boolean; roundSchedule?: number[]; tieBreakers?: boolean; cannonball?: boolean }, context) {
       const id = randomUUID();
-      const game = new Game(id, { deckConfig, scoringMode, pirateAbilities, roundSchedule, tieBreakers, cannonball });
+      const game = new Game(id, { deckConfig, scoringMode, pirateAbilities, roundSchedule, tieBreakers, cannonball, bidRevealDurationMs: 4500 });
       context.games.set(id, game);
       return id;
     },

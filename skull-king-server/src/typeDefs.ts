@@ -138,6 +138,7 @@ const typeDefs = `#graphql
     leader: String!
     playerTurn: String
     myBid: Int
+    bidRevealEndsAt: Float
     trickColor: Color
     cardsPlayed: [PlayedCard!]!
     hands: [Hand!]!

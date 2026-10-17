@@ -22,6 +22,7 @@ export interface Round {
   cannonLoads?: Map<string, CannonLoad>;
   phase: "bid" | "load" | "play" | "trick_result";
   bids: Map<string, number>;
+  bidRevealEndsAt?: number | null;
   cardsPlayed: PlayedCard[];
   dealer: number;
   roundLeader?: number;
@@ -73,6 +74,7 @@ export class Game {
   constructor(id: string, options?: GameOptions) {
     this.id = id;
     this.options = { ...options, roundSchedule: validateRoundSchedule(options?.roundSchedule ?? undefined) };
+    assert(options?.bidRevealDurationMs == null || (Number.isFinite(options.bidRevealDurationMs) && options.bidRevealDurationMs >= 0), "Invalid bid reveal duration");
     assert(!options?.cannonball || options.scoringMode === "rascal", "Cannonball requires Rascal scoring");
     assert(
       options?.scoringMode == null || options.scoringMode === "classic" || options.scoringMode === "rascal",
@@ -301,9 +303,26 @@ export class Game {
     this.currentRound.bids.set(playerId, count);
 
     if (this.currentRound.bids.size === this.playerNames.size) {
-      if (this.options.cannonball) this.currentRound.phase = "load";
-      else this.beginRoundPlay();
+      if (this.options.bidRevealDurationMs) {
+        this.currentRound.bidRevealEndsAt = Date.now() + this.options.bidRevealDurationMs;
+      } else this.revealBids();
     }
+  }
+
+  /** Server-driven deadline; retries and stale round timers cannot advance play. */
+  public advanceFromBidReveal(expectedRoundNumber: number, now = Date.now()) {
+    const round = this.currentRound;
+    if (this.phase !== "play" || round?.phase !== "bid" || round.roundNumber !== expectedRoundNumber ||
+      round.bidRevealEndsAt == null || now < round.bidRevealEndsAt || !Number.isFinite(now)) return false;
+    this.revealBids();
+    return true;
+  }
+
+  private revealBids() {
+    assert(this.currentRound, "No round to reveal");
+    this.currentRound.bidRevealEndsAt = null;
+    if (this.options.cannonball) this.currentRound.phase = "load";
+    else this.beginRoundPlay();
   }
 
   public loadCannon({ playerToken, load, expectedRoundNumber }: { playerToken: string; load: CannonLoad; expectedRoundNumber: number }) {
@@ -682,6 +701,7 @@ export class Game {
       ...this.currentRound,
       id: this.currentRound.roundNumber,
       myBid: undefined as number | undefined,
+      bidRevealEndsAt: this.currentRound.bidRevealEndsAt ?? null,
       myCannonLoad: null as CannonLoad | null,
       cannonLoads: undefined,
       revealedBids: this.currentRound.phase === "bid" ? [] : [...this.currentRound.bids].map(([playerId, count]) => ({ playerId, count })),
@@ -763,6 +783,8 @@ export class Game {
 }
 
 export interface GameOptions {
+  /** Presentation pause enabled by the server; direct engine simulations remain immediate. */
+  bidRevealDurationMs?: number;
   roundSchedule?: number[];
   tieBreakers?: boolean;
   cannonball?: boolean;

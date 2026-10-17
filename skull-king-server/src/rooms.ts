@@ -87,6 +87,10 @@ export class Rooms {
 
   tick() {
     for (const [id, game] of this.games) {
+      const biddingRound = game.getStateForPlayer().currentRound;
+      if (biddingRound?.bidRevealEndsAt != null && this.now() >= biddingRound.bidRevealEndsAt) {
+        this.mutate(id, () => game.advanceFromBidReveal(biddingRound.roundNumber, this.now()));
+      }
       if (this.now() - (this.botActions.get(id) ?? 0) >= 750 && this.mutate(id, () => game.stepAutoplay())) {
         this.botActions.set(id, this.now());
       }
