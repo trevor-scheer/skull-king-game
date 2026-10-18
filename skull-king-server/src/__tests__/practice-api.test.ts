@@ -44,9 +44,10 @@ it('steps at most one autoplay action per interval and restores seats with recon
   try{
     let rooms=new Rooms(directory,()=>now);const game=new Game('practice',{roundSchedule:[1],tieBreakers:false}); const host=game.addPlayer('Host');game.addBot(host);game.start();game.setAutoplay(host,true);rooms.games.set('practice',game);rooms.save('practice');
     const changed=jest.fn();rooms.updates.on('practice',changed);
+    rooms.tick();expect(game.__debugDump().currentRound!.bids.size).toBe(0);
+    now+=1400;rooms.tick();expect(game.__debugDump().currentRound!.bids.size).toBe(1);
     rooms.tick();expect(game.__debugDump().currentRound!.bids.size).toBe(1);
-    rooms.tick();expect(game.__debugDump().currentRound!.bids.size).toBe(1);
-    now+=750;rooms.tick();expect(game.__debugDump().currentRound!.bids.size).toBe(2);
+    now+=1400;rooms.tick();expect(game.__debugDump().currentRound!.bids.size).toBe(2);
     expect(changed).toHaveBeenCalledTimes(2);
     now+=100000;rooms=new Rooms(directory,()=>now);
     const restored=rooms.games.get('practice')!;

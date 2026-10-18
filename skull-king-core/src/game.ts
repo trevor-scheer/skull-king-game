@@ -66,6 +66,7 @@ export class Game {
   private phase: "setup" | "play" | "postgame";
   private currentRound: Round | null;
   private autoplayPlayers = new Set<string>();
+  private deferredAutoplay = false;
   private lastSeen = new Map<string, number>();
   private practice = false;
   private nextGameId: string | null = null;
@@ -222,14 +223,35 @@ export class Game {
     return true;
   }
 
-  /** Executes one decision from an explicitly filtered view. Tokens stay inside Game. */
-  public stepAutoplay() {
+  /** Server-managed rooms advance all automated cards through stepAutoplay. */
+  public deferAutoplay() {
+    this.deferredAutoplay = true;
+  }
+
+  private autoplayActor() {
     const round = this.currentRound;
-    if (this.phase !== "play" || !round) return false;
+    if (this.phase !== "play" || !round) return null;
     let actor = round.plankChoice?.playerId ?? round.pirateAbility?.playerId ?? this.playerTurn();
     if (round.phase === "bid") actor = this.players.find(player => this.autoplayPlayers.has(player.id) && !round.bids.has(player.id))?.id ?? null;
     if (round.phase === "load") actor = this.players.find(player => this.autoplayPlayers.has(player.id) && !round.cannonLoads?.has(player.id))?.id ?? null;
-    if (!actor || !this.autoplayPlayers.has(actor)) return false;
+    return actor && (this.autoplayPlayers.has(actor) || this.players.some(player => player.id === actor && player.isAutomated)) ? actor : null;
+  }
+
+  /** Identifies the pending decision without exposing credentials or private cards. */
+  public autoplayDecisionKey() {
+    const actor = this.autoplayActor();
+    const round = this.currentRound;
+    if (!actor || !round) return null;
+    return JSON.stringify([round.roundNumber, round.phase, round.hands.length, round.cardsPlayed.length,
+      round.bids.size, round.cannonLoads?.size ?? 0, round.pirateAbility?.id, round.plankChoice?.id, actor]);
+  }
+
+  /** Executes one decision from an explicitly filtered view. Tokens stay inside Game. */
+  public stepAutoplay() {
+    const round = this.currentRound;
+    const actor = this.autoplayActor();
+    if (!round || !actor) return false;
+    if (this.players.some(player => player.id === actor && player.isAutomated)) return this.playGraybeardCard();
     const token = [...this.playerTokens].find(([, id]) => id === actor)?.[0];
     assert(token, "Autoplay seat has no credential");
     const state = this.getStateForPlayer(token);
@@ -415,19 +437,24 @@ export class Game {
   }
 
   private playGraybeardIfNext() {
-    while (this.currentRound?.phase === "play") {
-      const player = this.players.find((candidate) => candidate.name === this.playerTurn());
-      if (!player?.isAutomated) return;
-      const forced = this.currentRound.forcedCards?.get(player.id);
-      const index = forced ? player.hand.findIndex(card => card.id === forced) : 0;
-      const [topCard] = player.hand.splice(index, 1);
-      assert(topCard, "Graybeard has no card to reveal");
-      this.currentRound.forcedCards?.delete(player.id);
-      const card = graybeardCard(topCard);
-      this.maybeSetTrickColor(card);
-      this.currentRound.cardsPlayed.push({ id: `${player.id}-${card.id}`, playerId: player.id, card });
-      this.maybeEndHand();
-    }
+    if (this.deferredAutoplay) return;
+    while (this.playGraybeardCard()) { /* Direct simulations resolve automated turns synchronously. */ }
+  }
+
+  private playGraybeardCard() {
+    if (this.currentRound?.phase !== "play") return false;
+    const player = this.players.find(candidate => candidate.id === this.playerTurn());
+    if (!player?.isAutomated) return false;
+    const forced = this.currentRound.forcedCards?.get(player.id);
+    const index = forced ? player.hand.findIndex(card => card.id === forced) : 0;
+    const [topCard] = player.hand.splice(index, 1);
+    assert(topCard, "Graybeard has no card to reveal");
+    this.currentRound.forcedCards?.delete(player.id);
+    const card = graybeardCard(topCard);
+    this.maybeSetTrickColor(card);
+    this.currentRound.cardsPlayed.push({ id: `${player.id}-${card.id}`, playerId: player.id, card });
+    this.maybeEndHand();
+    return true;
   }
 
   private maybeSetTrickColor(card: Card) {

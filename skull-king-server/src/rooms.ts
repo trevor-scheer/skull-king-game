@@ -10,7 +10,7 @@ export class Rooms {
   readonly updates = new EventEmitter();
   readonly saved = new EventEmitter();
   private touched = new Map<string, number>();
-  private botActions = new Map<string, number>();
+  private botDecisions = new Map<string, { key: string; due: number }>();
   private unavailable = new Set<string>();
   private results = new Map<string, { handId: string; due: number }>();
   constructor(readonly directory: string, private now = Date.now) {
@@ -25,6 +25,7 @@ export class Rooms {
         if (envelope && (saved.version !== 1 || !Number.isFinite(saved.lastActivity))) throw Error('Unsupported room checkpoint');
         const game = Game.restoreCheckpoint(envelope ? saved.checkpoint : bytes);
         game.resetPresence(this.now());
+        game.deferAutoplay();
         this.games.set(id, game);
         this.touched.set(id, envelope ? saved.lastActivity : statSync(join(directory, file)).mtimeMs);
       } catch {
@@ -38,6 +39,7 @@ export class Rooms {
     if (this.unavailable.has(id)) throw Error('Room storage requires recovery.');
     const game = this.games.get(id);
     if (!game) return;
+    game.deferAutoplay();
     if (!/^[a-zA-Z0-9-]+$/.test(id)) throw new Error('Invalid room identifier');
     const lastActivity = touch ? this.now() : this.touched.get(id) ?? this.now();
     const destination = join(this.directory, `${id}.room`);
@@ -91,8 +93,14 @@ export class Rooms {
       if (biddingRound?.bidRevealEndsAt != null && this.now() >= biddingRound.bidRevealEndsAt) {
         this.mutate(id, () => game.advanceFromBidReveal(biddingRound.roundNumber, this.now()));
       }
-      if (this.now() - (this.botActions.get(id) ?? 0) >= 750 && this.mutate(id, () => game.stepAutoplay())) {
-        this.botActions.set(id, this.now());
+      const decisionKey = game.autoplayDecisionKey();
+      const pendingDecision = this.botDecisions.get(id);
+      if (!decisionKey) this.botDecisions.delete(id);
+      else if (pendingDecision?.key !== decisionKey) {
+        this.botDecisions.set(id, { key: decisionKey, due: this.now() + 1400 });
+      } else if (this.now() >= pendingDecision.due) {
+        this.mutate(id, () => game.stepAutoplay());
+        this.botDecisions.delete(id);
       }
       const state = game.getStateForPlayer();
       const round = state.currentRound;
@@ -112,7 +120,7 @@ export class Rooms {
         this.games.delete(id);
         this.touched.delete(id);
         this.results.delete(id);
-        this.botActions.delete(id);
+        this.botDecisions.delete(id);
         this.updates.emit(id);
         this.saved.emit("expired", id);
       }
