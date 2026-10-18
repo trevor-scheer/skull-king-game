@@ -13,6 +13,7 @@ import {
 import { isColoredCard, isSpecialCard } from "../../../../utils";
 import { Card } from "../Card/Card";
 import "./Hand.scss";
+import { Dialog } from "../../../../components/Dialog";
 import { rememberCardOrigin } from "../PlayedCards/cardMotion";
 
 export const Hand: React.FunctionComponent = function () {
@@ -24,12 +25,7 @@ export const Hand: React.FunctionComponent = function () {
   );
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const handRef = useRef<HTMLUListElement>(null);
-  const inspectionRef = useRef<HTMLElement>(null);
   const previousPositions = useRef(new Map<string, number>());
-  useEffect(() => {
-    if (compact && selectedCardId)
-      inspectionRef.current?.scrollIntoView?.({ block: "nearest" });
-  }, [compact, selectedCardId]);
   useEffect(() => {
     if (!window.matchMedia) return;
     const media = window.matchMedia("(max-width: 600px)");
@@ -150,6 +146,7 @@ export const Hand: React.FunctionComponent = function () {
         phase === "play" && (!myTurn || !canPlayCard(card) || justClicked),
       card,
       index,
+      interactive: !preview,
       onInspect:
         compact && !preview ? () => setSelectedCardId(card.id) : undefined,
       actionLabel:
@@ -328,7 +325,9 @@ export const Hand: React.FunctionComponent = function () {
             : "Use Tab to move between playable cards and Enter to play."}
         </p>
       )}
-      {actionError && <p role="alert">{actionError}</p>}
+      {actionError && !(compact && selectedCard) && (
+        <p role="alert">{actionError}</p>
+      )}
       <ul
         ref={handRef}
         className="Hand-playerHand"
@@ -341,29 +340,27 @@ export const Hand: React.FunctionComponent = function () {
         {sortedHand.map((card, index) => renderCard(card, index))}
       </ul>
       {compact && selectedCard && (
-        <section
-          ref={inspectionRef}
-          className="Hand-inspection"
-          aria-label="Selected card"
+        <Dialog
+          open
+          title="Card preview"
+          onClose={() => setSelectedCardId(null)}
+          className="Hand-previewDialog"
         >
-          <div className="Hand-inspectionHeader">
-            <p>
-              {myTurn && canPlayCard(selectedCard)
-                ? "Ready to play?"
-                : "Inspect your card"}
-            </p>
-            <button
-              onClick={() => setSelectedCardId(null)}
-              aria-label="Close card preview"
-            >
-              Close
-            </button>
-          </div>
-          <ul>{renderCard(selectedCard, 0, true)}</ul>
-          {(!myTurn || !canPlayCard(selectedCard)) && (
-            <p className="Hand-guidance">{disabledReason}</p>
-          )}
-        </section>
+          <section className="Hand-inspection" aria-label="Selected card">
+            <div className="Hand-inspectionHeader">
+              <p>
+                {myTurn && canPlayCard(selectedCard)
+                  ? "Ready to play?"
+                  : "Inspect your card"}
+              </p>
+            </div>
+            <ul>{renderCard(selectedCard, 0, true)}</ul>
+            {actionError && <p role="alert">{actionError}</p>}
+            {(!myTurn || !canPlayCard(selectedCard)) && (
+              <p className="Hand-guidance">{disabledReason}</p>
+            )}
+          </section>
+        </Dialog>
       )}
     </div>
   );

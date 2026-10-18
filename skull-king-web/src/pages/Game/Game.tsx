@@ -10,7 +10,6 @@ import { useGamePhaseQuery } from "../../types/graphqlTypes";
 import { InGame } from "./InGame/InGame";
 import { Lobby } from "./Lobby/Lobby";
 import { PostGame } from "./PostGame/PostGame";
-import { Spectator } from "./Spectator/Spectator";
 
 export function Game() {
   const gameId = useGameId() ?? "";
@@ -55,8 +54,18 @@ export function Game() {
     );
   }
 
+  const utilities = (
+    <div className="Game-utilities">
+      {data.state.phase === "play" && playerToken && <RoomControls />}
+      <AccountResume gameId={gameId} phase={data.state.phase} />
+      <SeatRecovery gameId={gameId} />
+    </div>
+  );
+
   return (
-    <>
+    <div
+      className={data.state.phase === "play" ? "Game Game--playing" : "Game"}
+    >
       {!connected && (
         <p className="Game-connection" role="status">
           Reconnecting live updates… Your seat is saved; checking for changes.
@@ -66,16 +75,10 @@ export function Game() {
         <Lobby />
       ) : data.state.phase === "postgame" ? (
         <PostGame />
-      ) : playerToken ? (
-        <InGame />
       ) : (
-        <Spectator />
+        <InGame spectator={!playerToken} utilities={utilities} />
       )}
-      <div className="Game-utilities">
-        {data.state.phase === "play" && playerToken && <RoomControls />}
-        <AccountResume gameId={gameId} phase={data.state.phase} />
-        <SeatRecovery gameId={gameId} />
-      </div>
-    </>
+      {data.state.phase !== "play" && utilities}
+    </div>
   );
 }

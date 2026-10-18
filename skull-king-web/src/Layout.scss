@@ -229,3 +229,88 @@
     padding-top: 16px;
   }
 }
+
+// Keep the active table on screen; secondary content lives in dialogs.
+#root:has(.Game--playing) {
+  min-height: 0;
+  height: 100dvh;
+}
+.App:has(.Game--playing) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  .Header {
+    flex-shrink: 0;
+  }
+  .Header nav {
+    min-height: 52px;
+    padding: 4px 24px;
+    max-width: 1480px;
+  }
+  .Header-brand {
+    font-size: 18px;
+    gap: 8px;
+  }
+  .Header-brand svg {
+    width: 28px;
+  }
+  .Header-brand small {
+    display: none;
+  }
+  .Layout {
+    display: flex;
+    min-height: 0;
+    max-width: 1480px;
+    padding: 8px 24px 0;
+  }
+  .Footer {
+    display: none;
+  }
+}
+.Game--playing {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  .Game-connection {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+}
+@media (max-width: 760px) {
+  .App:has(.Game--playing) {
+    .Header nav {
+      flex-wrap: nowrap;
+      padding-inline: 12px;
+      gap: 8px;
+    }
+    .Header-brand {
+      font-size: 14px;
+    }
+    .Header-brand svg {
+      width: 22px;
+    }
+    .Header-links {
+      width: auto;
+      gap: 12px;
+      overflow-x: auto;
+      font-size: 11px;
+    }
+    .Header-links > a {
+      display: none;
+    }
+    .Header .AccountNav {
+      gap: 12px;
+    }
+    .Header .AccountNav a:last-child {
+      max-width: 90px;
+      padding-inline: 6px;
+    }
+    .Layout {
+      padding: 4px 8px 0;
+    }
+  }
+}

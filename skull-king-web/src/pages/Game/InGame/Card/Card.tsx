@@ -17,6 +17,7 @@ export const Card: React.FunctionComponent<{
   actionLabel?: string;
   className?: string;
   style?: React.CSSProperties;
+  interactive?: boolean;
 }> = function ({
   disabled,
   disabledReason,
@@ -30,6 +31,7 @@ export const Card: React.FunctionComponent<{
   actionLabel,
   className = "",
   style,
+  interactive = false,
 }) {
   const expansion = expansionCardDescription(
     card.id,
@@ -69,6 +71,34 @@ export const Card: React.FunctionComponent<{
       className={`Card${grayOut ? " Card-disabled" : ""} ${className}`}
       data-card-id={card.id}
       style={{ zIndex: index, ...style }}
+      onPointerMove={
+        interactive
+          ? (event) => {
+              if (
+                event.pointerType !== "mouse" ||
+                window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+              )
+                return;
+              const rect = event.currentTarget.getBoundingClientRect();
+              event.currentTarget.style.setProperty(
+                "--pointer-tilt-y",
+                `${((event.clientX - rect.left) / rect.width - 0.5) * 12}deg`,
+              );
+              event.currentTarget.style.setProperty(
+                "--pointer-tilt-x",
+                `${((event.clientY - rect.top) / rect.height - 0.5) * -8}deg`,
+              );
+            }
+          : undefined
+      }
+      onPointerLeave={
+        interactive
+          ? (event) => {
+              event.currentTarget.style.removeProperty("--pointer-tilt-x");
+              event.currentTarget.style.removeProperty("--pointer-tilt-y");
+            }
+          : undefined
+      }
       title={disabledReason ? `${altText}: ${disabledReason}` : altText}
     >
       {children && !onInspect ? (

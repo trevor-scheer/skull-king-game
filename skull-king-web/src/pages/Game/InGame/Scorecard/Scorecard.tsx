@@ -46,7 +46,7 @@ export const Scorecard: React.FunctionComponent = function () {
   if (loading && !data) return <div>Loading...</div>;
 
   const scorecard = data?.state?.scorecard;
-  if (!scorecard?.[0]) return null;
+  if (!scorecard?.[0]) return <p>Scores appear here after the first round. Your bids and tricks won are shown at the table.</p>;
 
   return (
     <div className="Scorecard">

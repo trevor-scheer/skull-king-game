@@ -32,6 +32,12 @@ jest.mock("../types/graphqlTypes", () => ({
 }));
 
 beforeEach(() => {
+  HTMLDialogElement.prototype.showModal = function () {
+    this.setAttribute("open", "");
+  };
+  HTMLDialogElement.prototype.close = function () {
+    this.removeAttribute("open");
+  };
   mockPlay.mockReset().mockResolvedValue({});
   window.matchMedia = jest.fn().mockImplementation((query) => ({
     matches: query === "(max-width: 600px)",

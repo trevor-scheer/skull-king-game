@@ -24,6 +24,27 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
   playerTurn,
   children,
 }) => {
+  const opponentsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const strip = opponentsRef.current;
+    const active = strip?.querySelector<HTMLElement>(
+      ".GameTable-opponent--active",
+    );
+    if (!strip || !active || strip.scrollWidth <= strip.clientWidth) return;
+    const stripRect = strip.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    const reduced = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    strip.scrollTo({
+      left:
+        strip.scrollLeft +
+        activeRect.left -
+        stripRect.left -
+        (stripRect.width - activeRect.width) / 2,
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, [playerTurn]);
   const currentPlayerIndex = players.findIndex(
     (player) => player.id === currentPlayerId,
   );
@@ -35,36 +56,27 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
           ...players.slice(0, currentPlayerIndex),
         ];
 
-  const topCount =
-    opponents.length <= 3 ? opponents.length : opponents.length % 2 ? 3 : 2;
-  const sideRows = Math.ceil((opponents.length - topCount) / 2);
+  const sideRows = Math.max(1, Math.ceil(opponents.length / 2));
 
   return (
     <section
-      className="GameTable"
+      className={`GameTable${opponents.length > 4 ? " GameTable--largeCrew" : ""}`}
       aria-label="Game table"
       style={{ "--side-rows": Math.max(1, sideRows) } as React.CSSProperties}
     >
       <div
         className="GameTable-opponents"
+        ref={opponentsRef}
         style={{ "--seat-count": opponents.length } as React.CSSProperties}
       >
         {opponents.map((opponent, index) => {
           const isTheirTurn = opponent.name === playerTurn;
-          const topIndex = index - sideRows;
           const onLeft = index < sideRows;
-          const onTop = topIndex >= 0 && topIndex < topCount;
           const seatStyle = {
-            "--seat-column": onLeft
-              ? "1"
-              : onTop
-                ? `${topCount === 1 ? 3 : topCount === 2 ? 2 + topIndex * 2 : topIndex + 2}`
-                : "5",
+            "--seat-column": onLeft ? "1" : "5",
             "--seat-row": onLeft
-              ? `${sideRows - index + 1}`
-              : onTop
-                ? "1"
-                : `${index - sideRows - topCount + 2}`,
+              ? `${sideRows - index}`
+              : `${index - sideRows + 1}`,
           } as React.CSSProperties;
           return (
             <div
@@ -74,21 +86,19 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
               className={`GameTable-opponent${isTheirTurn ? " GameTable-opponent--active" : ""}`}
             >
               <div className="GameTable-opponentHand" aria-hidden="true">
-                {Array.from(
-                  { length: Math.min(opponent.handCount, 7) },
-                  (_, cardIndex) => (
-                    <span
-                      key={cardIndex}
-                      style={
-                        {
-                          "--back-angle": `${(cardIndex - (Math.min(opponent.handCount, 7) - 1) / 2) * 9}deg`,
-                        } as React.CSSProperties
-                      }
-                    >
-                      <CardBack size="small" />
-                    </span>
-                  ),
-                )}
+                {Array.from({ length: opponent.handCount }, (_, cardIndex) => (
+                  <span
+                    key={cardIndex}
+                    style={
+                      {
+                        "--back-angle": `${(cardIndex - (opponent.handCount - 1) / 2) * Math.min(7, 45 / Math.max(1, opponent.handCount))}deg`,
+                        "--back-offset": `${(cardIndex - (opponent.handCount - 1) / 2) * Math.min(10, 70 / Math.max(1, opponent.handCount - 1))}px`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <CardBack />
+                  </span>
+                ))}
               </div>
               <span className="GameTable-avatar" aria-hidden="true">
                 {opponent.name.charAt(0).toUpperCase()}

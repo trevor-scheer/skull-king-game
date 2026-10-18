@@ -3,6 +3,7 @@ import { usePlayerToken } from "../../../../hooks/PlayerTokenContext";
 import { useGameId } from "../../../../hooks/useGameId";
 import { useCardsPlayedQuery } from "../../../../types/graphqlTypes";
 import { Card } from "../Card/Card";
+import { CardBack } from "../Card/CardBack";
 import { TrickResult } from "../TrickResult/TrickResult";
 import { cardMotionChanges, takeCardOrigin, TableMoment } from "./cardMotion";
 import "./PlayedCards.scss";
@@ -15,10 +16,42 @@ type Snapshot = {
   cards: { id: string; rect: DOMRect; clone: HTMLElement }[];
 };
 
+function playerSeat(player: string) {
+  return [...document.querySelectorAll<HTMLElement>("[data-player-seat]")].find(
+    (seat) => seat.dataset.playerSeat === player,
+  );
+}
 function seatRect(player: string) {
-  return [...document.querySelectorAll<HTMLElement>("[data-player-seat]")]
-    .find((seat) => seat.dataset.playerSeat === player)
-    ?.getBoundingClientRect();
+  return playerSeat(player)?.getBoundingClientRect();
+}
+function opponentHandRect(player: string) {
+  const hand = playerSeat(player)?.querySelector<HTMLElement>(
+    ".GameTable-opponentHand",
+  );
+  if (!hand) return undefined;
+  const back = hand.querySelector<HTMLElement>("span:last-child .Card");
+  const handRect = hand.getBoundingClientRect();
+  const width =
+    Number.parseFloat(
+      getComputedStyle(hand).getPropertyValue("--opponent-card-width"),
+    ) || 38;
+  const rect =
+    back?.getBoundingClientRect() ??
+    new DOMRect(
+      handRect.left + (handRect.width - width) / 2,
+      handRect.top,
+      width,
+      handRect.height,
+    );
+  const strip = hand.closest<HTMLElement>(".GameTable-opponents");
+  if (!strip || strip.scrollWidth <= strip.clientWidth) return rect;
+  const bounds = strip.getBoundingClientRect();
+  return new DOMRect(
+    Math.min(bounds.right - rect.width, Math.max(bounds.left, rect.left)),
+    rect.top,
+    rect.width,
+    rect.height,
+  );
 }
 
 export function PlayedCards({
@@ -35,6 +68,7 @@ export function PlayedCards({
   const animations = useRef(new Set<Animation>());
   const cardAnimations = useRef(new Map<HTMLElement, Animation>());
   const flights = useRef(new Set<HTMLElement>());
+  const enteringFlights = useRef(new Map<HTMLElement, () => void>());
   const { data, error, refetch } = useCardsPlayedQuery({
     variables: {
       gameId: gameId!,
@@ -53,6 +87,7 @@ export function PlayedCards({
   useEffect(() => {
     const reset = () => {
       previous.current = undefined;
+      enteringFlights.current.forEach((finish) => finish());
     };
     window.addEventListener("resize", reset);
     window.addEventListener("offline", reset);
@@ -63,6 +98,7 @@ export function PlayedCards({
       window.removeEventListener("offline", reset);
       window.removeEventListener("online", reset);
       document.removeEventListener("visibilitychange", reset);
+      enteringFlights.current.forEach((finish) => finish());
       animations.current.forEach((animation) => animation.cancel());
       flights.current.forEach((flight) => flight.remove());
     };
@@ -71,6 +107,7 @@ export function PlayedCards({
   const cardSignature = JSON.stringify(cards);
   const removedSignature = result?.removedCardIds?.join(",");
   useLayoutEffect(() => {
+    enteringFlights.current.forEach((finish) => finish());
     if (!round || error) {
       previous.current = undefined;
       return;
@@ -116,6 +153,7 @@ export function PlayedCards({
             cardAnimations.current.delete(node);
           done?.();
         });
+      return animation;
     }
     if (canAnimate && changes.collecting && previous.current) {
       const target = previous.current.winner
@@ -172,22 +210,71 @@ export function PlayedCards({
         const rect = node.getBoundingClientRect();
         const tilt = node.style.getPropertyValue("--card-tilt");
         if (changes.entering.includes(play.id)) {
+          const opponent = play.playerId !== data?.state?.me?.name;
           const origin =
-            (play.playerId === data?.state?.me?.name
-              ? takeCardOrigin(play.card.id)
-              : undefined) ?? seatRect(play.playerId);
+            (opponent
+              ? opponentHandRect(play.playerId)
+              : takeCardOrigin(play.card.id)) ?? seatRect(play.playerId);
+          const initialScale = origin
+            ? Math.min(1.5, Math.max(0.3, origin.width / rect.width))
+            : 0.65;
           const x = origin
             ? origin.left + origin.width / 2 - rect.left - rect.width / 2
             : 0;
           const y = origin
             ? origin.top + origin.height / 2 - rect.top - rect.height / 2
             : -70;
-          animate(
-            node,
+          const flight = document.createElement("div");
+          flight.className = "PlayedCards TrickFlight CardFlight";
+          flight.setAttribute("aria-hidden", "true");
+          flight.inert = true;
+          const clone = node.cloneNode(true) as HTMLElement;
+          // The overlay escapes scroll containers; match its untransformed layout
+          // so the final frame lines up with the card in the table.
+          const width = node.offsetWidth || rect.width;
+          const height = node.offsetHeight || rect.height;
+          Object.assign(flight.style, {
+            position: "fixed",
+            left: `${rect.left + (rect.width - width) / 2}px`,
+            top: `${rect.top + (rect.height - height) / 2}px`,
+            width: `${width}px`,
+            height: `${height}px`,
+          });
+          clone.style.visibility = "visible";
+          flight.append(clone);
+          document.body.append(flight);
+          flights.current.add(flight);
+          node.style.visibility = "hidden";
+          const flightAnimations: Animation[] = [];
+          let finished = false;
+          const finishFlight = () => {
+            if (finished) return;
+            finished = true;
+            node.style.removeProperty("visibility");
+            flight.remove();
+            flights.current.delete(flight);
+            enteringFlights.current.delete(node);
+            flightAnimations.forEach((animation) => animation.cancel());
+          };
+          enteringFlights.current.set(node, finishFlight);
+          function animateFlight(
+            target: HTMLElement,
+            frames: Keyframe[],
+            options: KeyframeAnimationOptions,
+            done?: () => void,
+          ) {
+            flightAnimations.push(animate(target, frames, options, done));
+          }
+          animateFlight(
+            clone,
             [
               {
-                transform: `translate(${x}px, ${y}px) rotate(-12deg) scale(.65)`,
-                opacity: 0.35,
+                transform: `translate(${x}px, ${y}px) rotate(-12deg) scale(${initialScale})`,
+                opacity: 1,
+              },
+              {
+                transform: `translate(${x * 0.35}px, ${y * 0.35 - 24}px) rotate(7deg) scale(1.12)`,
+                offset: 0.5,
               },
               {
                 transform: `translate(0, -5px) rotate(${tilt}) scale(1.035)`,
@@ -199,8 +286,48 @@ export function PlayedCards({
                 opacity: 1,
               },
             ],
-            { duration: 460, easing: "cubic-bezier(.2,.65,.3,1)" },
+            { duration: 720, easing: "cubic-bezier(.22,.7,.3,1)" },
+            finishFlight,
           );
+          if (opponent) {
+            const face = clone.querySelector<HTMLElement>(
+              ".PlayedCards-cardFace > .Card:not(.PlayedCards-flightBack)",
+            );
+            const back = clone.querySelector<HTMLElement>(
+              ".PlayedCards-flightBack",
+            );
+            if (face && back) {
+              animateFlight(
+                face,
+                [
+                  { transform: "rotateY(180deg)", offset: 0 },
+                  { transform: "rotateY(180deg)", offset: 0.12 },
+                  { transform: "rotateY(0deg)", offset: 0.7 },
+                  { transform: "rotateY(0deg)" },
+                ],
+                { duration: 720, easing: "ease-in-out" },
+              );
+              animateFlight(
+                back,
+                [
+                  { transform: "rotateY(0deg)", opacity: 1, offset: 0 },
+                  { transform: "rotateY(0deg)", opacity: 1, offset: 0.12 },
+                  { transform: "rotateY(-180deg)", opacity: 1, offset: 0.7 },
+                  { transform: "rotateY(-180deg)", opacity: 0 },
+                ],
+                { duration: 720, easing: "ease-in-out" },
+              );
+            }
+          }
+          const label = clone.querySelector<HTMLElement>(
+            ".PlayedCards-playerLabel",
+          );
+          if (label)
+            animateFlight(
+              label,
+              [{ opacity: 0 }, { opacity: 0, offset: 0.65 }, { opacity: 1 }],
+              { duration: 720 },
+            );
         } else {
           const old = previous.current?.cards.find(
             (card) => card.id === play.id,
@@ -297,7 +424,18 @@ export function PlayedCards({
               } as React.CSSProperties
             }
           >
-            <Card as="div" card={card} disabled grayOut={false} index={index} />
+            <div className="PlayedCards-cardFace">
+              <Card
+                as="div"
+                card={card}
+                disabled
+                grayOut={false}
+                index={index}
+              />
+              <div aria-hidden="true" className="PlayedCards-backFace">
+                <CardBack className="PlayedCards-flightBack" />
+              </div>
+            </div>
             <span className="PlayedCards-playerLabel">
               {playerId}
               {result?.removedCardIds?.includes(card.id) ? " · Removed" : ""}

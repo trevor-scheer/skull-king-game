@@ -32,6 +32,22 @@
   &-cards:empty {
     display: none;
   }
+  &-cardFace {
+    position: relative;
+    perspective: 700px;
+    .Card {
+      backface-visibility: hidden;
+    }
+  }
+  &-backFace {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .PlayedCards-flightBack {
+    opacity: 0;
+    backface-visibility: hidden;
+  }
   &-cardWrapper {
     display: flex;
     flex-direction: column;

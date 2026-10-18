@@ -247,6 +247,9 @@ test("an account resumes on another device and records practice without ranking 
       mobile.getByRole("heading", { name: "Place Your Bid" }),
     ).toBeVisible();
     await mobile
+      .getByRole("button", { name: "Table options", exact: true })
+      .click();
+    await mobile
       .getByRole("button", { name: "Let autoplay take my turns" })
       .click();
     await expect(
@@ -363,9 +366,31 @@ test("custom setup supports a full crew and readable responsive hands", async ({
     path: join(qaDirectory, "phone-full-crew.png"),
     fullPage: true,
   });
-  const hand = await page.locator(".Hand").boundingBox();
-  const bids = await page.locator(".BidForm").boundingBox();
-  expect(hand!.y).toBeLessThan(bids!.y);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollHeight <= innerHeight,
+    ),
+  ).toBe(true);
+  await expect(page.locator(".Hand")).toBeInViewport();
+  const scoreButton = page.getByRole("button", {
+    name: "Scorecard",
+    exact: true,
+  });
+  await scoreButton.click();
+  const scoreDialog = page.getByRole("dialog", {
+    name: "Scorecard",
+    exact: true,
+  });
+  await expect(scoreDialog).toBeVisible();
+  await expect(scoreDialog).toContainText(
+    "Scores appear here after the first round",
+  );
+  await page.keyboard.press("Escape");
+  await expect(scoreDialog).not.toBeVisible();
+  await expect(scoreButton).toBeFocused();
+  await scoreButton.click();
+  await page.getByRole("button", { name: "Close scorecard" }).click();
+  await expect(scoreDialog).not.toBeVisible();
   await page
     .locator(".BidForm")
     .getByRole("button", { name: "0", exact: true })
@@ -489,7 +514,7 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
     await inspect.tap();
     await expect(preview).toBeVisible();
     await expect(cards).toHaveCount(3);
-    await preview.getByRole("button", { name: "Close card preview" }).tap();
+    await phone.getByRole("button", { name: "Close card preview" }).tap();
     await expect(preview).toHaveCount(0);
     await inspect.focus();
     await phone.keyboard.press("Enter");
@@ -520,6 +545,12 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
       const tableCards = page.getByRole("list", { name: "Cards on the table" });
       await expect(tableCards.getByRole("listitem")).toHaveCount(1);
       await expect(tableCards).toContainText("Captain Anne");
+      const tableBounds = await page.locator(".GameTable").boundingBox();
+      const cardBounds = await tableCards.getByRole("listitem").boundingBox();
+      expect(cardBounds!.y).toBeGreaterThanOrEqual(tableBounds!.y);
+      expect(cardBounds!.y + cardBounds!.height).toBeLessThanOrEqual(
+        tableBounds!.y + tableBounds!.height,
+      );
       if (inspectedName !== "Tigress")
         await expect(tableCards).toContainText(inspectedName);
       expect(
@@ -529,10 +560,36 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
       ).toBe(true);
     }
     await pages[0].evaluate(() => window.scrollTo(0, 0));
+    for (const page of pages) {
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollHeight <= innerHeight,
+        ),
+      ).toBe(true);
+      const scores = page.getByRole("button", {
+        name: "Scorecard",
+        exact: true,
+      });
+      await scores.click();
+      await expect(
+        page.getByRole("dialog", { name: "Scorecard", exact: true }),
+      ).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(scores).toBeFocused();
+    }
     const desktopHand = await pages[0]
       .locator(".Hand-playerHand")
       .boundingBox();
     expect(desktopHand!.y + desktopHand!.height).toBeLessThanOrEqual(720);
+    const desktopCard = pages[0].locator(".Hand-playerHand > .Card").first();
+    const resting = await desktopCard.boundingBox();
+    expect(resting!.width).toBeGreaterThan(110);
+    await desktopCard.hover();
+    await expect
+      .poll(async () => (await desktopCard.boundingBox())!.y)
+      .toBeLessThan(resting!.y - 15);
+    await pages[0].screenshot({ path: join(qaDirectory, "desktop-hover.png") });
+    await pages[0].mouse.move(0, 0);
     await pages[0].screenshot({
       path: join(qaDirectory, "desktop-preview.png"),
       animations: "disabled",
@@ -550,4 +607,50 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
   } finally {
     await Promise.allSettled(contexts.map((context) => context.close()));
   }
+});
+
+test("practice pirates pause between visible card flights", async ({
+  page,
+  request,
+}) => {
+  const created = await (
+    await request.post(`${baseURL}/graphql`, {
+      data: {
+        query: "mutation { newGame(roundSchedule:[3],tieBreakers:false) }",
+      },
+    })
+  ).json();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${baseURL}/game/${created.data.newGame}`);
+  await page.getByLabel(/Enter yer name/).fill("Patient Captain");
+  await page.getByRole("button", { name: "Board the Ship" }).click();
+  await page.getByRole("button", { name: "Add practice pirate" }).click();
+  await expect(page.locator(".Lobby-playerList li")).toHaveCount(2);
+  await page.getByRole("button", { name: "Add practice pirate" }).click();
+  await expect(page.locator(".Lobby-playerList li")).toHaveCount(3);
+  await page.getByRole("button", { name: "Set Sail!" }).click();
+  await page.getByRole("button", { name: "0", exact: true }).click();
+  const played = page.locator(".PlayedCards-cards > li");
+  await expect(played).toHaveCount(1);
+  const firstPlay = Date.now();
+  await expect(page.locator("body > .CardFlight")).toBeVisible();
+  await expect(page.locator("body > .CardFlight")).toHaveCount(0);
+  await expect(played).toHaveCount(1);
+  await expect(played).toHaveCount(2);
+  expect(Date.now() - firstPlay).toBeGreaterThan(1000);
+  await expect(page.locator("body > .CardFlight")).toBeVisible();
+  await expect(page.locator("body > .CardFlight")).toHaveCount(0);
+  await expect(page.locator(".Hand--myTurn")).toBeVisible();
+  await expect(page.locator(".GameTable-opponentHand > span")).toHaveCount(4);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollHeight <= innerHeight,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Scorecard", exact: true }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Scorecard", exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.screenshot({ path: join(qaDirectory, "phone-paced-play.png") });
 });

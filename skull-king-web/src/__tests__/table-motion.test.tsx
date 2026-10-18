@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { PlayedCards } from "../pages/Game/InGame/PlayedCards/PlayedCards";
 import {
   cardMotionChanges,
@@ -114,16 +114,74 @@ it("does not restart a card flight on an unrelated query refresh", () => {
   const first = card("Ada", "g3");
   mockQuery.mockReturnValue(state("play", [first]));
   rerender(<PlayedCards />);
-  expect(animate).toHaveBeenCalledTimes(1);
+  expect(
+    animate.mock.contexts.filter((node) => node.dataset.playId),
+  ).toHaveLength(1);
   mockQuery.mockReturnValue(state("play", [{ ...first }]));
   rerender(<PlayedCards />);
-  expect(animate).toHaveBeenCalledTimes(1);
+  expect(
+    animate.mock.contexts.filter((node) => node.dataset.playId),
+  ).toHaveLength(1);
   expect(animations[0].finish).not.toHaveBeenCalled();
   mockQuery.mockReturnValue(state("play", [first, card("Grace", "g4")]));
   rerender(<PlayedCards />);
-  expect(animations[0].finish).toHaveBeenCalledTimes(1);
-  expect(animate).toHaveBeenCalledTimes(2);
+  expect(animations[0].cancel).toHaveBeenCalledTimes(1);
+  expect(
+    animate.mock.contexts.filter((node) => node.dataset.playId),
+  ).toHaveLength(2);
+  const backFlipIndex = animate.mock.contexts.findIndex((node) =>
+    node.classList.contains("PlayedCards-flightBack"),
+  );
+  expect(backFlipIndex).toBeGreaterThan(-1);
+  expect(
+    (animate.mock.calls[backFlipIndex] as unknown as [Keyframe[]])[0][0],
+  ).toMatchObject({ transform: "rotateY(0deg)", opacity: 1 });
   unmount();
   expect(animations[1].cancel).toHaveBeenCalled();
+  Element.prototype.animate = original;
+});
+
+it("flies above scroll containers and always restores the destination on completion or errors", async () => {
+  const original = Element.prototype.animate;
+  const completions: (() => void)[] = [];
+  Element.prototype.animate = jest.fn(() => ({
+    finish: jest.fn(),
+    cancel: jest.fn(),
+    finished: new Promise<void>((resolve) => completions.push(resolve)),
+  })) as unknown as typeof original;
+  mockQuery.mockReturnValue(state("play", []));
+  const { container, rerender, unmount } = render(<PlayedCards />);
+  const first = card("Grace", "g3");
+  mockQuery.mockReturnValue(state("play", [first]));
+  rerender(<PlayedCards />);
+  const destination = container.querySelector<HTMLElement>(
+    '[data-play-id="Grace-g3"]',
+  )!;
+  expect(destination.style.visibility).toBe("hidden");
+  const flight = document.querySelector<HTMLElement>(".CardFlight")!;
+  expect(flight.parentElement).toBe(document.body);
+  expect(flight.style.position).toBe("fixed");
+  expect(flight.getAttribute("aria-hidden")).toBe("true");
+  expect(flight.querySelector(".PlayedCards-flightBack")).not.toBeNull();
+  await act(async () => {
+    completions[0]();
+  });
+  expect(destination.style.visibility).toBe("");
+  expect(document.querySelector(".CardFlight")).toBeNull();
+
+  mockQuery.mockReturnValue(state("play", [first, card("Grace", "g4")]));
+  rerender(<PlayedCards />);
+  const next = container.querySelector<HTMLElement>(
+    '[data-play-id="Grace-g4"]',
+  )!;
+  expect(next.style.visibility).toBe("hidden");
+  mockQuery.mockReturnValue({
+    ...state("play", [first, card("Grace", "g4")]),
+    error: new Error("offline"),
+  });
+  rerender(<PlayedCards />);
+  expect(next.style.visibility).toBe("");
+  expect(document.querySelector(".CardFlight")).toBeNull();
+  unmount();
   Element.prototype.animate = original;
 });

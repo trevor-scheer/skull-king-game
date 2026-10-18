@@ -1,0 +1,84 @@
+.Dialog {
+  width: min(760px, calc(100% - 24px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid #8d7953;
+  border-radius: 16px;
+  background: #10212a;
+  color: #f4efdf;
+  box-shadow: 0 24px 90px #0009;
+  overflow: hidden;
+  &[open] {
+    display: flex;
+    flex-direction: column;
+    animation: dialog-arrive 180ms ease-out;
+  }
+  &::backdrop {
+    background: #061019bf;
+    backdrop-filter: blur(5px);
+  }
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #344b53;
+    h2 {
+      margin: 0;
+      font:
+        500 20px/1.2 "Cinzel",
+        Georgia,
+        serif;
+    }
+    button {
+      flex-shrink: 0;
+    }
+  }
+  &-content {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 20px;
+  }
+  .Game-utilities {
+    margin-top: 16px;
+  }
+  .TableHelp-row {
+    display: grid;
+  }
+  .TableHelp[open] {
+    max-height: none;
+    overflow: visible;
+  }
+}
+.ScoreDialog {
+  width: min(1100px, calc(100% - 24px));
+  .Scorecard {
+    margin: 0;
+    border: 0;
+    padding: 0;
+  }
+  .Scorecard-header {
+    display: none;
+  }
+}
+@keyframes dialog-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 600px) {
+  .Dialog-header {
+    padding: 8px 12px;
+  }
+  .Dialog-content {
+    padding: 12px;
+  }
+}

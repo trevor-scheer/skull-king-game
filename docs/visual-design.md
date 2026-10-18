@@ -13,13 +13,23 @@ first action below the fold. The redesign replaces those patterns:
   path to setup. Deck presets come before individual card and scoring options.
 - The lobby prioritizes joining, crew members, invitations, and starting. Detailed
   rules remain available in a disclosure.
-- The table uses perimeter seats, decorative opponent card fans, and a fanned
-  player hand. The ink, ivory, and brass theme also applies to the table rail.
-  Cards lift on hover or keyboard focus; phones use tap-to-inspect followed by an
-  explicit play or special-card choice. During mobile bidding, the hand appears
-  before the bid controls. Wide hands and scorecards scroll within their containers.
+- The active table fills the viewport. Scores open from the Scorecard button;
+  rules, sound, autoplay, and seat recovery live in Table options. Dialogs keep
+  focus inside, close with Escape, and return focus to their opener. Special
+  card choices stay available in focused dialogs.
+- The table uses perimeter seats and visible opponent card fans; large crews
+  use a row of seats. On phones the opponent row scrolls and follows the active
+  seat. Only public hand counts determine the backs. The ink, ivory, and brass
+  theme also applies to the table rail.
+- Larger hand cards lift, tilt with the pointer, and spread adjacent cards on
+  hover or keyboard focus. Phones use tap-to-inspect in a modal followed by an
+  explicit play or special-card choice. Wide hands, table content, and scorecards
+  scroll within their containers instead of expanding the page.
 - Accepted plays travel from the player's seat or selected card to a persistent
-  trick area. The final card lands before the winner is highlighted; completed
+  trick area over 720ms. Opponent cards turn from back to face during flight.
+  Each bot, delegated seat, and Graybeard decision gets a fresh 1.4-second pause
+  (roughly 1.5–2 seconds including the server tick), so consecutive cards remain
+  distinct and human turns are immediately available. The final card lands before the winner is highlighted; completed
   tricks gather toward the winner as play advances. Rejected actions keep the
   player's card in hand. Initial loads do not replay historical card motion.
 - New games share a 4.5-second visual count-in after the last secret bid is locked.

@@ -30,23 +30,24 @@
     margin: 0;
     max-width: 100%;
     overflow-x: auto;
-    padding: 2.2rem 1.2rem 1.6rem;
+    padding: 3.3rem 1.5rem 1.25rem;
+    perspective: 1000px;
     scroll-padding: 1.2rem;
     scrollbar-width: thin;
     scrollbar-color: #627983 #10212b;
     .Card {
-      --card-width: 120px;
-      --card-height: 194px;
-      transform: translateY(var(--fan-offset)) rotate(var(--fan-angle));
+      --card-width: 128px;
+      --card-height: 204px;
+      transform: translateX(var(--neighbor-shift, 0px))
+        translateY(var(--fan-offset)) rotate(var(--fan-angle));
       transform-origin: 50% 110%;
       transition:
-        transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
-        margin 200ms ease,
+        transform 280ms cubic-bezier(0.18, 0.85, 0.25, 1.15),
         box-shadow 200ms ease,
         border-color 160ms ease;
       box-shadow: -3px 5px 10px #0006;
       &:not(:first-child) {
-        margin-left: -30px;
+        margin-left: -38px;
       }
       &:has(.Card-declaration) {
         --card-height: 232px;
@@ -57,13 +58,21 @@
       &:hover,
       &:focus-within,
       &.Hand-card--selected {
-        transform: translateY(-19px) rotate(0) scale(1.035);
+        transform: translateY(-32px) rotate(0)
+          rotateX(var(--pointer-tilt-x, 0deg))
+          rotateY(var(--pointer-tilt-y, 0deg)) scale(1.07);
         z-index: 30 !important;
-        box-shadow: 0 14px 20px #0008;
+        box-shadow:
+          0 22px 26px #0009,
+          0 0 0 1px #d9b87666;
+      }
+      &:has(+ .Card:hover),
+      &:has(+ .Card:focus-within) {
+        --neighbor-shift: -15px;
       }
       &:hover + .Card,
       &:focus-within + .Card {
-        margin-left: -8px;
+        --neighbor-shift: 15px;
       }
     }
   }
@@ -124,7 +133,8 @@
         margin-left: -36px;
       }
       &:hover {
-        transform: translateY(var(--fan-offset)) rotate(var(--fan-angle));
+        transform: translateX(var(--neighbor-shift, 0px))
+          translateY(var(--fan-offset)) rotate(var(--fan-angle));
       }
       &:focus-within,
       &.Hand-card--selected {
@@ -143,6 +153,8 @@
 @media (prefers-reduced-motion: reduce) {
   .Hand-playerHand .Card {
     transition: none;
+    --pointer-tilt-x: 0deg !important;
+    --pointer-tilt-y: 0deg !important;
   }
 }
 
@@ -174,13 +186,29 @@
     grid-column: 1 / -1;
   }
   .Hand-playerHand {
-    padding: 1.75rem 1.2rem 1rem;
+    padding: 3.1rem 1.2rem 1.2rem;
     .Card {
-      --card-width: 106px;
-      --card-height: 168px;
+      --card-width: 118px;
+      --card-height: 184px;
     }
     .Card:has(.Card-declaration) {
       --card-height: 218px;
     }
+  }
+}
+
+.Hand-previewDialog {
+  width: min(360px, calc(100% - 24px));
+  .Hand-inspection {
+    border: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+  }
+}
+@media (hover: none) {
+  .Hand-playerHand .Card {
+    --neighbor-shift: 0px !important;
   }
 }
