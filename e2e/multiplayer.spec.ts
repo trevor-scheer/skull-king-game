@@ -654,3 +654,58 @@ test("practice pirates pause between visible card flights", async ({
   await page.keyboard.press("Escape");
   await page.screenshot({ path: join(qaDirectory, "phone-paced-play.png") });
 });
+
+test("hover stays engaged while moving along the lower edge of a lifted card", async ({
+  page,
+  request,
+}) => {
+  const created = await (
+    await request.post(`${baseURL}/graphql`, {
+      data: {
+        query: "mutation { newGame(roundSchedule:[1],tieBreakers:false) }",
+      },
+    })
+  ).json();
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(`${baseURL}/game/${created.data.newGame}`);
+  await page.getByLabel(/Enter yer name/).fill("Hover Captain");
+  await page.getByRole("button", { name: "Board the Ship" }).click();
+  await page.getByRole("button", { name: "Add practice pirate" }).click();
+  await expect(page.locator(".Lobby-playerList li")).toHaveCount(2);
+  await page.getByRole("button", { name: "Add practice pirate" }).click();
+  await expect(page.locator(".Lobby-playerList li")).toHaveCount(3);
+  await page.getByRole("button", { name: "Set Sail!" }).click();
+  const card = page.locator(".Hand-playerHand > li");
+  await expect(card).toHaveCount(1);
+  const bounds = (await card.boundingBox())!;
+  await card.evaluate((element) => {
+    element.setAttribute("data-hover-enters", "0");
+    element.setAttribute("data-hover-leaves", "0");
+    element.addEventListener("pointerenter", () =>
+      element.setAttribute(
+        "data-hover-enters",
+        String(Number(element.getAttribute("data-hover-enters")) + 1),
+      ),
+    );
+    element.addEventListener("pointerleave", () =>
+      element.setAttribute(
+        "data-hover-leaves",
+        String(Number(element.getAttribute("data-hover-leaves")) + 1),
+      ),
+    );
+  });
+  await page.mouse.move(
+    bounds.x + bounds.width / 2,
+    bounds.y + bounds.height - 6,
+  );
+  // Tiny natural pointer movements must not restart the lift as the card rises.
+  for (let step = 0; step < 20; step++) {
+    await page.waitForTimeout(40);
+    await page.mouse.move(
+      bounds.x + bounds.width / 2 + (step % 2),
+      bounds.y + bounds.height - 6,
+    );
+  }
+  await expect(card).toHaveAttribute("data-hover-enters", "1");
+  await expect(card).toHaveAttribute("data-hover-leaves", "0");
+});
