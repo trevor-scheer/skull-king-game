@@ -106,6 +106,7 @@ function Controls({ lobby }: { lobby: boolean }) {
   const host =
     state.players.find((player) => !player.isBot && !player.isAutomated)?.id ===
     me.id;
+  const practicePirates = state.players.filter((player) => player.isBot);
   async function run(
     mutation: typeof ADD_BOT,
     extras: Record<string, unknown> = {},
@@ -157,21 +158,29 @@ function Controls({ lobby }: { lobby: boolean }) {
               >
                 Add practice pirate
               </button>
-              {state.players
-                .filter((player) => player.isBot)
-                .map((player) => (
-                  <p key={player.id}>
-                    {player.name}{" "}
-                    <button
-                      disabled={busy}
-                      onClick={() =>
-                        void run(REMOVE_BOT, { playerId: player.id })
-                      }
-                    >
-                      Remove {player.name}
-                    </button>
-                  </p>
-                ))}
+              {practicePirates.length > 0 && (
+                <ul
+                  className="PracticeControls-roster"
+                  aria-label="Practice pirates"
+                >
+                  {practicePirates.map((player) => (
+                    <li key={player.id}>
+                      <span className="PracticeControls-pirateName">
+                        {player.name}
+                      </span>
+                      <button
+                        aria-label={`Remove ${player.name}`}
+                        disabled={busy}
+                        onClick={() =>
+                          void run(REMOVE_BOT, { playerId: player.id })
+                        }
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </>
           ) : (
             <p>The host can add or remove practice pirates.</p>
