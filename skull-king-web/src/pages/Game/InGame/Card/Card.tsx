@@ -66,41 +66,8 @@ export const Card: React.FunctionComponent<{
       }
     })();
 
-  return (
-    <Tag
-      className={`Card${grayOut ? " Card-disabled" : ""} ${className}`}
-      data-card-id={card.id}
-      style={{ zIndex: index, ...style }}
-      onPointerMove={
-        interactive
-          ? (event) => {
-              if (
-                event.pointerType !== "mouse" ||
-                window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-              )
-                return;
-              const rect = event.currentTarget.getBoundingClientRect();
-              event.currentTarget.style.setProperty(
-                "--pointer-tilt-y",
-                `${((event.clientX - rect.left) / rect.width - 0.5) * 12}deg`,
-              );
-              event.currentTarget.style.setProperty(
-                "--pointer-tilt-x",
-                `${((event.clientY - rect.top) / rect.height - 0.5) * -8}deg`,
-              );
-            }
-          : undefined
-      }
-      onPointerLeave={
-        interactive
-          ? (event) => {
-              event.currentTarget.style.removeProperty("--pointer-tilt-x");
-              event.currentTarget.style.removeProperty("--pointer-tilt-y");
-            }
-          : undefined
-      }
-      title={disabledReason ? `${altText}: ${disabledReason}` : altText}
-    >
+  const contents = (
+    <>
       {children && !onInspect ? (
         children
       ) : (
@@ -158,6 +125,51 @@ export const Card: React.FunctionComponent<{
         </button>
       )}
       <span className="Card-name">{altText}</span>
+    </>
+  );
+
+  return (
+    <Tag
+      className={`Card${grayOut ? " Card-disabled" : ""}${interactive ? " Card--interactive" : ""} ${className}`}
+      data-card-id={card.id}
+      style={{ zIndex: index, ...style }}
+      onPointerMove={
+        interactive
+          ? (event) => {
+              if (
+                event.pointerType !== "mouse" ||
+                window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+              )
+                return;
+              const rect = event.currentTarget.getBoundingClientRect();
+              event.currentTarget.style.setProperty(
+                "--pointer-tilt-y",
+                `${Math.max(-0.5, Math.min(0.5, (event.clientX - rect.left) / rect.width - 0.5)) * 12}deg`,
+              );
+              event.currentTarget.style.setProperty(
+                "--pointer-tilt-x",
+                `${Math.max(-0.5, Math.min(0.5, (event.clientY - rect.top) / rect.height - 0.5)) * -8}deg`,
+              );
+            }
+          : undefined
+      }
+      onPointerLeave={
+        interactive
+          ? (event) => {
+              event.currentTarget.style.removeProperty("--pointer-tilt-x");
+              event.currentTarget.style.removeProperty("--pointer-tilt-y");
+            }
+          : undefined
+      }
+      title={disabledReason ? `${altText}: ${disabledReason}` : altText}
+    >
+      {interactive ? (
+        <div className="Card-motion">
+          <div className="Card-surface">{contents}</div>
+        </div>
+      ) : (
+        contents
+      )}
     </Tag>
   );
 };

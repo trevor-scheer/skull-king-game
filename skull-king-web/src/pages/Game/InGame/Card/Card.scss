@@ -209,3 +209,46 @@
     transition: none;
   }
 }
+
+// The hand's hit area stays put while its visual layers lift and tilt.
+.Card--interactive {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  &:focus-within {
+    outline: none;
+  }
+  &:focus-within .Card-surface {
+    outline: 3px solid #e6c98e;
+    outline-offset: 3px;
+  }
+}
+.Card-motion,
+.Card-surface {
+  width: 100%;
+  height: 100%;
+}
+.Card-surface {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid #829294;
+  border-radius: 0.5rem;
+  background: #10212a;
+  overflow: hidden;
+  transform: rotateX(var(--pointer-tilt-x, 0deg))
+    rotateY(var(--pointer-tilt-y, 0deg));
+  transition:
+    transform 90ms ease-out,
+    border-color 160ms ease;
+}
+.Card-disabled .Card-surface {
+  border-color: #56636a;
+}
+@media (prefers-reduced-motion: reduce) {
+  .Card-surface {
+    transition: none;
+    transform: none;
+  }
+}

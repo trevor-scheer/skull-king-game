@@ -582,11 +582,12 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
       .boundingBox();
     expect(desktopHand!.y + desktopHand!.height).toBeLessThanOrEqual(720);
     const desktopCard = pages[0].locator(".Hand-playerHand > .Card").first();
-    const resting = await desktopCard.boundingBox();
+    const surface = desktopCard.locator(".Card-surface");
+    const resting = await surface.boundingBox();
     expect(resting!.width).toBeGreaterThan(110);
     await desktopCard.hover();
     await expect
-      .poll(async () => (await desktopCard.boundingBox())!.y)
+      .poll(async () => (await surface.boundingBox())!.y)
       .toBeLessThan(resting!.y - 15);
     await pages[0].screenshot({ path: join(qaDirectory, "desktop-hover.png") });
     await pages[0].mouse.move(0, 0);

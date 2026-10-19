@@ -38,33 +38,36 @@
     .Card {
       --card-width: 128px;
       --card-height: 204px;
-      transform: translateX(var(--neighbor-shift, 0px))
-        translateY(var(--fan-offset)) rotate(var(--fan-angle));
-      transform-origin: 50% 110%;
-      transition:
-        transform 280ms cubic-bezier(0.18, 0.85, 0.25, 1.15),
-        box-shadow 200ms ease,
-        border-color 160ms ease;
-      box-shadow: -3px 5px 10px #0006;
+      .Card-motion {
+        transform: translateX(var(--neighbor-shift, 0px))
+          translateY(var(--fan-offset)) rotate(var(--fan-angle));
+        transform-origin: 50% 110%;
+        transition:
+          transform 280ms cubic-bezier(0.18, 0.85, 0.25, 1),
+          box-shadow 200ms ease;
+        perspective: 1000px;
+        border-radius: 0.5rem;
+        box-shadow: -3px 5px 10px #0006;
+      }
       &:not(:first-child) {
         margin-left: -38px;
       }
       &:has(.Card-declaration) {
         --card-height: 232px;
       }
-      &:not(.Card-disabled):has(button:enabled) {
+      &:not(.Card-disabled):has(button:enabled) .Card-surface {
         border-color: #d9b876;
       }
       &:hover,
       &:focus-within,
       &.Hand-card--selected {
-        transform: translateY(-32px) rotate(0)
-          rotateX(var(--pointer-tilt-x, 0deg))
-          rotateY(var(--pointer-tilt-y, 0deg)) scale(1.07);
         z-index: 30 !important;
-        box-shadow:
-          0 22px 26px #0009,
-          0 0 0 1px #d9b87666;
+        .Card-motion {
+          transform: translateY(-32px) rotate(0) scale(1.07);
+          box-shadow:
+            0 22px 26px #0009,
+            0 0 0 1px #d9b87666;
+        }
       }
       &:has(+ .Card:hover),
       &:has(+ .Card:focus-within) {
@@ -132,12 +135,12 @@
       &:focus-within + .Card {
         margin-left: -36px;
       }
-      &:hover {
+      &:hover .Card-motion {
         transform: translateX(var(--neighbor-shift, 0px))
           translateY(var(--fan-offset)) rotate(var(--fan-angle));
       }
-      &:focus-within,
-      &.Hand-card--selected {
+      &:focus-within .Card-motion,
+      &.Hand-card--selected .Card-motion {
         transform: translateY(-12px) rotate(0);
       }
     }
@@ -151,7 +154,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .Hand-playerHand .Card {
+  .Hand-playerHand .Card .Card-motion {
     transition: none;
     --pointer-tilt-x: 0deg !important;
     --pointer-tilt-y: 0deg !important;

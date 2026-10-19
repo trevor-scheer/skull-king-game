@@ -13,7 +13,7 @@ export function rememberCardOrigin(cardId: string) {
   if (!card) return;
   origins.clear();
   origins.set(cardId, {
-    rect: card.getBoundingClientRect(),
+    rect: (card.querySelector(".Card-surface") ?? card).getBoundingClientRect(),
     at: Date.now(),
     scrollX: window.scrollX,
     scrollY: window.scrollY,
