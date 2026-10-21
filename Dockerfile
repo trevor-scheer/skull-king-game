@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:24-bookworm-slim AS build
+FROM node:24.22.1-bookworm-slim AS build
 WORKDIR /app
 RUN corepack enable
 COPY package.json yarn.lock .yarnrc.yml ./
@@ -11,7 +11,7 @@ COPY . .
 RUN yarn build && yarn build:web
 RUN yarn workspaces focus @skull-king/server --production && yarn cache clean
 
-FROM node:24-bookworm-slim AS runtime
+FROM node:24.22.1-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production PORT=4000 DATA_DIR=/app/data
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
