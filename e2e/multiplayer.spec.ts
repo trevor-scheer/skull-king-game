@@ -8,7 +8,8 @@ import { join } from "node:path";
 let server: ChildProcess;
 let baseURL: string;
 let directory: string;
-const qaDirectory = process.env.SKULL_KING_QA_DIRECTORY ?? "/tmp/skull-king-table-qa";
+const qaDirectory =
+  process.env.SKULL_KING_QA_DIRECTORY ?? "/tmp/skull-king-table-qa";
 
 async function startServer(port = 0) {
   server = spawn(process.execPath, ["e2e/server.cjs"], {
