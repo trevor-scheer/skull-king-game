@@ -710,3 +710,77 @@ test("hover stays engaged while moving along the lower edge of a lifted card", a
   await expect(card).toHaveAttribute("data-hover-enters", "1");
   await expect(card).toHaveAttribute("data-hover-leaves", "0");
 });
+
+test("reference card is one click away, readable on a phone, and keyboard dismissible", async ({
+  page,
+  request,
+}, testInfo) => {
+  const created = await (
+    await request.post(`${baseURL}/graphql`, {
+      data: {
+        query: "mutation { newGame(roundSchedule:[3],tieBreakers:false) }",
+      },
+    })
+  ).json();
+  const gameId = created.data.newGame;
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(`${baseURL}/game/${gameId}`);
+  await page.getByLabel(/Enter yer name/).fill("Reference Reader");
+  await page.getByRole("button", { name: "Board the Ship" }).click();
+  await page.getByRole("button", { name: "Add practice pirate" }).click();
+  await page.getByRole("button", { name: "Set Sail!" }).click();
+  const opener = page.getByRole("button", {
+    name: "Reference card",
+    exact: true,
+  });
+  await opener.click();
+  const reference = page.getByRole("dialog", {
+    name: "Reference card",
+    exact: true,
+  });
+  await expect(
+    reference.getByRole("heading", { name: "Card hierarchy" }),
+  ).toBeVisible();
+  await expect(
+    reference.getByRole("heading", { name: "Bonus points" }),
+  ).toBeVisible();
+  await expect(reference).toContainText(
+    "Mermaid wins a trick containing both Skull King and a Pirate",
+  );
+  await page.screenshot({
+    path: testInfo.outputPath("reference-desktop.png"),
+    animations: "disabled",
+  });
+  await page.keyboard.press("Escape");
+  await expect(reference).not.toBeVisible();
+  await expect(opener).toBeFocused();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await opener.click();
+  await expect(reference).toBeVisible();
+  expect(
+    await reference.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth,
+    ),
+  ).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath("reference-phone-hierarchy.png"),
+    animations: "disabled",
+  });
+  await reference
+    .getByRole("heading", { name: "Bonus points" })
+    .scrollIntoViewIfNeeded();
+  await expect(
+    reference.getByText("Mermaid captures Skull King"),
+  ).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("reference-phone-bonuses.png"),
+    animations: "disabled",
+  });
+  await reference.getByRole("button", { name: "Close reference card" }).click();
+  await expect(opener).toBeFocused();
+});

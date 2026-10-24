@@ -85,7 +85,11 @@
     text-align: left;
     max-width: none;
   }
+  .TableStatus-heading {
+    flex-wrap: wrap;
+  }
   .TableStatus-actions {
+    flex-wrap: wrap;
     gap: 0.3rem;
   }
   .TableStatus-actions button {
