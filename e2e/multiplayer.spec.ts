@@ -8,7 +8,7 @@ import { join } from "node:path";
 let server: ChildProcess;
 let baseURL: string;
 let directory: string;
-const qaDirectory = "/tmp/skull-king-table-qa";
+const qaDirectory = process.env.SKULL_KING_QA_DIRECTORY ?? "/tmp/skull-king-table-qa";
 
 async function startServer(port = 0) {
   server = spawn(process.execPath, ["e2e/server.cjs"], {
@@ -529,6 +529,7 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
     await phone.screenshot({
       path: join(qaDirectory, "phone-card-inspection.png"),
       fullPage: true,
+      animations: "disabled",
     });
     expect(
       await phone.evaluate(
@@ -589,7 +590,17 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
     await expect
       .poll(async () => (await surface.boundingBox())!.y)
       .toBeLessThan(resting!.y - 15);
+    await expect(desktopCard.locator(".Card-playability")).toHaveText("− Waiting");
+    await expect(desktopCard.getByRole("tooltip")).toBeVisible();
+    await expect(desktopCard.getByRole("tooltip")).toContainText("turn");
     await pages[0].screenshot({ path: join(qaDirectory, "desktop-hover.png") });
+    await pages[0].mouse.move(0, 0);
+    await desktopCard.focus();
+    await expect(desktopCard).toBeFocused();
+    await expect(desktopCard.getByRole("tooltip")).toBeVisible();
+    await pages[0].keyboard.press("Escape");
+    await expect(desktopCard.getByRole("tooltip")).toBeHidden();
+    await desktopCard.evaluate((element) => (element as HTMLElement).blur());
     await pages[0].mouse.move(0, 0);
     await pages[0].screenshot({
       path: join(qaDirectory, "desktop-preview.png"),
@@ -602,6 +613,18 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
     });
     await phone.screenshot({
       path: join(qaDirectory, "phone-card-played.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+    await pages[2].screenshot({
+      path: join(qaDirectory, "desktop-playable-cards.png"),
+      animations: "disabled",
+    });
+    await cards.first().getByRole("button", { name: /^Inspect / }).tap();
+    await expect(preview).toContainText("Wait for your turn to play.");
+    await expect(preview.locator("button:enabled")).toHaveCount(0);
+    await phone.screenshot({
+      path: join(qaDirectory, "phone-unavailable-card.png"),
       animations: "disabled",
       fullPage: true,
     });

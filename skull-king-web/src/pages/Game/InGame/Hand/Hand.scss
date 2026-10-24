@@ -56,7 +56,14 @@
         --card-height: 232px;
       }
       &:not(.Card-disabled):has(button:enabled) .Card-surface {
-        border-color: #d9b876;
+        border: 2px solid #d9b876;
+        box-shadow: 0 0 0 2px #d9b87630;
+      }
+      &.Card-disabled .Card-surface {
+        border: 2px dashed #829294;
+      }
+      &.Card-disabled .Card-image {
+        filter: saturate(0.3) brightness(0.75);
       }
       &:hover,
       &:focus-within,

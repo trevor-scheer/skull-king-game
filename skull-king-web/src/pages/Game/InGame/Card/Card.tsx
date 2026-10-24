@@ -1,3 +1,4 @@
+import { useId, useState } from "react";
 import { Card as CardType } from "../../../../types/graphqlTypes";
 import { PIRATE_NAMES } from "../../../../utils/pirateNames";
 import "./Card.scss";
@@ -7,6 +8,7 @@ import { expansionCardDescription } from "../../../../utils/expansionCards";
 export const Card: React.FunctionComponent<{
   disabled: boolean;
   disabledReason?: string;
+  playability?: string;
   as?: "li" | "div";
   onClick?: Function;
   card: CardType;
@@ -21,6 +23,7 @@ export const Card: React.FunctionComponent<{
 }> = function ({
   disabled,
   disabledReason,
+  playability,
   as: Tag = "li",
   onClick,
   card,
@@ -33,6 +36,9 @@ export const Card: React.FunctionComponent<{
   style,
   interactive = false,
 }) {
+  const descriptionId = useId();
+  const [descriptionDismissed, setDescriptionDismissed] = useState(false);
+  const description = disabledReason;
   const expansion = expansionCardDescription(
     card.id,
     card.__typename === "ColoredCard" ? card.color : undefined,
@@ -75,6 +81,7 @@ export const Card: React.FunctionComponent<{
           className="Card-content"
           disabled={disabled && !onInspect}
           onClick={() => (onInspect ? onInspect() : onClick?.())}
+          aria-describedby={description ? descriptionId : undefined}
           aria-label={
             onInspect
               ? `Inspect ${altText}`
@@ -124,6 +131,14 @@ export const Card: React.FunctionComponent<{
           {actionLabel && <span className="Card-playLabel">{actionLabel}</span>}
         </button>
       )}
+      {playability && (
+        <span
+          className={`Card-playability${disabled ? "" : " Card-playability--ready"}`}
+        >
+          <span aria-hidden="true">{disabled ? "−" : "✓"} </span>
+          {playability}
+        </span>
+      )}
       <span className="Card-name">{altText}</span>
     </>
   );
@@ -132,6 +147,14 @@ export const Card: React.FunctionComponent<{
     <Tag
       className={`Card${grayOut ? " Card-disabled" : ""}${interactive ? " Card--interactive" : ""} ${className}`}
       data-card-id={card.id}
+      tabIndex={interactive && disabled && !onInspect ? 0 : undefined}
+      aria-label={interactive && disabled && !onInspect ? altText : undefined}
+      aria-describedby={interactive && description ? descriptionId : undefined}
+      onFocus={() => setDescriptionDismissed(false)}
+      onPointerEnter={() => setDescriptionDismissed(false)}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setDescriptionDismissed(true);
+      }}
       style={{ zIndex: index, ...style }}
       onPointerMove={
         interactive
@@ -161,14 +184,30 @@ export const Card: React.FunctionComponent<{
             }
           : undefined
       }
-      title={disabledReason ? `${altText}: ${disabledReason}` : altText}
+      title={description ? undefined : altText}
     >
       {interactive ? (
         <div className="Card-motion">
           <div className="Card-surface">{contents}</div>
+          {description && (
+            <span
+              id={descriptionId}
+              role="tooltip"
+              className={`Card-reason${descriptionDismissed ? " Card-reason--dismissed" : ""}`}
+            >
+              {description}
+            </span>
+          )}
         </div>
       ) : (
-        contents
+        <>
+          {contents}
+          {description && (
+            <span id={descriptionId} className="Card-description">
+              {description}
+            </span>
+          )}
+        </>
       )}
     </Tag>
   );

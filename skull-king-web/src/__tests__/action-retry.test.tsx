@@ -10,7 +10,7 @@ jest.mock('../types/graphqlTypes', () => ({
   usePlayColoredCardMutation: () => [failedRequest],
   usePlaySpecialCardMutation: () => [failedRequest],
   useRoundNumberQuery: () => ({ data:{state:{currentRound:{roundNumber:1, cardsPerPlayer:1}}} }),
-  useMyHandQuery: () => ({data:{state:{legalCardIds:['yellow-1'],me:{name:'Anne', hand:[{__typename:'ColoredCard',id:'yellow-1',color:'YELLOW',number:1}]},currentRound:{phase:'play',playerTurn:'Anne',trickColor:null}}}}),
+  useMyHandQuery: () => ({data:{state:{legalCardIds:['yellow-1'],me:{id:'Anne',name:'Anne', hand:[{__typename:'ColoredCard',id:'yellow-1',color:'YELLOW',number:1}]},currentRound:{phase:'play',playerTurn:'Anne',trickColor:null}}}}),
 }));
 test('a failed bid can be retried without losing the hand', async () => {
   render(<BidForm />);
