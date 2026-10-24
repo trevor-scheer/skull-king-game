@@ -16,6 +16,8 @@ import "./InGame.scss";
 import { RulesReference } from "./TableHelp/RulesReference";
 import { TableFeedback } from "./TableHelp/TableFeedback";
 import "./TableHelp/TableHelp.scss";
+import { TurnStatus } from "./TurnStatus/TurnStatus";
+import { tableActivity } from "./TurnStatus/tableActivity";
 import { PlankChoice } from "./PlankChoice/PlankChoice";
 
 export const InGame: React.FunctionComponent<{
@@ -50,9 +52,12 @@ export const InGame: React.FunctionComponent<{
   const me = data?.state?.me;
   const currentRound = data?.state?.currentRound;
 
-  const { phase, myBid, leader, playerTurn } = currentRound ?? {};
+  const { phase, myBid, leader } = currentRound ?? {};
+  const activity = tableActivity(data?.state, spectator);
   return (
-    <div className={`InGame${phase === "bid" ? " InGame--bidding" : ""}`}>
+    <div
+      className={`InGame${phase === "bid" ? " InGame--bidding" : ""}${activity.yourTurn ? " InGame--yourTurn" : ""}`}
+    >
       <header className="TableStatus">
         <div className="TableStatus-heading">
           <h1>{spectator ? "Watching the table" : "Your table"}</h1>
@@ -73,21 +78,7 @@ export const InGame: React.FunctionComponent<{
           {currentRound?.isTieBreaker ? " · Tie-breaker" : ""}
           {me ? ` · You’ve won ${me.tricksWon}` : ""}
         </p>
-        <p role="status">
-          {phase === "bid"
-            ? currentRound?.bidRevealEndsAt
-              ? "Bids locked. All together now!"
-              : "Players are choosing secret bids."
-            : phase === "load"
-              ? "Players are choosing secret cannon loads."
-              : currentRound?.plankChoice
-                ? `${currentRound.plankChoice.playerId} is choosing a Pirate to remove.`
-                : currentRound?.pirateAbility
-                  ? `${currentRound.pirateAbility.playerId} is choosing ${currentRound.pirateAbility.name}’s power.`
-                  : playerTurn
-                    ? `${playerTurn === me?.id && !spectator ? "Your" : `${playerTurn}’s`} turn.`
-                    : "Trick complete."}
-        </p>
+        <TurnStatus activity={activity} />
         {phase === "play" && (
           <p className="TableStatus-suit">
             {currentRound?.trickColor
@@ -105,7 +96,8 @@ export const InGame: React.FunctionComponent<{
       <GameTable
         players={players}
         currentPlayerId={me?.id ?? ""}
-        playerTurn={playerTurn ?? ""}
+        playerTurn={activity.actor ?? ""}
+        activeLabel={activity.seatLabel}
       >
         {phase === "load" &&
           (spectator ? <p>Waiting for cannon loads.</p> : <CannonLoad />)}
@@ -170,7 +162,7 @@ export const InGame: React.FunctionComponent<{
           {data?.state && <RulesReference settings={data.state} />}
           {!spectator && (
             <TableFeedback
-              yourTurn={playerTurn === me?.id}
+              yourTurn={Boolean(activity.yourTurn)}
               trickId={currentRound?.lastCompletedHand?.id}
               roundKey={
                 currentRound ? `${gameId}:${currentRound.id}` : undefined

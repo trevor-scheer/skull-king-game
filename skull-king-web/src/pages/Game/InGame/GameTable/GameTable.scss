@@ -51,9 +51,10 @@
       box-shadow 180ms ease;
   }
   &-opponent--active {
-    border-color: #d9b876;
+    border-color: #f2d89f;
+    background: #2a3c3d;
     box-shadow:
-      0 0 0 3px #d9b87615,
+      0 0 0 3px #d9b87650,
       0 5px 12px #0004;
   }
   &-opponentHand {
@@ -111,7 +112,8 @@
     font-size: 0.65rem;
   }
   &-opponent--active &-opponentStatus {
-    color: #e6c98e;
+    color: #f2d89f;
+    font-weight: 700;
   }
   &-opponentStats {
     grid-column: 1 / -1;
@@ -180,6 +182,9 @@
 @media (max-width: 600px) {
   .GameTable {
     padding: 0.65rem;
+    &-center .PlayedCards-header {
+      margin-bottom: 0.4rem;
+    }
     &-opponents {
       gap: 0.35rem;
     }
