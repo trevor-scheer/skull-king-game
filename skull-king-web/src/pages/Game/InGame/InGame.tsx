@@ -13,6 +13,7 @@ import { PlayedCards } from "./PlayedCards/PlayedCards";
 import { Scorecard } from "./Scorecard/Scorecard";
 import { PirateAbility } from "./PirateAbility/PirateAbility";
 import "./InGame.scss";
+import { ReferenceCard } from "./TableHelp/ReferenceCard";
 import { RulesReference } from "./TableHelp/RulesReference";
 import { TableFeedback } from "./TableHelp/TableFeedback";
 import "./TableHelp/TableHelp.scss";
@@ -24,7 +25,9 @@ export const InGame: React.FunctionComponent<{
   spectator?: boolean;
   utilities?: ReactNode;
 }> = function ({ spectator = false, utilities }) {
-  const [panel, setPanel] = useState<"scores" | "tools" | null>(null);
+  const [panel, setPanel] = useState<"scores" | "tools" | "reference" | null>(
+    null,
+  );
   const [playerToken] = usePlayerToken();
   const gameId = useGameId();
 
@@ -62,6 +65,12 @@ export const InGame: React.FunctionComponent<{
         <div className="TableStatus-heading">
           <h1>{spectator ? "Watching the table" : "Your table"}</h1>
           <div className="TableStatus-actions">
+            <button
+              onClick={() => setPanel("reference")}
+              aria-haspopup="dialog"
+            >
+              Reference card
+            </button>
             <button onClick={() => setPanel("scores")} aria-haspopup="dialog">
               Scorecard
             </button>
@@ -177,6 +186,14 @@ export const InGame: React.FunctionComponent<{
         </div>
 
         {utilities}
+      </Dialog>
+      <Dialog
+        open={panel === "reference"}
+        onClose={() => setPanel(null)}
+        title="Reference card"
+        className="ReferenceDialog"
+      >
+        {data?.state && <ReferenceCard settings={data.state} />}
       </Dialog>
       <Dialog
         open={panel === "scores"}

@@ -1,0 +1,158 @@
+.ReferenceDialog {
+  width: min(960px, calc(100% - 24px));
+  a:focus-visible,
+  summary:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #e6c98e;
+    outline-offset: 3px;
+  }
+}
+.ReferenceCard {
+  font-size: 0.83rem;
+  line-height: 1.5;
+  &-intro {
+    margin: 0 0 16px;
+    color: #a5b5ba;
+  }
+  &-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  &-face {
+    min-width: 0;
+    border: 1px solid #607078;
+    border-radius: 10px;
+    padding: 16px;
+    background: #142731;
+  }
+  h3 {
+    margin: 0;
+    font:
+      500 1.2rem/1.4 "Cinzel",
+      Georgia,
+      serif;
+    color: #d9b876;
+  }
+  h4 {
+    margin: 16px 0 4px;
+    font-size: 0.9rem;
+  }
+  &-caption {
+    margin: 4px 0 12px;
+    color: #a5b5ba;
+    font-size: 0.75rem;
+  }
+  &-hierarchy {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  &-hierarchy li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-top: 1px solid #344b53;
+  }
+  &-hierarchy img,
+  &-mark {
+    width: 30px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+  &-mark {
+    display: grid;
+    place-items: center;
+    border: 1px solid #d9b876;
+    color: #d9b876;
+  }
+  &-hierarchy p {
+    margin: 2px 0 0;
+    color: #c8d2d3;
+  }
+  &-callout {
+    padding: 10px 12px;
+    border-left: 3px solid #d9b876;
+    background: #21353c;
+    margin: 12px 0;
+  }
+  &-note {
+    margin: 8px 0 0;
+    color: #c8d2d3;
+    font-size: 0.75rem;
+  }
+  &-bonuses {
+    margin: 0;
+  }
+  &-bonuses > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #344b53;
+  }
+  &-bonuses dt {
+    font-weight: 600;
+  }
+  &-bonuses small {
+    display: block;
+    color: #a5b5ba;
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+  &-bonuses dd {
+    margin: 0;
+    color: #d9b876;
+    font-size: 1.1rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  &-scoring p {
+    margin: 4px 0 0;
+    color: #c8d2d3;
+    font-size: 0.75rem;
+  }
+  &-exceptions {
+    margin-top: 16px;
+    padding: 0 12px;
+    border: 1px solid #344b53;
+    border-radius: 8px;
+  }
+  &-exceptions summary {
+    cursor: pointer;
+    padding: 12px 0;
+    min-height: 44px;
+    font-weight: 600;
+  }
+  &-exceptions dl {
+    margin: 0 0 12px;
+  }
+  &-exceptions dt {
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  &-exceptions dd {
+    margin: 2px 0;
+    color: #c8d2d3;
+  }
+  &-source {
+    margin: 16px 0 0;
+    color: #a5b5ba;
+    font-size: 0.7rem;
+  }
+  a {
+    color: #d9b876;
+  }
+}
+@media (max-width: 600px) {
+  .ReferenceCard-grid {
+    grid-template-columns: 1fr;
+  }
+  .ReferenceCard-face {
+    padding: 12px;
+  }
+}

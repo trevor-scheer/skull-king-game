@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { GameStateQuery } from "../../../../types/graphqlTypes";
 
-type Settings = Pick<
+export type TableRulesSettings = Pick<
   NonNullable<GameStateQuery["state"]>,
   "deckConfig" | "scoringMode" | "pirateAbilities" | "cannonball" | "players"
 >;
-export function RulesReference({ settings }: { settings: Settings }) {
+export function RulesReference({ settings }: { settings: TableRulesSettings }) {
   const d = settings.deckConfig;
   const graybeard = settings.players.some((player) => player.isAutomated);
   return (

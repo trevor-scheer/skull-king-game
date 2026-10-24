@@ -43,6 +43,9 @@
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
+    @media (max-width: 600px) {
+      flex-wrap: wrap;
+    }
   }
   h1 {
     margin: 0;
@@ -77,6 +80,7 @@
     font-size: 0.65rem;
   }
   .TableStatus-actions {
+    flex-wrap: wrap;
     gap: 0.3rem;
   }
   .TableStatus-actions button {

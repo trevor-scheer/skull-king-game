@@ -12,6 +12,7 @@ Rules were checked on October 11, 2026 against these publisher sources:
 - [English base rulebook](https://cdnm.heyzine.com/files/uploaded/46b5bd7166a9f579404e175e4990c9d415b4aac7.pdf): standard play, bonuses, Graybeard, schedules, creatures, and powers.
 - [Base-game FAQ](https://www.grandpabecksgames.com/pages/skull-king): card interactions, exact Loot/wager requirements, and suit following.
 - [Expansion rulebook](https://cdn.shopify.com/s/files/1/0565/3230/4053/files/Skull_King_Expansion_Rulebook_Web.pdf?v=1753214318) and [expansion FAQ](https://www.grandpabecksgames.com/pages/skull-king-expansion): additional cards and lead-suit clarifications.
+- [Hierarchy reference card](https://cdn.shopify.com/s/files/1/0565/3230/4053/files/SK_Heirarchy.jpg?v=1672938216) and [bonus reference card](https://cdn.shopify.com/s/files/1/0565/3230/4053/files/SK_Bonus_Points.jpg?v=1672938216): the in-game quick reference follows these two faces, checked October 24, 2026. It adapts the hierarchy, bonus eligibility, and optional cards to the current table; the published card awards 40 for Mermaid capturing Skull King.
 - [Rascal scoring sheet](https://cdn.shopify.com/s/files/1/0565/3230/4053/files/Skull_King_Rascal_Scoring.pdf?v=1784153921): ordinary Rascal scoring. Cannonball uses the earlier booklet described in [round and scoring options](docs/round-options.md).
 
 The user selected the live FAQ when it conflicts with the base rulebook about
