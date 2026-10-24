@@ -15,7 +15,7 @@ test("caches a completed trick from the game-state polling query", () => {
         { __typename: "Player", id: "Anne", name: "Anne", handCount: 0, isAutomated: false, bid: 0, tricksWon: 0 },
         { __typename: "Player", id: "Mary", name: "Mary", handCount: 0, isAutomated: false, bid: 1, tricksWon: 1 },
       ],
-      me: { __typename: "Player", id: "Anne", name: "Anne", handCount: 0, isAutomated: false, bid: 0, tricksWon: 0 },
+      me: { isAutoplay: false, __typename: "Player", id: "Anne", name: "Anne", handCount: 0, isAutomated: false, bid: 0, tricksWon: 0 },
       currentRound: {
         __typename: "Round",
         id: 1,

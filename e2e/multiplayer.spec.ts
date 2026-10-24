@@ -8,7 +8,8 @@ import { join } from "node:path";
 let server: ChildProcess;
 let baseURL: string;
 let directory: string;
-const qaDirectory = "/tmp/skull-king-table-qa";
+const qaDirectory =
+  process.env.SKULL_KING_QA_DIRECTORY ?? "/tmp/skull-king-table-qa";
 
 async function startServer(port = 0) {
   server = spawn(process.execPath, ["e2e/server.cjs"], {
@@ -502,6 +503,21 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
     }
 
     const phone = pages[1];
+    await expect(phone.locator(".TurnStatus strong")).toHaveText("Your turn");
+    await expect(pages[0].locator(".TurnStatus strong")).toHaveText(
+      "Captain Anne’s turn",
+    );
+    await expect(
+      pages[0].locator('.GameTable-opponent[aria-current="true"]'),
+    ).toContainText("Captain Anne");
+    await phone.screenshot({
+      path: join(qaDirectory, "phone-your-turn.png"),
+      animations: "disabled",
+    });
+    await pages[0].screenshot({
+      path: join(qaDirectory, "desktop-opponent-turn.png"),
+      animations: "disabled",
+    });
     await expect(phone.getByText(/Your Turn!/)).toBeVisible();
     const cards = phone.locator(".Hand-playerHand > li");
     await expect(cards).toHaveCount(3);
@@ -541,6 +557,22 @@ test("the crew shares a bid reveal and a phone player inspects before a keyboard
     await phone.keyboard.press("Enter");
     await expect(cards).toHaveCount(2);
     await expect(preview).toHaveCount(0);
+    await expect(phone.locator(".TurnStatus strong")).toHaveText(
+      "Captain Grace’s turn",
+    );
+    await expect(pages[2].locator(".TurnStatus--yours strong")).toHaveText(
+      "Your turn",
+    );
+    await pages[2].screenshot({
+      path: join(qaDirectory, "desktop-your-turn.png"),
+      animations: "disabled",
+    });
+    await pages[2].emulateMedia({ reducedMotion: "reduce" });
+    expect(
+      await pages[2].locator(".TurnStatus").evaluate(
+        (element) => getComputedStyle(element).animationName,
+      ),
+    ).toBe("none");
     for (const page of pages) {
       const tableCards = page.getByRole("list", { name: "Cards on the table" });
       await expect(tableCards.getByRole("listitem")).toHaveCount(1);

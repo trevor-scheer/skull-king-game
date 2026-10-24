@@ -15,6 +15,7 @@ interface GameTableProps {
   players: PlayerInfo[];
   currentPlayerId: string;
   playerTurn: string;
+  activeLabel?: string;
   children: React.ReactNode;
 }
 
@@ -22,6 +23,7 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
   players,
   currentPlayerId,
   playerTurn,
+  activeLabel = "Playing now",
   children,
 }) => {
   const opponentsRef = useRef<HTMLDivElement>(null);
@@ -70,7 +72,7 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
         style={{ "--seat-count": opponents.length } as React.CSSProperties}
       >
         {opponents.map((opponent, index) => {
-          const isTheirTurn = opponent.name === playerTurn;
+          const isTheirTurn = opponent.id === playerTurn;
           const onLeft = index < sideRows;
           const seatStyle = {
             "--seat-column": onLeft ? "1" : "5",
@@ -82,6 +84,7 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
             <div
               key={opponent.id}
               data-player-seat={opponent.name}
+              aria-current={isTheirTurn ? "true" : undefined}
               style={seatStyle}
               className={`GameTable-opponent${isTheirTurn ? " GameTable-opponent--active" : ""}`}
             >
@@ -109,7 +112,7 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
                 </div>
                 <span className="GameTable-opponentStatus">
                   {isTheirTurn
-                    ? "Playing"
+                    ? `▶ ${activeLabel}`
                     : `${opponent.handCount} cards in hand`}
                 </span>
               </div>

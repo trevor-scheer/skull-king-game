@@ -1,0 +1,76 @@
+.TurnStatus {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-block: 0.3rem 0.1rem;
+  padding: 0.55rem 0.8rem;
+  min-width: 0;
+  border: 1px solid #68828b;
+  border-left-width: 4px;
+  border-radius: 0.65rem;
+  background: #142731;
+  color: #f4efdf;
+  strong {
+    display: block;
+    font-size: 1.1rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  &-marker {
+    flex-shrink: 0;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  &-detail {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: #a5b5ba;
+  }
+  &--yours {
+    border-color: #f2d89f;
+    background: #d9b876;
+    color: #142731;
+    .TurnStatus-detail {
+      color: #233b43;
+    }
+  }
+  &--arriving {
+    animation: turn-arrival 1.4s ease-out;
+  }
+}
+
+@keyframes turn-arrival {
+  0% {
+    box-shadow: 0 0 0 0 #f2d89f99;
+    transform: translateY(3px);
+  }
+  45% {
+    box-shadow: 0 0 0 7px #f2d89f33;
+    transform: translateY(0);
+  }
+  100% {
+    box-shadow: 0 0 0 10px #f2d89f00;
+  }
+}
+
+@media (max-width: 600px) {
+  .TurnStatus {
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    strong {
+      font-size: 1rem;
+    }
+    &-detail {
+      font-size: 0.7rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .TurnStatus--arriving {
+    animation: none;
+  }
+}
