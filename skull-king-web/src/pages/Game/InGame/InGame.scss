@@ -43,6 +43,9 @@
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
+    @media (max-width: 600px) {
+      flex-wrap: wrap;
+    }
   }
   h1 {
     margin: 0;
@@ -84,9 +87,6 @@
   .TableStatus p[role="status"] {
     text-align: left;
     max-width: none;
-  }
-  .TableStatus-heading {
-    flex-wrap: wrap;
   }
   .TableStatus-actions {
     flex-wrap: wrap;
