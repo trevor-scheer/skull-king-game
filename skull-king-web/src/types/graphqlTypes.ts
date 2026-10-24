@@ -425,7 +425,7 @@ export type MyHandQueryVariables = Exact<{
 }>;
 
 
-export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, legalCardIds: Array<string>, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, choice?: boolean | null, wild?: boolean | null, expansion?: boolean | null, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, playerTurn?: string | null, trickColor?: Color | null, myForcedCardId?: string | null, myBid?: number | null, bidRevealEndsAt?: number | null } | null } | null };
+export type MyHandQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, legalCardIds: Array<string>, me?: { __typename?: 'Player', id: string, name: string, hand: Array<{ __typename?: 'ColoredCard', id: string, color: string, choice?: boolean | null, wild?: boolean | null, expansion?: boolean | null, number: number } | { __typename?: 'SpecialCard', id: string, type: string }> } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, playerTurn?: string | null, trickColor?: Color | null, myForcedCardId?: string | null, myBid?: number | null, bidRevealEndsAt?: number | null, pirateAbility?: { __typename?: 'PirateAbility', name: string, playerId: string } | null, plankChoice?: { __typename?: 'PlankChoice', playerId: string } | null } | null } | null };
 
 export type PlayColoredCardMutationVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -1034,6 +1034,13 @@ export const MyHandDocument = gql`
       phase
       playerTurn
       trickColor
+      pirateAbility {
+        name
+        playerId
+      }
+      plankChoice {
+        playerId
+      }
       myForcedCardId
       myBid
       bidRevealEndsAt

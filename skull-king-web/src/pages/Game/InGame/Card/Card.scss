@@ -252,3 +252,53 @@
     transform: none;
   }
 }
+
+.Card-playability {
+  flex-shrink: 0;
+  padding: 0.2rem 0.3rem;
+  background: #293c46;
+  color: #e0e7e8;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+.Card-playability--ready {
+  background: #d9b876;
+  color: #10212a;
+}
+.Card-reason {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 5px;
+  bottom: 48px;
+  padding: 0.55rem;
+  border: 1px solid #d9b876;
+  border-radius: 0.35rem;
+  background: #0b1720f5;
+  color: #f4efdf;
+  box-shadow: 0 4px 14px #0008;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  text-align: left;
+  visibility: hidden;
+}
+.Card:hover .Card-reason,
+.Card:focus-within .Card-reason {
+  visibility: visible;
+}
+.Card .Card-reason.Card-reason--dismissed {
+  visibility: hidden;
+}
+.Card-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+@media (hover: none) {
+  .Card .Card-reason {
+    display: none;
+  }
+}

@@ -25,6 +25,13 @@ query MyHand($gameId: String!, $playerToken: String!) {
       phase
       playerTurn
       trickColor
+      pirateAbility {
+        name
+        playerId
+      }
+      plankChoice {
+        playerId
+      }
       myForcedCardId
       myBid
       bidRevealEndsAt
