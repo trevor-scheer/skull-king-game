@@ -13,6 +13,14 @@
   &--myTurn &-label {
     color: #e6c98e;
   }
+  &-roundStats {
+    display: inline-block;
+    margin-left: 0.75rem;
+    color: #f4efdf;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
   &-totalScore {
     display: inline-block;
     margin-left: 0.75rem;
