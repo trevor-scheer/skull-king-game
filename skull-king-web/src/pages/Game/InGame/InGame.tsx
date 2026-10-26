@@ -170,7 +170,12 @@ export const InGame: React.FunctionComponent<{
         )}
 
       {/* Player's hand at the bottom */}
-      {!spectator && <Hand totalScore={totals.get(me?.name ?? "") ?? 0} />}
+      {!spectator && (
+        <Hand
+          totalScore={totals.get(me?.name ?? "") ?? 0}
+          tricksWon={me?.tricksWon ?? 0}
+        />
+      )}
 
       <Dialog
         open={panel === "tools"}
