@@ -111,6 +111,12 @@
     color: #a5b5ba;
     font-size: 0.65rem;
   }
+  &-opponentScore {
+    color: #d9b876;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
   &-opponent--active &-opponentStatus {
     color: #f2d89f;
     font-weight: 700;
@@ -199,7 +205,18 @@
     &-opponentName {
       font-size: 0.7rem;
     }
+    &-opponentIdentity {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      flex-wrap: wrap;
+      column-gap: 0.35rem;
+    }
+    &-opponentScore {
+      font-size: 0.65rem;
+    }
     &-opponentStatus {
+      flex-basis: 100%;
       font-size: 0.6rem;
     }
     &-opponentStats {
@@ -322,15 +339,5 @@
       flex: 1;
       width: 100%;
     }
-  }
-}
-
-@media (min-width: 851px) {
-  .GameTable:not(.GameTable--largeCrew) .GameTable-opponentIdentity {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.1rem 0.4rem;
   }
 }

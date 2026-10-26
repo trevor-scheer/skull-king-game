@@ -16,7 +16,9 @@ import "./Hand.scss";
 import { Dialog } from "../../../../components/Dialog";
 import { rememberCardOrigin } from "../PlayedCards/cardMotion";
 
-export const Hand: React.FunctionComponent = function () {
+export const Hand: React.FunctionComponent<{ totalScore?: number }> = function ({
+  totalScore = 0,
+}) {
   const [playerToken] = usePlayerToken();
   const gameId = useGameId() ?? ""; // TODO: hacky fallback
   const [justClicked, setJustClicked] = useState(false);
@@ -321,6 +323,9 @@ export const Hand: React.FunctionComponent = function () {
       <p className="Hand-label">
         {myTurn ? "Your Turn!" : "My Hand"}
         {phase === "play" && ` · Bid: ${currentRound?.myBid}`}
+        <span className="Hand-totalScore">
+          Total <strong>{totalScore}</strong> pts
+        </span>
       </p>
       {sortedHand.length > 3 && (
         <p className="Hand-scrollHint">

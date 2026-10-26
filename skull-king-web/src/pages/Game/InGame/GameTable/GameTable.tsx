@@ -9,6 +9,7 @@ interface PlayerInfo {
   isAutomated: boolean;
   bid?: number | null;
   tricksWon: number;
+  totalScore?: number;
 }
 
 interface GameTableProps {
@@ -110,6 +111,11 @@ export const GameTable: React.FunctionComponent<GameTableProps> = ({
                 <div className="GameTable-opponentName" title={opponent.name}>
                   {opponent.name}
                 </div>
+                {opponent.totalScore !== undefined && (
+                  <span className="GameTable-opponentScore">
+                    Total <strong>{opponent.totalScore}</strong> pts
+                  </span>
+                )}
                 <span className="GameTable-opponentStatus">
                   {isTheirTurn
                     ? `▶ ${activeLabel}`

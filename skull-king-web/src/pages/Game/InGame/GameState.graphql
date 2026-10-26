@@ -6,6 +6,14 @@ query GameState($gameId: String!, $playerToken: String!) {
     cannonball
     deckConfig { includeMermaids includeKraken includeWhiteWhale includeLoot includeExpansion includeFirstMate includeStingray includeDavyJones includeWalkThePlank includeLastVolley }
     legalCardIds
+    scorecard {
+      playerName
+      tricksBid
+      tricksWon
+      bidPoints
+      bonusPoints
+      totalPoints
+    }
     players {
       id
       name
