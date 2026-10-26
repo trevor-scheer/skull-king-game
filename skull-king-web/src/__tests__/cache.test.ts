@@ -11,6 +11,7 @@ test("caches a completed trick from the game-state polling query", () => {
       scoringMode: ScoringMode.Classic, pirateAbilities: false, cannonball: false,
       deckConfig: {__typename:"DeckConfig", includeMermaids:true, includeKraken:false,includeWhiteWhale:false,includeLoot:false,includeExpansion:false,includeFirstMate:false,includeStingray:false,includeDavyJones:false,includeWalkThePlank:false,includeLastVolley:false},
       legalCardIds: [],
+      scorecard: [],
       players: [
         { __typename: "Player", id: "Anne", name: "Anne", handCount: 0, isAutomated: false, bid: 0, tricksWon: 0 },
         { __typename: "Player", id: "Mary", name: "Mary", handCount: 0, isAutomated: false, bid: 1, tricksWon: 1 },

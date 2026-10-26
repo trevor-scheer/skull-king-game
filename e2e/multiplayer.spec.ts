@@ -399,6 +399,142 @@ test("custom setup supports a full crew and readable responsive hands", async ({
   await expect(page.locator(".AwaitingBids")).toBeVisible();
 });
 
+test("running totals stay visible and update between rounds without opening the scorecard", async ({
+  browser,
+  request,
+}) => {
+  const created = await (
+    await request.post(`${baseURL}/graphql`, {
+      data: {
+        query: "mutation { newGame(roundSchedule:[1,1,1],tieBreakers:false) }",
+      },
+    })
+  ).json();
+  expect(created.errors).toBeUndefined();
+  const gameId = created.data.newGame;
+  const names = ["Captain Ada", "Captain Anne", "Captain Grace"];
+  const contexts = await Promise.all(
+    names.map(() =>
+      browser.newContext({ viewport: { width: 1280, height: 720 } }),
+    ),
+  );
+  const pages = await Promise.all(contexts.map((context) => context.newPage()));
+  const assertTotals = async (totals: Map<string, number>) => {
+    for (let index = 0; index < pages.length; index++) {
+      const page = pages[index];
+      await expect(page.locator(".Hand-totalScore")).toHaveText(
+        `Total ${totals.get(names[index])} pts`,
+      );
+      await expect(page.locator(".Hand-totalScore")).toBeInViewport();
+      await expect(page.locator(".GameTable-opponentScore")).toHaveCount(2);
+      for (const name of names.filter((name) => name !== names[index])) {
+        await expect(
+          page
+            .locator(".GameTable-opponent")
+            .filter({ hasText: name })
+            .locator(".GameTable-opponentScore"),
+        ).toHaveText(`Total ${totals.get(name)} pts`);
+      }
+      await expect(
+        page.getByRole("dialog", { name: "Scorecard", exact: true }),
+      ).not.toBeVisible();
+    }
+  };
+  try {
+    for (let index = 0; index < pages.length; index++) {
+      await pages[index].goto(`${baseURL}/game/${gameId}`);
+      await pages[index].getByLabel(/Enter yer name/).fill(names[index]);
+      await pages[index]
+        .getByRole("button", { name: "Board the Ship" })
+        .click();
+      await expect(pages[index].locator(".Lobby-playerList")).toContainText(
+        names[index],
+      );
+    }
+    await pages[0].getByRole("button", { name: "Set Sail!" }).click();
+    await assertTotals(new Map(names.map((name) => [name, 0])));
+    for (let round = 1; round <= 2; round++) {
+      for (const page of pages) {
+        await expect(
+          page.getByRole("heading", { name: "Place Your Bid" }),
+        ).toBeVisible();
+        await page.getByRole("button", { name: "0", exact: true }).click();
+      }
+      for (let turn = 0; turn < names.length; turn++) {
+        let active = -1;
+        await expect
+          .poll(async () => {
+            const enabled = await Promise.all(
+              pages.map((page) =>
+                page.locator(".Hand-playerHand button:enabled").count(),
+              ),
+            );
+            active = enabled.findIndex((count) => count > 0);
+            return active;
+          })
+          .toBeGreaterThanOrEqual(0);
+        await pages[active]
+          .locator(".Hand-playerHand button:enabled")
+          .first()
+          .click();
+        await expect(
+          pages[active].locator(".Hand-playerHand button"),
+        ).toHaveCount(0);
+      }
+      let scorecard: { playerName: string; totalPoints: number }[][] = [];
+      await expect
+        .poll(async () => {
+          const response = await request.post(`${baseURL}/graphql`, {
+            data: {
+              query:
+                "query($gameId:String!) { state(gameId:$gameId) { scorecard { playerName totalPoints } } }",
+              variables: { gameId },
+            },
+          });
+          const result = await response.json();
+          expect(result.errors).toBeUndefined();
+          scorecard = result.data.state.scorecard ?? [];
+          return scorecard.length;
+        })
+        .toBe(round);
+      const latest = scorecard[round - 1];
+      if (round === 1)
+        expect(latest.some((score) => score.totalPoints < 0)).toBe(true);
+      await assertTotals(
+        new Map(latest.map((score) => [score.playerName, score.totalPoints])),
+      );
+    }
+    for (const page of pages)
+      await expect(
+        page.getByRole("heading", { name: "Place Your Bid" }),
+      ).toBeVisible();
+    await pages[0].screenshot({
+      path: join(qaDirectory, "desktop-running-totals.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+    await pages[1].setViewportSize({ width: 390, height: 844 });
+    for (const selector of [".Hand-totalScore", ".GameTable-opponentScore"]) {
+      for (const score of await pages[1].locator(selector).all())
+        await expect(score).toBeInViewport();
+    }
+    expect(
+      await pages[1].evaluate(
+        () =>
+          document.documentElement.scrollWidth <= innerWidth &&
+          document.documentElement.scrollHeight <= innerHeight,
+      ),
+    ).toBe(true);
+    await pages[1].screenshot({
+      path: join(qaDirectory, "phone-running-totals.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+  } finally {
+    await Promise.allSettled(contexts.map((context) => context.close()));
+  }
+});
+
 test("an unavailable page file offers recovery instead of a developer error", async ({
   page,
 }) => {

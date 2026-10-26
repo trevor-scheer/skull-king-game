@@ -51,7 +51,17 @@ export const InGame: React.FunctionComponent<{
     );
   if (loading && !data) return <div className="InGame-loading">Loading...</div>;
 
-  const players = data?.state?.players ?? [];
+  const scorecard = data?.state?.scorecard ?? [];
+  const totals = new Map(
+    scorecard[scorecard.length - 1]?.map(({ playerName, totalPoints }) => [
+      playerName,
+      totalPoints,
+    ]),
+  );
+  const players = (data?.state?.players ?? []).map((player) => ({
+    ...player,
+    totalScore: player.isAutomated ? undefined : (totals.get(player.name) ?? 0),
+  }));
   const me = data?.state?.me;
   const currentRound = data?.state?.currentRound;
 
@@ -160,7 +170,7 @@ export const InGame: React.FunctionComponent<{
         )}
 
       {/* Player's hand at the bottom */}
-      {!spectator && <Hand />}
+      {!spectator && <Hand totalScore={totals.get(me?.name ?? "") ?? 0} />}
 
       <Dialog
         open={panel === "tools"}

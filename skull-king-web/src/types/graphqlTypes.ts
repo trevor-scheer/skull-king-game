@@ -417,7 +417,7 @@ export type GameStateQueryVariables = Exact<{
 }>;
 
 
-export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, scoringMode: ScoringMode, pirateAbilities: boolean, cannonball: boolean, legalCardIds: Array<string>, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean, includeExpansion: boolean, includeFirstMate: boolean, includeStingray: boolean, includeDavyJones: boolean, includeWalkThePlank: boolean, includeLastVolley: boolean }, players: Array<{ __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number }>, me?: { __typename?: 'Player', isAutoplay: boolean, id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPerPlayer: number, isTieBreaker: boolean, trickColor?: Color | null, leader: string, playerTurn?: string | null, myBid?: number | null, bidRevealEndsAt?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string, name: string, playerId: string } | null, plankChoice?: { __typename?: 'PlankChoice', id: string, playerId: string } | null, hands: Array<{ __typename?: 'Hand', id: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
+export type GameStateQuery = { __typename?: 'Query', state?: { __typename?: 'GameState', id: string, scoringMode: ScoringMode, pirateAbilities: boolean, cannonball: boolean, legalCardIds: Array<string>, deckConfig: { __typename?: 'DeckConfig', includeMermaids: boolean, includeKraken: boolean, includeWhiteWhale: boolean, includeLoot: boolean, includeExpansion: boolean, includeFirstMate: boolean, includeStingray: boolean, includeDavyJones: boolean, includeWalkThePlank: boolean, includeLastVolley: boolean }, scorecard?: Array<Array<{ __typename?: 'ScoreBlock', playerName: string, tricksBid: number, tricksWon: number, bidPoints: number, bonusPoints: number, totalPoints: number }>> | null, players: Array<{ __typename?: 'Player', id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number }>, me?: { __typename?: 'Player', isAutoplay: boolean, id: string, name: string, handCount: number, isAutomated: boolean, bid?: number | null, tricksWon: number } | null, currentRound?: { __typename?: 'Round', id: number, phase: string, cardsPerPlayer: number, isTieBreaker: boolean, trickColor?: Color | null, leader: string, playerTurn?: string | null, myBid?: number | null, bidRevealEndsAt?: number | null, roundNumber: number, pirateAbility?: { __typename?: 'PirateAbility', id: string, name: string, playerId: string } | null, plankChoice?: { __typename?: 'PlankChoice', id: string, playerId: string } | null, hands: Array<{ __typename?: 'Hand', id: string }>, lastCompletedHand?: { __typename?: 'Hand', id: string } | null, cardsPlayed: Array<{ __typename?: 'PlayedCard', id: string, playerId: string }> } | null } | null };
 
 export type MyHandQueryVariables = Exact<{
   gameId: Scalars['String']['input'];
@@ -918,6 +918,14 @@ export const GameStateDocument = gql`
       includeLastVolley
     }
     legalCardIds
+    scorecard {
+      playerName
+      tricksBid
+      tricksWon
+      bidPoints
+      bonusPoints
+      totalPoints
+    }
     players {
       id
       name
