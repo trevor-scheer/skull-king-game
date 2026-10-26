@@ -839,3 +839,99 @@ test("reference card is one click away, readable on a phone, and keyboard dismis
   await reference.getByRole("button", { name: "Close reference card" }).click();
   await expect(opener).toBeFocused();
 });
+
+for (const viewport of [
+  { width: 1280, height: 720 },
+  { width: 1920, height: 1080 },
+  { width: 390, height: 844 },
+]) {
+  test(`card artwork stays uncropped with status labels at ${viewport.width}px`, async ({
+    page,
+    request,
+  }, testInfo) => {
+    const created = await (
+      await request.post(`${baseURL}/graphql`, {
+        data: {
+          query: "mutation { newGame(roundSchedule:[10],tieBreakers:false) }",
+        },
+      })
+    ).json();
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(`${baseURL}/game/${created.data.newGame}`);
+    await page.getByLabel(/Enter yer name/).fill("Card Reader");
+    await page.getByRole("button", { name: "Board the Ship" }).click();
+    await page.getByRole("button", { name: "Add practice pirate" }).click();
+    await expect(page.locator(".Lobby-playerList li")).toHaveCount(2);
+    await page.getByRole("button", { name: "Add practice pirate" }).click();
+    await expect(page.locator(".Lobby-playerList li")).toHaveCount(3);
+    await page.getByRole("button", { name: "Set Sail!" }).click();
+
+    await page.setViewportSize(viewport);
+    const cards = page.locator(".Hand-playerHand > li");
+    await expect(cards).toHaveCount(10);
+    await expect(cards.first().locator(".Card-playability")).toContainText(
+      "Waiting",
+    );
+    const images = page.locator(".Hand-playerHand .Card-image");
+    expect(await images.count()).toBeGreaterThan(0);
+    await expect
+      .poll(() =>
+        images.evaluateAll((elements) =>
+          elements.every(
+            (element) =>
+              element instanceof HTMLImageElement &&
+              element.complete &&
+              element.naturalWidth > 0,
+          ),
+        ),
+      )
+      .toBe(true);
+
+    const expectUncroppedArtwork = async () => {
+      const croppedImages = await images.evaluateAll((elements) =>
+        elements.flatMap((element) => {
+          const image = element as HTMLImageElement;
+          const style = getComputedStyle(image);
+          const width = parseFloat(style.width);
+          const height = parseFloat(style.height);
+          const scales = [
+            width / image.naturalWidth,
+            height / image.naturalHeight,
+          ];
+          const scale =
+            style.objectFit === "cover"
+              ? Math.max(...scales)
+              : style.objectFit === "contain"
+                ? Math.min(...scales)
+                : style.objectFit === "scale-down"
+                  ? Math.min(1, ...scales)
+                  : 1;
+          return style.objectFit !== "fill" &&
+            (image.naturalWidth * scale > width + 1 ||
+              image.naturalHeight * scale > height + 1)
+            ? [image.alt]
+            : [];
+        }),
+      );
+      expect(
+        croppedImages,
+        "The full artwork, including its top rank, must fit inside the image area",
+      ).toEqual([]);
+    };
+
+    await page.screenshot({ path: testInfo.outputPath("idle.png") });
+    await expectUncroppedArtwork();
+    if (viewport.width > 600) {
+      await cards.first().hover();
+      await expectUncroppedArtwork();
+      await cards.first().focus();
+      await page.keyboard.press("Escape");
+      await expect(cards.first()).toBeFocused();
+      await expectUncroppedArtwork();
+      await page.screenshot({
+        path: testInfo.outputPath("focused.png"),
+        animations: "disabled",
+      });
+    }
+  });
+}
